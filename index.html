@@ -3435,209 +3435,208 @@ display: none;
 <details open class="code-fold">
 <summary>Show code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="fu">rm</span>(<span class="at">list =</span> <span class="fu">ls</span>())</span>
-<span id="cb3-2"><a href="#cb3-2"></a><span class="fu">install.packages</span>(<span class="st">&quot;reticulate&quot;</span>)</span>
-<span id="cb3-3"><a href="#cb3-3"></a><span class="fu">library</span>(reticulate)</span>
-<span id="cb3-4"><a href="#cb3-4"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb3-5"><a href="#cb3-5"></a><span class="fu">library</span>(plm)</span>
-<span id="cb3-6"><a href="#cb3-6"></a><span class="fu">library</span>(stargazer)</span>
-<span id="cb3-7"><a href="#cb3-7"></a><span class="fu">library</span>(data.table)</span>
-<span id="cb3-8"><a href="#cb3-8"></a><span class="fu">library</span>(lmtest)</span>
-<span id="cb3-9"><a href="#cb3-9"></a><span class="fu">library</span>(sandwich)</span>
-<span id="cb3-10"><a href="#cb3-10"></a></span>
-<span id="cb3-11"><a href="#cb3-11"></a>master <span class="ot">&lt;-</span> <span class="fu">fread</span>(<span class="st">&quot;~/Desktop/DATATHES/FINAL WORKING DATA/Master_Panel.csv&quot;</span>)</span>
-<span id="cb3-12"><a href="#cb3-12"></a></span>
-<span id="cb3-13"><a href="#cb3-13"></a>master_clean <span class="ot">&lt;-</span> master <span class="sc">%&gt;%</span></span>
-<span id="cb3-14"><a href="#cb3-14"></a>  <span class="fu">mutate</span>(<span class="at">researchers_per_million =</span> <span class="fu">coalesce</span>(researchers_per_million_y, researchers_per_million_x)) <span class="sc">%&gt;%</span></span>
-<span id="cb3-15"><a href="#cb3-15"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">c</span>(</span>
-<span id="cb3-16"><a href="#cb3-16"></a>    year, avg_quality_index_4, avg_quality_index_6, VC_investment,</span>
-<span id="cb3-17"><a href="#cb3-17"></a>    bank_credit_gdp, market_cap_gdp, ipp_index_IP_transformed,</span>
-<span id="cb3-18"><a href="#cb3-18"></a>    patent_applications_residents, researchers_per_million,</span>
-<span id="cb3-19"><a href="#cb3-19"></a>    gdp_pc_const2015usd, trade_percent_gdp,</span>
-<span id="cb3-20"><a href="#cb3-20"></a>    rd_expenditure_percent_gdp, tertiary_enrollment_percent</span>
-<span id="cb3-21"><a href="#cb3-21"></a>  ), as.numeric)) <span class="sc">%&gt;%</span></span>
-<span id="cb3-22"><a href="#cb3-22"></a>  <span class="fu">mutate</span>(<span class="at">VC_investment_pct =</span> VC_investment <span class="sc">*</span> <span class="dv">100</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb3-23"><a href="#cb3-23"></a>  <span class="fu">mutate</span>(<span class="at">quality_index_100 =</span> avg_quality_index_4 <span class="sc">*</span> <span class="dv">100</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb3-24"><a href="#cb3-24"></a>  <span class="fu">mutate</span>(<span class="at">patents_per_researcher =</span> patent_applications_residents <span class="sc">/</span> researchers_per_million) <span class="sc">%&gt;%</span></span>
-<span id="cb3-25"><a href="#cb3-25"></a>  </span>
-<span id="cb3-26"><a href="#cb3-26"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb3-27"><a href="#cb3-27"></a>    <span class="at">bank_x_ipr =</span> bank_credit_gdp <span class="sc">*</span> ipp_index_IP_transformed,</span>
-<span id="cb3-28"><a href="#cb3-28"></a>    <span class="at">market_x_ipr =</span> market_cap_gdp <span class="sc">*</span> ipp_index_IP_transformed,</span>
-<span id="cb3-29"><a href="#cb3-29"></a>    <span class="at">vc_x_ipr =</span> VC_investment_pct <span class="sc">*</span> ipp_index_IP_transformed</span>
-<span id="cb3-30"><a href="#cb3-30"></a>  )</span>
-<span id="cb3-31"><a href="#cb3-31"></a></span>
-<span id="cb3-32"><a href="#cb3-32"></a>master_clean <span class="ot">&lt;-</span> <span class="fu">pdata.frame</span>(master_clean, <span class="at">index =</span> <span class="fu">c</span>(<span class="st">&quot;iso3c&quot;</span>, <span class="st">&quot;year&quot;</span>))</span>
-<span id="cb3-33"><a href="#cb3-33"></a></span>
-<span id="cb3-34"><a href="#cb3-34"></a>master_levels <span class="ot">&lt;-</span> master_clean <span class="sc">%&gt;%</span></span>
-<span id="cb3-35"><a href="#cb3-35"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(quality_index_100) <span class="sc">|</span> <span class="sc">!</span><span class="fu">is.na</span>(patents_per_researcher)) <span class="sc">%&gt;%</span></span>
-<span id="cb3-36"><a href="#cb3-36"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(bank_credit_gdp) <span class="sc">|</span> <span class="sc">!</span><span class="fu">is.na</span>(market_cap_gdp) <span class="sc">|</span> <span class="sc">!</span><span class="fu">is.na</span>(VC_investment_pct)) <span class="sc">%&gt;%</span></span>
-<span id="cb3-37"><a href="#cb3-37"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(ipp_index_IP_transformed))</span>
-<span id="cb3-38"><a href="#cb3-38"></a></span>
-<span id="cb3-39"><a href="#cb3-39"></a>year_range <span class="ot">&lt;-</span> <span class="fu">range</span>(<span class="fu">as.numeric</span>(<span class="fu">as.character</span>(master_levels<span class="sc">$</span>year)), <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb3-40"><a href="#cb3-40"></a></span>
-<span id="cb3-41"><a href="#cb3-41"></a>master_bank_market <span class="ot">&lt;-</span> master_levels <span class="sc">%&gt;%</span> </span>
-<span id="cb3-42"><a href="#cb3-42"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(bank_credit_gdp) <span class="sc">|</span> <span class="sc">!</span><span class="fu">is.na</span>(market_cap_gdp))</span>
-<span id="cb3-43"><a href="#cb3-43"></a></span>
-<span id="cb3-44"><a href="#cb3-44"></a>master_vc <span class="ot">&lt;-</span> master_levels <span class="sc">%&gt;%</span> </span>
-<span id="cb3-45"><a href="#cb3-45"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(VC_investment_pct))</span>
-<span id="cb3-46"><a href="#cb3-46"></a></span>
-<span id="cb3-47"><a href="#cb3-47"></a><span class="co"># PATENT QUALITY REGRESSIONS</span></span>
-<span id="cb3-48"><a href="#cb3-48"></a></span>
-<span id="cb3-49"><a href="#cb3-49"></a><span class="co"># Bank-based FD with IPR interaction</span></span>
-<span id="cb3-50"><a href="#cb3-50"></a>qual_bank <span class="ot">&lt;-</span> <span class="fu">plm</span>(quality_index_100 <span class="sc">~</span> bank_credit_gdp <span class="sc">+</span> ipp_index_IP_transformed <span class="sc">+</span> bank_x_ipr <span class="sc">+</span></span>
-<span id="cb3-51"><a href="#cb3-51"></a>                   gdp_pc_const2015usd <span class="sc">+</span> trade_percent_gdp <span class="sc">+</span></span>
-<span id="cb3-52"><a href="#cb3-52"></a>                   rd_expenditure_percent_gdp <span class="sc">+</span> tertiary_enrollment_percent,</span>
-<span id="cb3-53"><a href="#cb3-53"></a>                 <span class="at">data =</span> master_bank_market, <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span>)</span>
-<span id="cb3-54"><a href="#cb3-54"></a></span>
-<span id="cb3-55"><a href="#cb3-55"></a><span class="co"># Market-based FD with IPR interaction  </span></span>
-<span id="cb3-56"><a href="#cb3-56"></a>qual_market <span class="ot">&lt;-</span> <span class="fu">plm</span>(quality_index_100 <span class="sc">~</span> market_cap_gdp <span class="sc">+</span> ipp_index_IP_transformed <span class="sc">+</span> market_x_ipr <span class="sc">+</span></span>
-<span id="cb3-57"><a href="#cb3-57"></a>                     gdp_pc_const2015usd <span class="sc">+</span> trade_percent_gdp <span class="sc">+</span></span>
-<span id="cb3-58"><a href="#cb3-58"></a>                     rd_expenditure_percent_gdp <span class="sc">+</span> tertiary_enrollment_percent,</span>
-<span id="cb3-59"><a href="#cb3-59"></a>                   <span class="at">data =</span> master_bank_market, <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span>)</span>
-<span id="cb3-60"><a href="#cb3-60"></a></span>
-<span id="cb3-61"><a href="#cb3-61"></a><span class="co"># VC-based FD with IPR interaction</span></span>
-<span id="cb3-62"><a href="#cb3-62"></a>qual_vc <span class="ot">&lt;-</span> <span class="fu">plm</span>(quality_index_100 <span class="sc">~</span> VC_investment_pct <span class="sc">+</span> ipp_index_IP_transformed <span class="sc">+</span> vc_x_ipr <span class="sc">+</span></span>
-<span id="cb3-63"><a href="#cb3-63"></a>                 gdp_pc_const2015usd <span class="sc">+</span> trade_percent_gdp <span class="sc">+</span></span>
-<span id="cb3-64"><a href="#cb3-64"></a>                 rd_expenditure_percent_gdp <span class="sc">+</span> tertiary_enrollment_percent,</span>
-<span id="cb3-65"><a href="#cb3-65"></a>               <span class="at">data =</span> master_vc, <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span>)</span>
-<span id="cb3-66"><a href="#cb3-66"></a></span>
-<span id="cb3-67"><a href="#cb3-67"></a><span class="co"># patent count regressions</span></span>
-<span id="cb3-68"><a href="#cb3-68"></a></span>
-<span id="cb3-69"><a href="#cb3-69"></a><span class="co"># Bank FD with IPR interaction</span></span>
-<span id="cb3-70"><a href="#cb3-70"></a>count_bank <span class="ot">&lt;-</span> <span class="fu">plm</span>(patents_per_researcher <span class="sc">~</span> bank_credit_gdp <span class="sc">+</span> ipp_index_IP_transformed <span class="sc">+</span> bank_x_ipr <span class="sc">+</span></span>
-<span id="cb3-71"><a href="#cb3-71"></a>                    gdp_pc_const2015usd <span class="sc">+</span> trade_percent_gdp <span class="sc">+</span></span>
-<span id="cb3-72"><a href="#cb3-72"></a>                    rd_expenditure_percent_gdp <span class="sc">+</span> tertiary_enrollment_percent,</span>
-<span id="cb3-73"><a href="#cb3-73"></a>                  <span class="at">data =</span> master_bank_market, <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span>)</span>
-<span id="cb3-74"><a href="#cb3-74"></a></span>
-<span id="cb3-75"><a href="#cb3-75"></a><span class="co"># market FD with IPR interaction</span></span>
-<span id="cb3-76"><a href="#cb3-76"></a>count_market <span class="ot">&lt;-</span> <span class="fu">plm</span>(patents_per_researcher <span class="sc">~</span> market_cap_gdp <span class="sc">+</span> ipp_index_IP_transformed <span class="sc">+</span> market_x_ipr <span class="sc">+</span></span>
-<span id="cb3-77"><a href="#cb3-77"></a>                      gdp_pc_const2015usd <span class="sc">+</span> trade_percent_gdp <span class="sc">+</span></span>
-<span id="cb3-78"><a href="#cb3-78"></a>                      rd_expenditure_percent_gdp <span class="sc">+</span> tertiary_enrollment_percent,</span>
-<span id="cb3-79"><a href="#cb3-79"></a>                    <span class="at">data =</span> master_bank_market, <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span>)</span>
-<span id="cb3-80"><a href="#cb3-80"></a></span>
-<span id="cb3-81"><a href="#cb3-81"></a><span class="co"># VC FD with IPR interaction</span></span>
-<span id="cb3-82"><a href="#cb3-82"></a>count_vc <span class="ot">&lt;-</span> <span class="fu">plm</span>(patents_per_researcher <span class="sc">~</span> VC_investment_pct <span class="sc">+</span> ipp_index_IP_transformed <span class="sc">+</span> vc_x_ipr <span class="sc">+</span></span>
-<span id="cb3-83"><a href="#cb3-83"></a>                  gdp_pc_const2015usd <span class="sc">+</span> trade_percent_gdp <span class="sc">+</span></span>
-<span id="cb3-84"><a href="#cb3-84"></a>                  rd_expenditure_percent_gdp <span class="sc">+</span> tertiary_enrollment_percent,</span>
-<span id="cb3-85"><a href="#cb3-85"></a>                <span class="at">data =</span> master_vc, <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span>)</span>
-<span id="cb3-86"><a href="#cb3-86"></a></span>
-<span id="cb3-87"><a href="#cb3-87"></a><span class="co"># clustering se</span></span>
-<span id="cb3-88"><a href="#cb3-88"></a>qual_bank_se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(<span class="fu">vcovHC</span>(qual_bank, <span class="at">type =</span> <span class="st">&quot;HC1&quot;</span>, <span class="at">cluster =</span> <span class="st">&quot;group&quot;</span>)))</span>
-<span id="cb3-89"><a href="#cb3-89"></a>qual_market_se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(<span class="fu">vcovHC</span>(qual_market, <span class="at">type =</span> <span class="st">&quot;HC1&quot;</span>, <span class="at">cluster =</span> <span class="st">&quot;group&quot;</span>)))</span>
-<span id="cb3-90"><a href="#cb3-90"></a>qual_vc_se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(<span class="fu">vcovHC</span>(qual_vc, <span class="at">type =</span> <span class="st">&quot;HC1&quot;</span>, <span class="at">cluster =</span> <span class="st">&quot;group&quot;</span>)))</span>
-<span id="cb3-91"><a href="#cb3-91"></a></span>
-<span id="cb3-92"><a href="#cb3-92"></a>count_bank_se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(<span class="fu">vcovHC</span>(count_bank, <span class="at">type =</span> <span class="st">&quot;HC1&quot;</span>, <span class="at">cluster =</span> <span class="st">&quot;group&quot;</span>)))</span>
-<span id="cb3-93"><a href="#cb3-93"></a>count_market_se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(<span class="fu">vcovHC</span>(count_market, <span class="at">type =</span> <span class="st">&quot;HC1&quot;</span>, <span class="at">cluster =</span> <span class="st">&quot;group&quot;</span>)))</span>
-<span id="cb3-94"><a href="#cb3-94"></a>count_vc_se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(<span class="fu">vcovHC</span>(count_vc, <span class="at">type =</span> <span class="st">&quot;HC1&quot;</span>, <span class="at">cluster =</span> <span class="st">&quot;group&quot;</span>)))</span>
-<span id="cb3-95"><a href="#cb3-95"></a></span>
-<span id="cb3-96"><a href="#cb3-96"></a><span class="co"># stargazer tables with clustered se</span></span>
-<span id="cb3-97"><a href="#cb3-97"></a></span>
-<span id="cb3-98"><a href="#cb3-98"></a><span class="fu">stargazer</span>(qual_bank, qual_market, qual_vc,</span>
-<span id="cb3-99"><a href="#cb3-99"></a>          <span class="at">type =</span> <span class="st">&quot;text&quot;</span>,</span>
-<span id="cb3-100"><a href="#cb3-100"></a>          <span class="at">title =</span> <span class="st">&quot;Financial Development, IP Protection and Patent Quality&quot;</span>,</span>
-<span id="cb3-101"><a href="#cb3-101"></a>          <span class="at">dep.var.labels =</span> <span class="st">&quot;Patent Quality Index (0-100 scale)&quot;</span>,</span>
-<span id="cb3-102"><a href="#cb3-102"></a>          <span class="at">column.labels =</span> <span class="fu">c</span>(<span class="st">&quot;Bank-based&quot;</span>, <span class="st">&quot;Market-based&quot;</span>, <span class="st">&quot;VC-based&quot;</span>),</span>
-<span id="cb3-103"><a href="#cb3-103"></a>          <span class="at">covariate.labels =</span> <span class="fu">c</span>(<span class="st">&quot;Bank Credit/GDP&quot;</span>, <span class="st">&quot;Market Cap/GDP&quot;</span>, <span class="st">&quot;VC Investment/GDP&quot;</span>,</span>
-<span id="cb3-104"><a href="#cb3-104"></a>                               <span class="st">&quot;IP Protection&quot;</span>, </span>
-<span id="cb3-105"><a href="#cb3-105"></a>                               <span class="st">&quot;Bank FD × IP Protection&quot;</span>, </span>
-<span id="cb3-106"><a href="#cb3-106"></a>                               <span class="st">&quot;Market FD × IP Protection&quot;</span>,</span>
-<span id="cb3-107"><a href="#cb3-107"></a>                               <span class="st">&quot;VC FD × IP Protection&quot;</span>,</span>
-<span id="cb3-108"><a href="#cb3-108"></a>                               <span class="st">&quot;GDP per Capita&quot;</span>, <span class="st">&quot;Trade/GDP&quot;</span>, </span>
-<span id="cb3-109"><a href="#cb3-109"></a>                               <span class="st">&quot;R&amp;D Expenditure&quot;</span>, <span class="st">&quot;Tertiary Enrollment&quot;</span>),</span>
-<span id="cb3-110"><a href="#cb3-110"></a>          <span class="at">omit.stat =</span> <span class="fu">c</span>(<span class="st">&quot;ser&quot;</span>, <span class="st">&quot;f&quot;</span>),</span>
-<span id="cb3-111"><a href="#cb3-111"></a>          <span class="at">se =</span> <span class="fu">list</span>(qual_bank_se, qual_market_se, qual_vc_se),</span>
-<span id="cb3-112"><a href="#cb3-112"></a>          <span class="at">notes =</span> <span class="st">&quot;All specifications include country and year fixed effects. Patent quality measured on 0-100 scale. Standard errors clustered by country in parentheses.&quot;</span>,</span>
-<span id="cb3-113"><a href="#cb3-113"></a>          <span class="at">notes.append =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb3-114"><a href="#cb3-114"></a>          <span class="at">align =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="fu">library</span>(reticulate)</span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="fu">library</span>(plm)</span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="fu">library</span>(stargazer)</span>
+<span id="cb3-6"><a href="#cb3-6"></a><span class="fu">library</span>(data.table)</span>
+<span id="cb3-7"><a href="#cb3-7"></a><span class="fu">library</span>(lmtest)</span>
+<span id="cb3-8"><a href="#cb3-8"></a><span class="fu">library</span>(sandwich)</span>
+<span id="cb3-9"><a href="#cb3-9"></a></span>
+<span id="cb3-10"><a href="#cb3-10"></a>master <span class="ot">&lt;-</span> <span class="fu">fread</span>(<span class="st">&quot;~/Desktop/DATATHES/FINAL WORKING DATA/Master_Panel.csv&quot;</span>)</span>
+<span id="cb3-11"><a href="#cb3-11"></a></span>
+<span id="cb3-12"><a href="#cb3-12"></a>master_clean <span class="ot">&lt;-</span> master <span class="sc">%&gt;%</span></span>
+<span id="cb3-13"><a href="#cb3-13"></a>  <span class="fu">mutate</span>(<span class="at">researchers_per_million =</span> <span class="fu">coalesce</span>(researchers_per_million_y, researchers_per_million_x)) <span class="sc">%&gt;%</span></span>
+<span id="cb3-14"><a href="#cb3-14"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">c</span>(</span>
+<span id="cb3-15"><a href="#cb3-15"></a>    year, avg_quality_index_4, avg_quality_index_6, VC_investment,</span>
+<span id="cb3-16"><a href="#cb3-16"></a>    bank_credit_gdp, market_cap_gdp, ipp_index_IP_transformed,</span>
+<span id="cb3-17"><a href="#cb3-17"></a>    patent_applications_residents, researchers_per_million,</span>
+<span id="cb3-18"><a href="#cb3-18"></a>    gdp_pc_const2015usd, trade_percent_gdp,</span>
+<span id="cb3-19"><a href="#cb3-19"></a>    rd_expenditure_percent_gdp, tertiary_enrollment_percent</span>
+<span id="cb3-20"><a href="#cb3-20"></a>  ), as.numeric)) <span class="sc">%&gt;%</span></span>
+<span id="cb3-21"><a href="#cb3-21"></a>  <span class="fu">mutate</span>(<span class="at">VC_investment_pct =</span> VC_investment <span class="sc">*</span> <span class="dv">100</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb3-22"><a href="#cb3-22"></a>  <span class="fu">mutate</span>(<span class="at">quality_index_100 =</span> avg_quality_index_4 <span class="sc">*</span> <span class="dv">100</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb3-23"><a href="#cb3-23"></a>  <span class="fu">mutate</span>(<span class="at">patents_per_researcher =</span> patent_applications_residents <span class="sc">/</span> researchers_per_million) <span class="sc">%&gt;%</span></span>
+<span id="cb3-24"><a href="#cb3-24"></a>  </span>
+<span id="cb3-25"><a href="#cb3-25"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb3-26"><a href="#cb3-26"></a>    <span class="at">bank_x_ipr =</span> bank_credit_gdp <span class="sc">*</span> ipp_index_IP_transformed,</span>
+<span id="cb3-27"><a href="#cb3-27"></a>    <span class="at">market_x_ipr =</span> market_cap_gdp <span class="sc">*</span> ipp_index_IP_transformed,</span>
+<span id="cb3-28"><a href="#cb3-28"></a>    <span class="at">vc_x_ipr =</span> VC_investment_pct <span class="sc">*</span> ipp_index_IP_transformed</span>
+<span id="cb3-29"><a href="#cb3-29"></a>  )</span>
+<span id="cb3-30"><a href="#cb3-30"></a></span>
+<span id="cb3-31"><a href="#cb3-31"></a>master_clean <span class="ot">&lt;-</span> <span class="fu">pdata.frame</span>(master_clean, <span class="at">index =</span> <span class="fu">c</span>(<span class="st">&quot;iso3c&quot;</span>, <span class="st">&quot;year&quot;</span>))</span>
+<span id="cb3-32"><a href="#cb3-32"></a></span>
+<span id="cb3-33"><a href="#cb3-33"></a>master_levels <span class="ot">&lt;-</span> master_clean <span class="sc">%&gt;%</span></span>
+<span id="cb3-34"><a href="#cb3-34"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(quality_index_100) <span class="sc">|</span> <span class="sc">!</span><span class="fu">is.na</span>(patents_per_researcher)) <span class="sc">%&gt;%</span></span>
+<span id="cb3-35"><a href="#cb3-35"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(bank_credit_gdp) <span class="sc">|</span> <span class="sc">!</span><span class="fu">is.na</span>(market_cap_gdp) <span class="sc">|</span> <span class="sc">!</span><span class="fu">is.na</span>(VC_investment_pct)) <span class="sc">%&gt;%</span></span>
+<span id="cb3-36"><a href="#cb3-36"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(ipp_index_IP_transformed))</span>
+<span id="cb3-37"><a href="#cb3-37"></a></span>
+<span id="cb3-38"><a href="#cb3-38"></a>year_range <span class="ot">&lt;-</span> <span class="fu">range</span>(<span class="fu">as.numeric</span>(<span class="fu">as.character</span>(master_levels<span class="sc">$</span>year)), <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb3-39"><a href="#cb3-39"></a></span>
+<span id="cb3-40"><a href="#cb3-40"></a>master_bank_market <span class="ot">&lt;-</span> master_levels <span class="sc">%&gt;%</span> </span>
+<span id="cb3-41"><a href="#cb3-41"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(bank_credit_gdp) <span class="sc">|</span> <span class="sc">!</span><span class="fu">is.na</span>(market_cap_gdp))</span>
+<span id="cb3-42"><a href="#cb3-42"></a></span>
+<span id="cb3-43"><a href="#cb3-43"></a>master_vc <span class="ot">&lt;-</span> master_levels <span class="sc">%&gt;%</span> </span>
+<span id="cb3-44"><a href="#cb3-44"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(VC_investment_pct))</span>
+<span id="cb3-45"><a href="#cb3-45"></a></span>
+<span id="cb3-46"><a href="#cb3-46"></a><span class="co"># PATENT QUALITY REGRESSIONS</span></span>
+<span id="cb3-47"><a href="#cb3-47"></a></span>
+<span id="cb3-48"><a href="#cb3-48"></a><span class="co"># Bank-based FD with IPR interaction</span></span>
+<span id="cb3-49"><a href="#cb3-49"></a>qual_bank <span class="ot">&lt;-</span> <span class="fu">plm</span>(quality_index_100 <span class="sc">~</span> bank_credit_gdp <span class="sc">+</span> ipp_index_IP_transformed <span class="sc">+</span> bank_x_ipr <span class="sc">+</span></span>
+<span id="cb3-50"><a href="#cb3-50"></a>                   gdp_pc_const2015usd <span class="sc">+</span> trade_percent_gdp <span class="sc">+</span></span>
+<span id="cb3-51"><a href="#cb3-51"></a>                   rd_expenditure_percent_gdp <span class="sc">+</span> tertiary_enrollment_percent,</span>
+<span id="cb3-52"><a href="#cb3-52"></a>                 <span class="at">data =</span> master_bank_market, <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span>)</span>
+<span id="cb3-53"><a href="#cb3-53"></a></span>
+<span id="cb3-54"><a href="#cb3-54"></a><span class="co"># Market-based FD with IPR interaction  </span></span>
+<span id="cb3-55"><a href="#cb3-55"></a>qual_market <span class="ot">&lt;-</span> <span class="fu">plm</span>(quality_index_100 <span class="sc">~</span> market_cap_gdp <span class="sc">+</span> ipp_index_IP_transformed <span class="sc">+</span> market_x_ipr <span class="sc">+</span></span>
+<span id="cb3-56"><a href="#cb3-56"></a>                     gdp_pc_const2015usd <span class="sc">+</span> trade_percent_gdp <span class="sc">+</span></span>
+<span id="cb3-57"><a href="#cb3-57"></a>                     rd_expenditure_percent_gdp <span class="sc">+</span> tertiary_enrollment_percent,</span>
+<span id="cb3-58"><a href="#cb3-58"></a>                   <span class="at">data =</span> master_bank_market, <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span>)</span>
+<span id="cb3-59"><a href="#cb3-59"></a></span>
+<span id="cb3-60"><a href="#cb3-60"></a><span class="co"># VC-based FD with IPR interaction</span></span>
+<span id="cb3-61"><a href="#cb3-61"></a>qual_vc <span class="ot">&lt;-</span> <span class="fu">plm</span>(quality_index_100 <span class="sc">~</span> VC_investment_pct <span class="sc">+</span> ipp_index_IP_transformed <span class="sc">+</span> vc_x_ipr <span class="sc">+</span></span>
+<span id="cb3-62"><a href="#cb3-62"></a>                 gdp_pc_const2015usd <span class="sc">+</span> trade_percent_gdp <span class="sc">+</span></span>
+<span id="cb3-63"><a href="#cb3-63"></a>                 rd_expenditure_percent_gdp <span class="sc">+</span> tertiary_enrollment_percent,</span>
+<span id="cb3-64"><a href="#cb3-64"></a>               <span class="at">data =</span> master_vc, <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span>)</span>
+<span id="cb3-65"><a href="#cb3-65"></a></span>
+<span id="cb3-66"><a href="#cb3-66"></a><span class="co"># patent count regressions</span></span>
+<span id="cb3-67"><a href="#cb3-67"></a></span>
+<span id="cb3-68"><a href="#cb3-68"></a><span class="co"># Bank FD with IPR interaction</span></span>
+<span id="cb3-69"><a href="#cb3-69"></a>count_bank <span class="ot">&lt;-</span> <span class="fu">plm</span>(patents_per_researcher <span class="sc">~</span> bank_credit_gdp <span class="sc">+</span> ipp_index_IP_transformed <span class="sc">+</span> bank_x_ipr <span class="sc">+</span></span>
+<span id="cb3-70"><a href="#cb3-70"></a>                    gdp_pc_const2015usd <span class="sc">+</span> trade_percent_gdp <span class="sc">+</span></span>
+<span id="cb3-71"><a href="#cb3-71"></a>                    rd_expenditure_percent_gdp <span class="sc">+</span> tertiary_enrollment_percent,</span>
+<span id="cb3-72"><a href="#cb3-72"></a>                  <span class="at">data =</span> master_bank_market, <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span>)</span>
+<span id="cb3-73"><a href="#cb3-73"></a></span>
+<span id="cb3-74"><a href="#cb3-74"></a><span class="co"># market FD with IPR interaction</span></span>
+<span id="cb3-75"><a href="#cb3-75"></a>count_market <span class="ot">&lt;-</span> <span class="fu">plm</span>(patents_per_researcher <span class="sc">~</span> market_cap_gdp <span class="sc">+</span> ipp_index_IP_transformed <span class="sc">+</span> market_x_ipr <span class="sc">+</span></span>
+<span id="cb3-76"><a href="#cb3-76"></a>                      gdp_pc_const2015usd <span class="sc">+</span> trade_percent_gdp <span class="sc">+</span></span>
+<span id="cb3-77"><a href="#cb3-77"></a>                      rd_expenditure_percent_gdp <span class="sc">+</span> tertiary_enrollment_percent,</span>
+<span id="cb3-78"><a href="#cb3-78"></a>                    <span class="at">data =</span> master_bank_market, <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span>)</span>
+<span id="cb3-79"><a href="#cb3-79"></a></span>
+<span id="cb3-80"><a href="#cb3-80"></a><span class="co"># VC FD with IPR interaction</span></span>
+<span id="cb3-81"><a href="#cb3-81"></a>count_vc <span class="ot">&lt;-</span> <span class="fu">plm</span>(patents_per_researcher <span class="sc">~</span> VC_investment_pct <span class="sc">+</span> ipp_index_IP_transformed <span class="sc">+</span> vc_x_ipr <span class="sc">+</span></span>
+<span id="cb3-82"><a href="#cb3-82"></a>                  gdp_pc_const2015usd <span class="sc">+</span> trade_percent_gdp <span class="sc">+</span></span>
+<span id="cb3-83"><a href="#cb3-83"></a>                  rd_expenditure_percent_gdp <span class="sc">+</span> tertiary_enrollment_percent,</span>
+<span id="cb3-84"><a href="#cb3-84"></a>                <span class="at">data =</span> master_vc, <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span>)</span>
+<span id="cb3-85"><a href="#cb3-85"></a></span>
+<span id="cb3-86"><a href="#cb3-86"></a><span class="co"># clustering se</span></span>
+<span id="cb3-87"><a href="#cb3-87"></a>qual_bank_se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(<span class="fu">vcovHC</span>(qual_bank, <span class="at">type =</span> <span class="st">&quot;HC1&quot;</span>, <span class="at">cluster =</span> <span class="st">&quot;group&quot;</span>)))</span>
+<span id="cb3-88"><a href="#cb3-88"></a>qual_market_se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(<span class="fu">vcovHC</span>(qual_market, <span class="at">type =</span> <span class="st">&quot;HC1&quot;</span>, <span class="at">cluster =</span> <span class="st">&quot;group&quot;</span>)))</span>
+<span id="cb3-89"><a href="#cb3-89"></a>qual_vc_se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(<span class="fu">vcovHC</span>(qual_vc, <span class="at">type =</span> <span class="st">&quot;HC1&quot;</span>, <span class="at">cluster =</span> <span class="st">&quot;group&quot;</span>)))</span>
+<span id="cb3-90"><a href="#cb3-90"></a></span>
+<span id="cb3-91"><a href="#cb3-91"></a>count_bank_se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(<span class="fu">vcovHC</span>(count_bank, <span class="at">type =</span> <span class="st">&quot;HC1&quot;</span>, <span class="at">cluster =</span> <span class="st">&quot;group&quot;</span>)))</span>
+<span id="cb3-92"><a href="#cb3-92"></a>count_market_se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(<span class="fu">vcovHC</span>(count_market, <span class="at">type =</span> <span class="st">&quot;HC1&quot;</span>, <span class="at">cluster =</span> <span class="st">&quot;group&quot;</span>)))</span>
+<span id="cb3-93"><a href="#cb3-93"></a>count_vc_se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(<span class="fu">vcovHC</span>(count_vc, <span class="at">type =</span> <span class="st">&quot;HC1&quot;</span>, <span class="at">cluster =</span> <span class="st">&quot;group&quot;</span>)))</span>
+<span id="cb3-94"><a href="#cb3-94"></a></span>
+<span id="cb3-95"><a href="#cb3-95"></a><span class="co"># stargazer tables with clustered se</span></span>
+<span id="cb3-96"><a href="#cb3-96"></a></span>
+<span id="cb3-97"><a href="#cb3-97"></a><span class="fu">stargazer</span>(qual_bank, qual_market, qual_vc,</span>
+<span id="cb3-98"><a href="#cb3-98"></a>          <span class="at">type =</span> <span class="st">&quot;text&quot;</span>,</span>
+<span id="cb3-99"><a href="#cb3-99"></a>          <span class="at">title =</span> <span class="st">&quot;Financial Development, IP Protection and Patent Quality&quot;</span>,</span>
+<span id="cb3-100"><a href="#cb3-100"></a>          <span class="at">dep.var.labels =</span> <span class="st">&quot;Patent Quality Index (0-100 scale)&quot;</span>,</span>
+<span id="cb3-101"><a href="#cb3-101"></a>          <span class="at">column.labels =</span> <span class="fu">c</span>(<span class="st">&quot;Bank-based&quot;</span>, <span class="st">&quot;Market-based&quot;</span>, <span class="st">&quot;VC-based&quot;</span>),</span>
+<span id="cb3-102"><a href="#cb3-102"></a>          <span class="at">covariate.labels =</span> <span class="fu">c</span>(<span class="st">&quot;Bank Credit/GDP&quot;</span>, <span class="st">&quot;Market Cap/GDP&quot;</span>, <span class="st">&quot;VC Investment/GDP&quot;</span>,</span>
+<span id="cb3-103"><a href="#cb3-103"></a>                               <span class="st">&quot;IP Protection&quot;</span>, </span>
+<span id="cb3-104"><a href="#cb3-104"></a>                               <span class="st">&quot;Bank FD × IP Protection&quot;</span>, </span>
+<span id="cb3-105"><a href="#cb3-105"></a>                               <span class="st">&quot;Market FD × IP Protection&quot;</span>,</span>
+<span id="cb3-106"><a href="#cb3-106"></a>                               <span class="st">&quot;VC FD × IP Protection&quot;</span>,</span>
+<span id="cb3-107"><a href="#cb3-107"></a>                               <span class="st">&quot;GDP per Capita&quot;</span>, <span class="st">&quot;Trade/GDP&quot;</span>, </span>
+<span id="cb3-108"><a href="#cb3-108"></a>                               <span class="st">&quot;R&amp;D Expenditure&quot;</span>, <span class="st">&quot;Tertiary Enrollment&quot;</span>),</span>
+<span id="cb3-109"><a href="#cb3-109"></a>          <span class="at">omit.stat =</span> <span class="fu">c</span>(<span class="st">&quot;ser&quot;</span>, <span class="st">&quot;f&quot;</span>),</span>
+<span id="cb3-110"><a href="#cb3-110"></a>          <span class="at">se =</span> <span class="fu">list</span>(qual_bank_se, qual_market_se, qual_vc_se),</span>
+<span id="cb3-111"><a href="#cb3-111"></a>          <span class="at">notes =</span> <span class="st">&quot;All specifications include country and year fixed effects. Patent quality measured on 0-100 scale. Standard errors clustered by country in parentheses.&quot;</span>,</span>
+<span id="cb3-112"><a href="#cb3-112"></a>          <span class="at">notes.append =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb3-113"><a href="#cb3-113"></a>          <span class="at">align =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb3-114"><a href="#cb3-114"></a></span>
 <span id="cb3-115"><a href="#cb3-115"></a></span>
-<span id="cb3-116"><a href="#cb3-116"></a></span>
-<span id="cb3-117"><a href="#cb3-117"></a><span class="fu">stargazer</span>(count_bank, count_market, count_vc,</span>
-<span id="cb3-118"><a href="#cb3-118"></a>          <span class="at">type =</span> <span class="st">&quot;text&quot;</span>,</span>
-<span id="cb3-119"><a href="#cb3-119"></a>          <span class="at">title =</span> <span class="st">&quot;Financial Development, IP Protection and Patent Counts per Researcher&quot;</span>,</span>
-<span id="cb3-120"><a href="#cb3-120"></a>          <span class="at">dep.var.labels =</span> <span class="st">&quot;Patents per Researcher&quot;</span>,</span>
-<span id="cb3-121"><a href="#cb3-121"></a>          <span class="at">column.labels =</span> <span class="fu">c</span>(<span class="st">&quot;Bank-based&quot;</span>, <span class="st">&quot;Market-based&quot;</span>, <span class="st">&quot;VC-based&quot;</span>),</span>
-<span id="cb3-122"><a href="#cb3-122"></a>          <span class="at">covariate.labels =</span> <span class="fu">c</span>(<span class="st">&quot;Bank Credit/GDP&quot;</span>, <span class="st">&quot;Market Cap/GDP&quot;</span>, <span class="st">&quot;VC Investment/GDP&quot;</span>,</span>
-<span id="cb3-123"><a href="#cb3-123"></a>                               <span class="st">&quot;IP Protection&quot;</span>, </span>
-<span id="cb3-124"><a href="#cb3-124"></a>                               <span class="st">&quot;Bank FD × IP Protection&quot;</span>, </span>
-<span id="cb3-125"><a href="#cb3-125"></a>                               <span class="st">&quot;Market FD × IP Protection&quot;</span>,</span>
-<span id="cb3-126"><a href="#cb3-126"></a>                               <span class="st">&quot;VC FD × IP Protection&quot;</span>,</span>
-<span id="cb3-127"><a href="#cb3-127"></a>                               <span class="st">&quot;GDP per Capita&quot;</span>, <span class="st">&quot;Trade/GDP&quot;</span>, </span>
-<span id="cb3-128"><a href="#cb3-128"></a>                               <span class="st">&quot;R&amp;D Expenditure&quot;</span>, <span class="st">&quot;Tertiary Enrollment&quot;</span>),</span>
-<span id="cb3-129"><a href="#cb3-129"></a>          <span class="at">omit.stat =</span> <span class="fu">c</span>(<span class="st">&quot;ser&quot;</span>, <span class="st">&quot;f&quot;</span>),</span>
-<span id="cb3-130"><a href="#cb3-130"></a>          <span class="at">se =</span> <span class="fu">list</span>(count_bank_se, count_market_se, count_vc_se),</span>
-<span id="cb3-131"><a href="#cb3-131"></a>          <span class="at">notes =</span> <span class="st">&quot;All specifications include country and year fixed effects. All financial development measures in % of GDP. Standard errors clustered by country in parentheses.&quot;</span>,</span>
-<span id="cb3-132"><a href="#cb3-132"></a>          <span class="at">notes.append =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb3-133"><a href="#cb3-133"></a>          <span class="at">align =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb3-134"><a href="#cb3-134"></a><span class="do">##</span></span>
-<span id="cb3-135"><a href="#cb3-135"></a><span class="co"># SAMPLE SIZE REPORT</span></span>
-<span id="cb3-136"><a href="#cb3-136"></a><span class="co">#cat(&quot;\n\n&quot;)</span></span>
-<span id="cb3-137"><a href="#cb3-137"></a><span class="co">#cat(&quot;===============================================================================\n&quot;)</span></span>
-<span id="cb3-138"><a href="#cb3-138"></a><span class="co">#cat(&quot;SAMPLE SIZES\n&quot;)</span></span>
-<span id="cb3-139"><a href="#cb3-139"></a><span class="co">#cat(&quot;===============================================================================\n&quot;)</span></span>
-<span id="cb3-140"><a href="#cb3-140"></a><span class="co">#cat(&quot;Bank/Market Models:\n&quot;)</span></span>
-<span id="cb3-141"><a href="#cb3-141"></a><span class="co">#cat(&quot;  Quality:&quot;, nobs(qual_bank), &quot;observations\n&quot;)</span></span>
-<span id="cb3-142"><a href="#cb3-142"></a><span class="co">#cat(&quot;  Counts:&quot;, nobs(count_bank), &quot;observations\n&quot;)</span></span>
-<span id="cb3-143"><a href="#cb3-143"></a><span class="co">#cat(&quot;VC Models:\n&quot;)</span></span>
-<span id="cb3-144"><a href="#cb3-144"></a><span class="co">#cat(&quot;  Quality:&quot;, nobs(qual_vc), &quot;observations\n&quot;)</span></span>
-<span id="cb3-145"><a href="#cb3-145"></a><span class="co">#cat(&quot;  Counts:&quot;, nobs(count_vc), &quot;observations\n&quot;)</span></span>
-<span id="cb3-146"><a href="#cb3-146"></a><span class="co">#cat(&quot;Countries (Bank/Market):&quot;, length(unique(master_bank_market$iso3c)), &quot;\n&quot;)</span></span>
-<span id="cb3-147"><a href="#cb3-147"></a><span class="co">#cat(&quot;Countries (VC):&quot;, length(unique(master_vc$iso3c)), &quot;\n&quot;)</span></span>
-<span id="cb3-148"><a href="#cb3-148"></a><span class="co">#cat(&quot;Years:&quot;, paste0(year_range, collapse = &quot; - &quot;), &quot;\n&quot;)</span></span>
-<span id="cb3-149"><a href="#cb3-149"></a></span>
-<span id="cb3-150"><a href="#cb3-150"></a><span class="fu">stargazer</span>(qual_bank, qual_market, qual_vc,</span>
-<span id="cb3-151"><a href="#cb3-151"></a>          <span class="at">type =</span> <span class="st">&quot;html&quot;</span>,</span>
-<span id="cb3-152"><a href="#cb3-152"></a>          <span class="at">title =</span> <span class="st">&quot;Financial Development, IP Protection and Patent Quality&quot;</span>,</span>
-<span id="cb3-153"><a href="#cb3-153"></a>          <span class="at">dep.var.labels =</span> <span class="st">&quot;Patent Quality Index (0-100 scale)&quot;</span>,</span>
-<span id="cb3-154"><a href="#cb3-154"></a>          <span class="at">column.labels =</span> <span class="fu">c</span>(<span class="st">&quot;Bank-based&quot;</span>, <span class="st">&quot;Market-based&quot;</span>, <span class="st">&quot;VC-based&quot;</span>),</span>
-<span id="cb3-155"><a href="#cb3-155"></a>          <span class="at">covariate.labels =</span> <span class="fu">c</span>(<span class="st">&quot;Bank Credit/GDP&quot;</span>, <span class="st">&quot;Market Cap/GDP&quot;</span>, <span class="st">&quot;VC Investment/GDP&quot;</span>,</span>
-<span id="cb3-156"><a href="#cb3-156"></a>                               <span class="st">&quot;IP Protection&quot;</span>, </span>
-<span id="cb3-157"><a href="#cb3-157"></a>                               <span class="st">&quot;Bank FD × IP Protection&quot;</span>, </span>
-<span id="cb3-158"><a href="#cb3-158"></a>                               <span class="st">&quot;Market FD × IP Protection&quot;</span>,</span>
-<span id="cb3-159"><a href="#cb3-159"></a>                               <span class="st">&quot;VC FD × IP Protection&quot;</span>,</span>
-<span id="cb3-160"><a href="#cb3-160"></a>                               <span class="st">&quot;GDP per Capita&quot;</span>, <span class="st">&quot;Trade/GDP&quot;</span>, </span>
-<span id="cb3-161"><a href="#cb3-161"></a>                               <span class="st">&quot;R&amp;D Expenditure&quot;</span>, <span class="st">&quot;Tertiary Enrollment&quot;</span>),</span>
-<span id="cb3-162"><a href="#cb3-162"></a>          <span class="at">omit.stat =</span> <span class="fu">c</span>(<span class="st">&quot;ser&quot;</span>, <span class="st">&quot;f&quot;</span>),</span>
-<span id="cb3-163"><a href="#cb3-163"></a>          <span class="at">se =</span> <span class="fu">list</span>(qual_bank_se, qual_market_se, qual_vc_se),</span>
-<span id="cb3-164"><a href="#cb3-164"></a>          <span class="at">notes =</span> <span class="st">&quot;All specifications include country and year fixed effects. Patent quality measured on 0-100 scale. Standard errors clustered by country in parentheses.&quot;</span>,</span>
-<span id="cb3-165"><a href="#cb3-165"></a>          <span class="at">notes.append =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb3-166"><a href="#cb3-166"></a>          <span class="at">align =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb3-167"><a href="#cb3-167"></a>          <span class="at">out =</span> <span class="st">&quot;~/Desktop/quality_table.html&quot;</span>)</span>
-<span id="cb3-168"><a href="#cb3-168"></a></span>
-<span id="cb3-169"><a href="#cb3-169"></a><span class="fu">stargazer</span>(count_bank, count_market, count_vc,</span>
-<span id="cb3-170"><a href="#cb3-170"></a>          <span class="at">type =</span> <span class="st">&quot;html&quot;</span>,</span>
-<span id="cb3-171"><a href="#cb3-171"></a>          <span class="at">title =</span> <span class="st">&quot;Financial Development, IP Protection and Patent Counts per Researcher&quot;</span>,</span>
-<span id="cb3-172"><a href="#cb3-172"></a>          <span class="at">dep.var.labels =</span> <span class="st">&quot;Patents per Researcher&quot;</span>,</span>
-<span id="cb3-173"><a href="#cb3-173"></a>          <span class="at">column.labels =</span> <span class="fu">c</span>(<span class="st">&quot;Bank-based&quot;</span>, <span class="st">&quot;Market-based&quot;</span>, <span class="st">&quot;VC-based&quot;</span>),</span>
-<span id="cb3-174"><a href="#cb3-174"></a>          <span class="at">covariate.labels =</span> <span class="fu">c</span>(<span class="st">&quot;Bank Credit/GDP&quot;</span>, <span class="st">&quot;Market Cap/GDP&quot;</span>, <span class="st">&quot;VC Investment/GDP&quot;</span>,</span>
-<span id="cb3-175"><a href="#cb3-175"></a>                               <span class="st">&quot;IP Protection&quot;</span>, </span>
-<span id="cb3-176"><a href="#cb3-176"></a>                               <span class="st">&quot;Bank FD × IP Protection&quot;</span>, </span>
-<span id="cb3-177"><a href="#cb3-177"></a>                               <span class="st">&quot;Market FD × IP Protection&quot;</span>,</span>
-<span id="cb3-178"><a href="#cb3-178"></a>                               <span class="st">&quot;VC FD × IP Protection&quot;</span>,</span>
-<span id="cb3-179"><a href="#cb3-179"></a>                               <span class="st">&quot;GDP per Capita&quot;</span>, <span class="st">&quot;Trade/GDP&quot;</span>, </span>
-<span id="cb3-180"><a href="#cb3-180"></a>                               <span class="st">&quot;R&amp;D Expenditure&quot;</span>, <span class="st">&quot;Tertiary Enrollment&quot;</span>),</span>
-<span id="cb3-181"><a href="#cb3-181"></a>          <span class="at">omit.stat =</span> <span class="fu">c</span>(<span class="st">&quot;ser&quot;</span>, <span class="st">&quot;f&quot;</span>),</span>
-<span id="cb3-182"><a href="#cb3-182"></a>          <span class="at">se =</span> <span class="fu">list</span>(count_bank_se, count_market_se, count_vc_se),</span>
-<span id="cb3-183"><a href="#cb3-183"></a>          <span class="at">notes =</span> <span class="st">&quot;All specifications include country and year fixed effects. All financial development measures in % of GDP. Standard errors clustered by country in parentheses.&quot;</span>,</span>
-<span id="cb3-184"><a href="#cb3-184"></a>          <span class="at">notes.append =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb3-185"><a href="#cb3-185"></a>          <span class="at">align =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb3-186"><a href="#cb3-186"></a>          <span class="at">out =</span> <span class="st">&quot;~/Desktop/count_table.html&quot;</span>)</span>
-<span id="cb3-187"><a href="#cb3-187"></a></span>
-<span id="cb3-188"><a href="#cb3-188"></a><span class="fu">stargazer</span>(qual_bank, qual_market, qual_vc,</span>
-<span id="cb3-189"><a href="#cb3-189"></a>          <span class="at">type =</span> <span class="st">&quot;text&quot;</span>,</span>
-<span id="cb3-190"><a href="#cb3-190"></a>          <span class="at">title =</span> <span class="st">&quot;Financial Development, IP Protection and Patent Quality&quot;</span>,</span>
-<span id="cb3-191"><a href="#cb3-191"></a>          <span class="at">dep.var.labels =</span> <span class="st">&quot;Patent Quality Index (0-100 scale)&quot;</span>,</span>
-<span id="cb3-192"><a href="#cb3-192"></a>          <span class="at">column.labels =</span> <span class="fu">c</span>(<span class="st">&quot;Bank-based&quot;</span>, <span class="st">&quot;Market-based&quot;</span>, <span class="st">&quot;VC-based&quot;</span>),</span>
-<span id="cb3-193"><a href="#cb3-193"></a>          <span class="at">covariate.labels =</span> <span class="fu">c</span>(<span class="st">&quot;GDP per Capita&quot;</span>, <span class="st">&quot;Trade/GDP&quot;</span>, <span class="st">&quot;R&amp;D Expenditure&quot;</span>, <span class="st">&quot;Tertiary Enrollment&quot;</span>,  </span>
-<span id="cb3-194"><a href="#cb3-194"></a>                               <span class="st">&quot;Bank Credit/GDP&quot;</span>, <span class="st">&quot;Market Cap/GDP&quot;</span>, <span class="st">&quot;VC Investment/GDP&quot;</span>,  </span>
-<span id="cb3-195"><a href="#cb3-195"></a>                               <span class="st">&quot;IP Protection&quot;</span>, </span>
-<span id="cb3-196"><a href="#cb3-196"></a>                               <span class="st">&quot;Bank FD × IP Protection&quot;</span>, <span class="st">&quot;Market FD × IP Protection&quot;</span>, <span class="st">&quot;VC FD × IP Protection&quot;</span>),</span>
-<span id="cb3-197"><a href="#cb3-197"></a>          <span class="at">keep =</span> <span class="fu">c</span>(<span class="st">&quot;bank_credit_gdp&quot;</span>, <span class="st">&quot;market_cap_gdp&quot;</span>, <span class="st">&quot;VC_investment_pct&quot;</span>,  </span>
-<span id="cb3-198"><a href="#cb3-198"></a>                   <span class="st">&quot;ipp_index_IP_transformed&quot;</span>, <span class="st">&quot;bank_x_ipr&quot;</span>, <span class="st">&quot;market_x_ipr&quot;</span>, <span class="st">&quot;vc_x_ipr&quot;</span>,</span>
-<span id="cb3-199"><a href="#cb3-199"></a>                   <span class="st">&quot;gdp_pc_const2015usd&quot;</span>, <span class="st">&quot;trade_percent_gdp&quot;</span>, <span class="st">&quot;rd_expenditure_percent_gdp&quot;</span>, <span class="st">&quot;tertiary_enrollment_percent&quot;</span>),</span>
-<span id="cb3-200"><a href="#cb3-200"></a>          <span class="at">omit.stat =</span> <span class="fu">c</span>(<span class="st">&quot;ser&quot;</span>, <span class="st">&quot;f&quot;</span>),</span>
-<span id="cb3-201"><a href="#cb3-201"></a>          <span class="at">se =</span> <span class="fu">list</span>(qual_bank_se, qual_market_se, qual_vc_se),</span>
-<span id="cb3-202"><a href="#cb3-202"></a>          <span class="at">notes =</span> <span class="st">&quot;All specifications include country and year fixed effects. Standard errors clustered by country.&quot;</span>,</span>
-<span id="cb3-203"><a href="#cb3-203"></a>          <span class="at">notes.append =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb3-204"><a href="#cb3-204"></a>          <span class="at">align =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-116"><a href="#cb3-116"></a><span class="fu">stargazer</span>(count_bank, count_market, count_vc,</span>
+<span id="cb3-117"><a href="#cb3-117"></a>          <span class="at">type =</span> <span class="st">&quot;text&quot;</span>,</span>
+<span id="cb3-118"><a href="#cb3-118"></a>          <span class="at">title =</span> <span class="st">&quot;Financial Development, IP Protection and Patent Counts per Researcher&quot;</span>,</span>
+<span id="cb3-119"><a href="#cb3-119"></a>          <span class="at">dep.var.labels =</span> <span class="st">&quot;Patents per Researcher&quot;</span>,</span>
+<span id="cb3-120"><a href="#cb3-120"></a>          <span class="at">column.labels =</span> <span class="fu">c</span>(<span class="st">&quot;Bank-based&quot;</span>, <span class="st">&quot;Market-based&quot;</span>, <span class="st">&quot;VC-based&quot;</span>),</span>
+<span id="cb3-121"><a href="#cb3-121"></a>          <span class="at">covariate.labels =</span> <span class="fu">c</span>(<span class="st">&quot;Bank Credit/GDP&quot;</span>, <span class="st">&quot;Market Cap/GDP&quot;</span>, <span class="st">&quot;VC Investment/GDP&quot;</span>,</span>
+<span id="cb3-122"><a href="#cb3-122"></a>                               <span class="st">&quot;IP Protection&quot;</span>, </span>
+<span id="cb3-123"><a href="#cb3-123"></a>                               <span class="st">&quot;Bank FD × IP Protection&quot;</span>, </span>
+<span id="cb3-124"><a href="#cb3-124"></a>                               <span class="st">&quot;Market FD × IP Protection&quot;</span>,</span>
+<span id="cb3-125"><a href="#cb3-125"></a>                               <span class="st">&quot;VC FD × IP Protection&quot;</span>,</span>
+<span id="cb3-126"><a href="#cb3-126"></a>                               <span class="st">&quot;GDP per Capita&quot;</span>, <span class="st">&quot;Trade/GDP&quot;</span>, </span>
+<span id="cb3-127"><a href="#cb3-127"></a>                               <span class="st">&quot;R&amp;D Expenditure&quot;</span>, <span class="st">&quot;Tertiary Enrollment&quot;</span>),</span>
+<span id="cb3-128"><a href="#cb3-128"></a>          <span class="at">omit.stat =</span> <span class="fu">c</span>(<span class="st">&quot;ser&quot;</span>, <span class="st">&quot;f&quot;</span>),</span>
+<span id="cb3-129"><a href="#cb3-129"></a>          <span class="at">se =</span> <span class="fu">list</span>(count_bank_se, count_market_se, count_vc_se),</span>
+<span id="cb3-130"><a href="#cb3-130"></a>          <span class="at">notes =</span> <span class="st">&quot;All specifications include country and year fixed effects. All financial development measures in % of GDP. Standard errors clustered by country in parentheses.&quot;</span>,</span>
+<span id="cb3-131"><a href="#cb3-131"></a>          <span class="at">notes.append =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb3-132"><a href="#cb3-132"></a>          <span class="at">align =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb3-133"><a href="#cb3-133"></a><span class="do">##</span></span>
+<span id="cb3-134"><a href="#cb3-134"></a><span class="co"># SAMPLE SIZE REPORT</span></span>
+<span id="cb3-135"><a href="#cb3-135"></a><span class="co">#cat(&quot;\n\n&quot;)</span></span>
+<span id="cb3-136"><a href="#cb3-136"></a><span class="co">#cat(&quot;===============================================================================\n&quot;)</span></span>
+<span id="cb3-137"><a href="#cb3-137"></a><span class="co">#cat(&quot;SAMPLE SIZES\n&quot;)</span></span>
+<span id="cb3-138"><a href="#cb3-138"></a><span class="co">#cat(&quot;===============================================================================\n&quot;)</span></span>
+<span id="cb3-139"><a href="#cb3-139"></a><span class="co">#cat(&quot;Bank/Market Models:\n&quot;)</span></span>
+<span id="cb3-140"><a href="#cb3-140"></a><span class="co">#cat(&quot;  Quality:&quot;, nobs(qual_bank), &quot;observations\n&quot;)</span></span>
+<span id="cb3-141"><a href="#cb3-141"></a><span class="co">#cat(&quot;  Counts:&quot;, nobs(count_bank), &quot;observations\n&quot;)</span></span>
+<span id="cb3-142"><a href="#cb3-142"></a><span class="co">#cat(&quot;VC Models:\n&quot;)</span></span>
+<span id="cb3-143"><a href="#cb3-143"></a><span class="co">#cat(&quot;  Quality:&quot;, nobs(qual_vc), &quot;observations\n&quot;)</span></span>
+<span id="cb3-144"><a href="#cb3-144"></a><span class="co">#cat(&quot;  Counts:&quot;, nobs(count_vc), &quot;observations\n&quot;)</span></span>
+<span id="cb3-145"><a href="#cb3-145"></a><span class="co">#cat(&quot;Countries (Bank/Market):&quot;, length(unique(master_bank_market$iso3c)), &quot;\n&quot;)</span></span>
+<span id="cb3-146"><a href="#cb3-146"></a><span class="co">#cat(&quot;Countries (VC):&quot;, length(unique(master_vc$iso3c)), &quot;\n&quot;)</span></span>
+<span id="cb3-147"><a href="#cb3-147"></a><span class="co">#cat(&quot;Years:&quot;, paste0(year_range, collapse = &quot; - &quot;), &quot;\n&quot;)</span></span>
+<span id="cb3-148"><a href="#cb3-148"></a></span>
+<span id="cb3-149"><a href="#cb3-149"></a><span class="fu">stargazer</span>(qual_bank, qual_market, qual_vc,</span>
+<span id="cb3-150"><a href="#cb3-150"></a>          <span class="at">type =</span> <span class="st">&quot;html&quot;</span>,</span>
+<span id="cb3-151"><a href="#cb3-151"></a>          <span class="at">title =</span> <span class="st">&quot;Financial Development, IP Protection and Patent Quality&quot;</span>,</span>
+<span id="cb3-152"><a href="#cb3-152"></a>          <span class="at">dep.var.labels =</span> <span class="st">&quot;Patent Quality Index (0-100 scale)&quot;</span>,</span>
+<span id="cb3-153"><a href="#cb3-153"></a>          <span class="at">column.labels =</span> <span class="fu">c</span>(<span class="st">&quot;Bank-based&quot;</span>, <span class="st">&quot;Market-based&quot;</span>, <span class="st">&quot;VC-based&quot;</span>),</span>
+<span id="cb3-154"><a href="#cb3-154"></a>          <span class="at">covariate.labels =</span> <span class="fu">c</span>(<span class="st">&quot;Bank Credit/GDP&quot;</span>, <span class="st">&quot;Market Cap/GDP&quot;</span>, <span class="st">&quot;VC Investment/GDP&quot;</span>,</span>
+<span id="cb3-155"><a href="#cb3-155"></a>                               <span class="st">&quot;IP Protection&quot;</span>, </span>
+<span id="cb3-156"><a href="#cb3-156"></a>                               <span class="st">&quot;Bank FD × IP Protection&quot;</span>, </span>
+<span id="cb3-157"><a href="#cb3-157"></a>                               <span class="st">&quot;Market FD × IP Protection&quot;</span>,</span>
+<span id="cb3-158"><a href="#cb3-158"></a>                               <span class="st">&quot;VC FD × IP Protection&quot;</span>,</span>
+<span id="cb3-159"><a href="#cb3-159"></a>                               <span class="st">&quot;GDP per Capita&quot;</span>, <span class="st">&quot;Trade/GDP&quot;</span>, </span>
+<span id="cb3-160"><a href="#cb3-160"></a>                               <span class="st">&quot;R&amp;D Expenditure&quot;</span>, <span class="st">&quot;Tertiary Enrollment&quot;</span>),</span>
+<span id="cb3-161"><a href="#cb3-161"></a>          <span class="at">omit.stat =</span> <span class="fu">c</span>(<span class="st">&quot;ser&quot;</span>, <span class="st">&quot;f&quot;</span>),</span>
+<span id="cb3-162"><a href="#cb3-162"></a>          <span class="at">se =</span> <span class="fu">list</span>(qual_bank_se, qual_market_se, qual_vc_se),</span>
+<span id="cb3-163"><a href="#cb3-163"></a>          <span class="at">notes =</span> <span class="st">&quot;All specifications include country and year fixed effects. Patent quality measured on 0-100 scale. Standard errors clustered by country in parentheses.&quot;</span>,</span>
+<span id="cb3-164"><a href="#cb3-164"></a>          <span class="at">notes.append =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb3-165"><a href="#cb3-165"></a>          <span class="at">align =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb3-166"><a href="#cb3-166"></a>          <span class="at">out =</span> <span class="st">&quot;~/Desktop/quality_table.html&quot;</span>)</span>
+<span id="cb3-167"><a href="#cb3-167"></a></span>
+<span id="cb3-168"><a href="#cb3-168"></a><span class="fu">stargazer</span>(count_bank, count_market, count_vc,</span>
+<span id="cb3-169"><a href="#cb3-169"></a>          <span class="at">type =</span> <span class="st">&quot;html&quot;</span>,</span>
+<span id="cb3-170"><a href="#cb3-170"></a>          <span class="at">title =</span> <span class="st">&quot;Financial Development, IP Protection and Patent Counts per Researcher&quot;</span>,</span>
+<span id="cb3-171"><a href="#cb3-171"></a>          <span class="at">dep.var.labels =</span> <span class="st">&quot;Patents per Researcher&quot;</span>,</span>
+<span id="cb3-172"><a href="#cb3-172"></a>          <span class="at">column.labels =</span> <span class="fu">c</span>(<span class="st">&quot;Bank-based&quot;</span>, <span class="st">&quot;Market-based&quot;</span>, <span class="st">&quot;VC-based&quot;</span>),</span>
+<span id="cb3-173"><a href="#cb3-173"></a>          <span class="at">covariate.labels =</span> <span class="fu">c</span>(<span class="st">&quot;Bank Credit/GDP&quot;</span>, <span class="st">&quot;Market Cap/GDP&quot;</span>, <span class="st">&quot;VC Investment/GDP&quot;</span>,</span>
+<span id="cb3-174"><a href="#cb3-174"></a>                               <span class="st">&quot;IP Protection&quot;</span>, </span>
+<span id="cb3-175"><a href="#cb3-175"></a>                               <span class="st">&quot;Bank FD × IP Protection&quot;</span>, </span>
+<span id="cb3-176"><a href="#cb3-176"></a>                               <span class="st">&quot;Market FD × IP Protection&quot;</span>,</span>
+<span id="cb3-177"><a href="#cb3-177"></a>                               <span class="st">&quot;VC FD × IP Protection&quot;</span>,</span>
+<span id="cb3-178"><a href="#cb3-178"></a>                               <span class="st">&quot;GDP per Capita&quot;</span>, <span class="st">&quot;Trade/GDP&quot;</span>, </span>
+<span id="cb3-179"><a href="#cb3-179"></a>                               <span class="st">&quot;R&amp;D Expenditure&quot;</span>, <span class="st">&quot;Tertiary Enrollment&quot;</span>),</span>
+<span id="cb3-180"><a href="#cb3-180"></a>          <span class="at">omit.stat =</span> <span class="fu">c</span>(<span class="st">&quot;ser&quot;</span>, <span class="st">&quot;f&quot;</span>),</span>
+<span id="cb3-181"><a href="#cb3-181"></a>          <span class="at">se =</span> <span class="fu">list</span>(count_bank_se, count_market_se, count_vc_se),</span>
+<span id="cb3-182"><a href="#cb3-182"></a>          <span class="at">notes =</span> <span class="st">&quot;All specifications include country and year fixed effects. All financial development measures in % of GDP. Standard errors clustered by country in parentheses.&quot;</span>,</span>
+<span id="cb3-183"><a href="#cb3-183"></a>          <span class="at">notes.append =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb3-184"><a href="#cb3-184"></a>          <span class="at">align =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb3-185"><a href="#cb3-185"></a>          <span class="at">out =</span> <span class="st">&quot;~/Desktop/count_table.html&quot;</span>)</span>
+<span id="cb3-186"><a href="#cb3-186"></a></span>
+<span id="cb3-187"><a href="#cb3-187"></a><span class="fu">stargazer</span>(qual_bank, qual_market, qual_vc,</span>
+<span id="cb3-188"><a href="#cb3-188"></a>          <span class="at">type =</span> <span class="st">&quot;text&quot;</span>,</span>
+<span id="cb3-189"><a href="#cb3-189"></a>          <span class="at">title =</span> <span class="st">&quot;Financial Development, IP Protection and Patent Quality&quot;</span>,</span>
+<span id="cb3-190"><a href="#cb3-190"></a>          <span class="at">dep.var.labels =</span> <span class="st">&quot;Patent Quality Index (0-100 scale)&quot;</span>,</span>
+<span id="cb3-191"><a href="#cb3-191"></a>          <span class="at">column.labels =</span> <span class="fu">c</span>(<span class="st">&quot;Bank-based&quot;</span>, <span class="st">&quot;Market-based&quot;</span>, <span class="st">&quot;VC-based&quot;</span>),</span>
+<span id="cb3-192"><a href="#cb3-192"></a>          <span class="at">covariate.labels =</span> <span class="fu">c</span>(<span class="st">&quot;GDP per Capita&quot;</span>, <span class="st">&quot;Trade/GDP&quot;</span>, <span class="st">&quot;R&amp;D Expenditure&quot;</span>, <span class="st">&quot;Tertiary Enrollment&quot;</span>,  </span>
+<span id="cb3-193"><a href="#cb3-193"></a>                               <span class="st">&quot;Bank Credit/GDP&quot;</span>, <span class="st">&quot;Market Cap/GDP&quot;</span>, <span class="st">&quot;VC Investment/GDP&quot;</span>,  </span>
+<span id="cb3-194"><a href="#cb3-194"></a>                               <span class="st">&quot;IP Protection&quot;</span>, </span>
+<span id="cb3-195"><a href="#cb3-195"></a>                               <span class="st">&quot;Bank FD × IP Protection&quot;</span>, <span class="st">&quot;Market FD × IP Protection&quot;</span>, <span class="st">&quot;VC FD × IP Protection&quot;</span>),</span>
+<span id="cb3-196"><a href="#cb3-196"></a>          <span class="at">keep =</span> <span class="fu">c</span>(<span class="st">&quot;bank_credit_gdp&quot;</span>, <span class="st">&quot;market_cap_gdp&quot;</span>, <span class="st">&quot;VC_investment_pct&quot;</span>,  </span>
+<span id="cb3-197"><a href="#cb3-197"></a>                   <span class="st">&quot;ipp_index_IP_transformed&quot;</span>, <span class="st">&quot;bank_x_ipr&quot;</span>, <span class="st">&quot;market_x_ipr&quot;</span>, <span class="st">&quot;vc_x_ipr&quot;</span>,</span>
+<span id="cb3-198"><a href="#cb3-198"></a>                   <span class="st">&quot;gdp_pc_const2015usd&quot;</span>, <span class="st">&quot;trade_percent_gdp&quot;</span>, <span class="st">&quot;rd_expenditure_percent_gdp&quot;</span>, <span class="st">&quot;tertiary_enrollment_percent&quot;</span>),</span>
+<span id="cb3-199"><a href="#cb3-199"></a>          <span class="at">omit.stat =</span> <span class="fu">c</span>(<span class="st">&quot;ser&quot;</span>, <span class="st">&quot;f&quot;</span>),</span>
+<span id="cb3-200"><a href="#cb3-200"></a>          <span class="at">se =</span> <span class="fu">list</span>(qual_bank_se, qual_market_se, qual_vc_se),</span>
+<span id="cb3-201"><a href="#cb3-201"></a>          <span class="at">notes =</span> <span class="st">&quot;All specifications include country and year fixed effects. Standard errors clustered by country.&quot;</span>,</span>
+<span id="cb3-202"><a href="#cb3-202"></a>          <span class="at">notes.append =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb3-203"><a href="#cb3-203"></a>          <span class="at">align =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
