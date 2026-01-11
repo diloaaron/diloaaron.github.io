@@ -1,7 +1,7 @@
 ---
 title: "Thesis Data Work"
 author: Aaron DiLorenzo
-date: "Jan 11, 2024"
+date: "January 11, 2024"
 format: 
   html:
     theme: cosmo
@@ -42,8 +42,7 @@ self-contained: true
 
 ```{python}
 """
-OECD Patent Quality Indicators - Data Processing Script
-Merging, normalization, and aggregation of patent quality data
+OECD Patent Quality Indicators - Data handling: merging, normalization, and aggregation of patent quality data
 """
 
 
@@ -51,24 +50,24 @@ import polars as pl
 import os
 
 
-# Configuration
+
 OUTPUT_DIR = "/Users/aarondilorenzo/Desktop/DATATHES/FINAL WORKING DATA"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
-# Input files
+# input files
 INDICATORS_FILE = "/Users/aarondilorenzo/Desktop/DATATHES/202502_OECD_PATENT_QUALITY_EPO_INDIC.txt"
 COHORTS_FILE = "/Users/aarondilorenzo/Desktop/DATATHES/202502_OECD_PATENT_QUALITY_EPO_INDIC_COHORT.txt"
 HAN_PATENTS_FILE = "/Users/aarondilorenzo/Desktop/DATATHES/202502_HAN_PATENTS.txt"
 HARM_NAMES_FILE = "/Users/aarondilorenzo/Desktop/DATATHES/202502_HARM_NAMES.txt"
 
 
-# Output files
+# output files
 FINAL_PATENT_FILE = "OECD_patent_quality_final.parquet"
 FINAL_COUNTRY_FILE = "OECD_country_year_final.csv"
 
 
-# Indicator categories
+# indicator categories
 WINSOR_VARS = ["family_size", "grant_lag", "bwd_cits", "npl_cits", "claims", "fwd_cits5", "fwd_cits7"]
 COMPOSITE_VARS = ["generality", "originality", "radicalness", "quality_index_4", "quality_index_6"]
 BINARY_VARS = ["breakthrough"]
