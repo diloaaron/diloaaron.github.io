@@ -3390,45 +3390,42 @@ display: none;
 <span id="cb2-19"><a href="#cb2-19"></a>dfs <span class="op">=</span> {}</span>
 <span id="cb2-20"><a href="#cb2-20"></a><span class="cf">for</span> key, fname <span class="kw">in</span> files.items():</span>
 <span id="cb2-21"><a href="#cb2-21"></a>    path <span class="op">=</span> os.path.join(data_dir, fname)</span>
-<span id="cb2-22"><a href="#cb2-22"></a>    <span class="bu">print</span>(<span class="ss">f&quot;Reading </span><span class="sc">{</span>fname<span class="sc">}</span><span class="ss"> ...&quot;</span>)</span>
-<span id="cb2-23"><a href="#cb2-23"></a>    <span class="cf">try</span>:</span>
-<span id="cb2-24"><a href="#cb2-24"></a>        df <span class="op">=</span> pd.read_csv(path)</span>
-<span id="cb2-25"><a href="#cb2-25"></a></span>
-<span id="cb2-26"><a href="#cb2-26"></a>        <span class="co"># Standardize column names</span></span>
-<span id="cb2-27"><a href="#cb2-27"></a>        <span class="cf">for</span> col <span class="kw">in</span> df.columns:</span>
-<span id="cb2-28"><a href="#cb2-28"></a>            <span class="cf">if</span> col.lower() <span class="kw">in</span> [<span class="st">&quot;iso3&quot;</span>, <span class="st">&quot;iso3c&quot;</span>, <span class="st">&quot;country_code&quot;</span>]:</span>
-<span id="cb2-29"><a href="#cb2-29"></a>                df <span class="op">=</span> df.rename(columns<span class="op">=</span>{col: <span class="st">&quot;iso3c&quot;</span>})</span>
-<span id="cb2-30"><a href="#cb2-30"></a>            <span class="cf">if</span> col.lower() <span class="kw">in</span> [<span class="st">&quot;country&quot;</span>, <span class="st">&quot;country name&quot;</span>]:</span>
-<span id="cb2-31"><a href="#cb2-31"></a>                df <span class="op">=</span> df.rename(columns<span class="op">=</span>{col: <span class="st">&quot;country_name&quot;</span>})</span>
-<span id="cb2-32"><a href="#cb2-32"></a>        cols <span class="op">=</span> [c <span class="cf">for</span> c <span class="kw">in</span> df.columns <span class="cf">if</span> c <span class="op">!=</span> <span class="st">&quot;country_name&quot;</span>]</span>
-<span id="cb2-33"><a href="#cb2-33"></a>        df <span class="op">=</span> df[[<span class="st">&quot;iso3c&quot;</span>, <span class="st">&quot;year&quot;</span>, <span class="st">&quot;country_name&quot;</span>] <span class="op">+</span> [c <span class="cf">for</span> c <span class="kw">in</span> cols <span class="cf">if</span> c <span class="kw">not</span> <span class="kw">in</span> [<span class="st">&quot;iso3c&quot;</span>, <span class="st">&quot;year&quot;</span>]]]</span>
-<span id="cb2-34"><a href="#cb2-34"></a></span>
-<span id="cb2-35"><a href="#cb2-35"></a>        </span>
-<span id="cb2-36"><a href="#cb2-36"></a>        <span class="cf">if</span> <span class="st">&quot;year&quot;</span> <span class="kw">in</span> df.columns:</span>
-<span id="cb2-37"><a href="#cb2-37"></a>            df[<span class="st">&quot;year&quot;</span>] <span class="op">=</span> df[<span class="st">&quot;year&quot;</span>].astype(<span class="bu">int</span>)</span>
-<span id="cb2-38"><a href="#cb2-38"></a></span>
-<span id="cb2-39"><a href="#cb2-39"></a>        dfs[key] <span class="op">=</span> df</span>
-<span id="cb2-40"><a href="#cb2-40"></a></span>
-<span id="cb2-41"><a href="#cb2-41"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
-<span id="cb2-42"><a href="#cb2-42"></a>        <span class="bu">print</span>(<span class="ss">f&quot;eror reading </span><span class="sc">{</span>fname<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>e<span class="sc">}</span><span class="ss">&quot;</span>)</span>
-<span id="cb2-43"><a href="#cb2-43"></a></span>
-<span id="cb2-44"><a href="#cb2-44"></a><span class="co"># Merge</span></span>
-<span id="cb2-45"><a href="#cb2-45"></a>master <span class="op">=</span> <span class="va">None</span></span>
-<span id="cb2-46"><a href="#cb2-46"></a><span class="cf">for</span> name, df <span class="kw">in</span> dfs.items():</span>
-<span id="cb2-47"><a href="#cb2-47"></a>    <span class="cf">if</span> master <span class="kw">is</span> <span class="va">None</span>:</span>
-<span id="cb2-48"><a href="#cb2-48"></a>        master <span class="op">=</span> df</span>
-<span id="cb2-49"><a href="#cb2-49"></a>    <span class="cf">else</span>:</span>
-<span id="cb2-50"><a href="#cb2-50"></a>        <span class="co"># Drop duplicate country_name column if it already exists in master</span></span>
-<span id="cb2-51"><a href="#cb2-51"></a>        <span class="cf">if</span> <span class="st">&quot;country_name&quot;</span> <span class="kw">in</span> master.columns <span class="kw">and</span> <span class="st">&quot;country_name&quot;</span> <span class="kw">in</span> df.columns:</span>
-<span id="cb2-52"><a href="#cb2-52"></a>            df <span class="op">=</span> df.drop(columns<span class="op">=</span>[<span class="st">&quot;country_name&quot;</span>])</span>
-<span id="cb2-53"><a href="#cb2-53"></a>        master <span class="op">=</span> pd.merge(master, df, on<span class="op">=</span>[<span class="st">&quot;iso3c&quot;</span>, <span class="st">&quot;year&quot;</span>], how<span class="op">=</span><span class="st">&quot;outer&quot;</span>)</span>
+<span id="cb2-22"><a href="#cb2-22"></a>    <span class="cf">try</span>:</span>
+<span id="cb2-23"><a href="#cb2-23"></a>        df <span class="op">=</span> pd.read_csv(path)</span>
+<span id="cb2-24"><a href="#cb2-24"></a></span>
+<span id="cb2-25"><a href="#cb2-25"></a>        <span class="co"># Standardize column names</span></span>
+<span id="cb2-26"><a href="#cb2-26"></a>        <span class="cf">for</span> col <span class="kw">in</span> df.columns:</span>
+<span id="cb2-27"><a href="#cb2-27"></a>            <span class="cf">if</span> col.lower() <span class="kw">in</span> [<span class="st">&quot;iso3&quot;</span>, <span class="st">&quot;iso3c&quot;</span>, <span class="st">&quot;country_code&quot;</span>]:</span>
+<span id="cb2-28"><a href="#cb2-28"></a>                df <span class="op">=</span> df.rename(columns<span class="op">=</span>{col: <span class="st">&quot;iso3c&quot;</span>})</span>
+<span id="cb2-29"><a href="#cb2-29"></a>            <span class="cf">if</span> col.lower() <span class="kw">in</span> [<span class="st">&quot;country&quot;</span>, <span class="st">&quot;country name&quot;</span>]:</span>
+<span id="cb2-30"><a href="#cb2-30"></a>                df <span class="op">=</span> df.rename(columns<span class="op">=</span>{col: <span class="st">&quot;country_name&quot;</span>})</span>
+<span id="cb2-31"><a href="#cb2-31"></a>        cols <span class="op">=</span> [c <span class="cf">for</span> c <span class="kw">in</span> df.columns <span class="cf">if</span> c <span class="op">!=</span> <span class="st">&quot;country_name&quot;</span>]</span>
+<span id="cb2-32"><a href="#cb2-32"></a>        df <span class="op">=</span> df[[<span class="st">&quot;iso3c&quot;</span>, <span class="st">&quot;year&quot;</span>, <span class="st">&quot;country_name&quot;</span>] <span class="op">+</span> [c <span class="cf">for</span> c <span class="kw">in</span> cols <span class="cf">if</span> c <span class="kw">not</span> <span class="kw">in</span> [<span class="st">&quot;iso3c&quot;</span>, <span class="st">&quot;year&quot;</span>]]]</span>
+<span id="cb2-33"><a href="#cb2-33"></a></span>
+<span id="cb2-34"><a href="#cb2-34"></a>        </span>
+<span id="cb2-35"><a href="#cb2-35"></a>        <span class="cf">if</span> <span class="st">&quot;year&quot;</span> <span class="kw">in</span> df.columns:</span>
+<span id="cb2-36"><a href="#cb2-36"></a>            df[<span class="st">&quot;year&quot;</span>] <span class="op">=</span> df[<span class="st">&quot;year&quot;</span>].astype(<span class="bu">int</span>)</span>
+<span id="cb2-37"><a href="#cb2-37"></a></span>
+<span id="cb2-38"><a href="#cb2-38"></a>        dfs[key] <span class="op">=</span> df</span>
+<span id="cb2-39"><a href="#cb2-39"></a></span>
+<span id="cb2-40"><a href="#cb2-40"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb2-41"><a href="#cb2-41"></a></span>
+<span id="cb2-42"><a href="#cb2-42"></a><span class="co"># Merge</span></span>
+<span id="cb2-43"><a href="#cb2-43"></a>master <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb2-44"><a href="#cb2-44"></a><span class="cf">for</span> name, df <span class="kw">in</span> dfs.items():</span>
+<span id="cb2-45"><a href="#cb2-45"></a>    <span class="cf">if</span> master <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb2-46"><a href="#cb2-46"></a>        master <span class="op">=</span> df</span>
+<span id="cb2-47"><a href="#cb2-47"></a>    <span class="cf">else</span>:</span>
+<span id="cb2-48"><a href="#cb2-48"></a>        <span class="cf">if</span> <span class="st">&quot;country_name&quot;</span> <span class="kw">in</span> master.columns <span class="kw">and</span> <span class="st">&quot;country_name&quot;</span> <span class="kw">in</span> df.columns:</span>
+<span id="cb2-49"><a href="#cb2-49"></a>            df <span class="op">=</span> df.drop(columns<span class="op">=</span>[<span class="st">&quot;country_name&quot;</span>])</span>
+<span id="cb2-50"><a href="#cb2-50"></a>        master <span class="op">=</span> pd.merge(master, df, on<span class="op">=</span>[<span class="st">&quot;iso3c&quot;</span>, <span class="st">&quot;year&quot;</span>], how<span class="op">=</span><span class="st">&quot;outer&quot;</span>)</span>
+<span id="cb2-51"><a href="#cb2-51"></a></span>
+<span id="cb2-52"><a href="#cb2-52"></a><span class="co"># sort and organize</span></span>
+<span id="cb2-53"><a href="#cb2-53"></a>master <span class="op">=</span> master.sort_values([<span class="st">&quot;iso3c&quot;</span>, <span class="st">&quot;year&quot;</span>]).reset_index(drop<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb2-54"><a href="#cb2-54"></a></span>
-<span id="cb2-55"><a href="#cb2-55"></a><span class="co"># sort and organize</span></span>
-<span id="cb2-56"><a href="#cb2-56"></a>master <span class="op">=</span> master.sort_values([<span class="st">&quot;iso3c&quot;</span>, <span class="st">&quot;year&quot;</span>]).reset_index(drop<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb2-57"><a href="#cb2-57"></a></span>
-<span id="cb2-58"><a href="#cb2-58"></a><span class="co"># save</span></span>
-<span id="cb2-59"><a href="#cb2-59"></a>out_path <span class="op">=</span> os.path.join(data_dir, <span class="st">&quot;Master_Panel.csv&quot;</span>)</span>
-<span id="cb2-60"><a href="#cb2-60"></a>master.to_csv(out_path, index<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-55"><a href="#cb2-55"></a><span class="co"># save</span></span>
+<span id="cb2-56"><a href="#cb2-56"></a>out_path <span class="op">=</span> os.path.join(data_dir, <span class="st">&quot;Master_Panel.csv&quot;</span>)</span>
+<span id="cb2-57"><a href="#cb2-57"></a>master.to_csv(out_path, index<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
@@ -3646,21 +3643,33 @@ display: none;
 </section>
 <section id="variable-glossary" class="level3" data-number="0.4">
 <h3 data-number="0.4" class="anchored" data-anchor-id="variable-glossary"><span class="header-section-number">0.4</span> Variable Glossary</h3>
-<p><code>iso3c</code> Every country’s unique iso3 code, used to standardize and merge all data <code>year</code> Observation year<br>
-<code>country_name</code> Country name <code>avg_patent_scope_norm</code> Number of countries where patent is filed <code>avg_family_size_norm</code> Size of patent family<br>
+<p><code>iso3c</code> Every country’s unique iso3 code, used to standardize and merge all data</p>
+<p><code>year</code> Observation year<br>
+<code>country_name</code> Country name</p>
+<p><code>avg_patent_scope_norm</code> Number of countries where patent is filed</p>
+<p><code>avg_family_size_norm</code> Size of patent family<br>
 <code>avg_grant_lag_norm</code> Days between application and grant<br>
 <code>avg_bwd_cits_norm</code> Number of backward citations<br>
-<code>avg_npl_cits_norm</code> Non-patent literature citations <code>avg_claims_norm</code> Number of claims<br>
+<code>avg_npl_cits_norm</code> Non-patent literature citations</p>
+<p><code>avg_claims_norm</code> Number of claims<br>
 <code>avg_fwd_cits5_norm</code> Forward citations within 5 years<br>
 <code>avg_fwd_cits7_norm</code> Forward citations within 7 years<br>
-<code>avg_generality</code> Technological breadth index (0-1) <code>avg_originality</code> Citation diversity index (0-1)<br>
+<code>avg_generality</code> Technological breadth index (0-1)</p>
+<p><code>avg_originality</code> Citation diversity index (0-1)<br>
 <code>avg_radicalness</code> Novelty index (0-1)<br>
 <code>avg_quality_index_4</code> Composite index (4 indicators)<br>
-<code>avg_quality_index_6</code> Composite index (6 indicators) <code>pct_breakthrough</code> Binary indicator (1 = top 1% cited) <code>avg_renewal</code> Years patent was renewed<br>
-<code>VC_investment</code> Venture Capital investment as % of GDP <code>ipp_index_IP_transformed</code> Park Index of IP protection, 5-year fill interpolation<br>
-<code>rd_expenditure_percent_gdp</code> R&amp;D expenditure as a % of GDP, control <code>trade_percent_gdp</code> Trade as a % of GDP, control<br>
+<code>avg_quality_index_6</code> Composite index (6 indicators)</p>
+<p><code>pct_breakthrough</code> Binary indicator (1 = top 1% cited)</p>
+<p><code>avg_renewal</code> Years patent was renewed<br>
+<code>VC_investment</code> Venture Capital investment as % of GDP</p>
+<p><code>ipp_index_IP_transformed</code> Park Index of IP protection, 5-year fill interpolation<br>
+<code>rd_expenditure_percent_gdp</code> R&amp;D expenditure as a % of GDP, control</p>
+<p><code>trade_percent_gdp</code> Trade as a % of GDP, control<br>
 <code>gdp_pc_const2015usd</code> GDP per capita, constant 2015 USD, control<br>
-<code>tertiary_enrollment_percent</code> tertiary enrollment, control <code>researchers_per_million_x</code> researchers per million, used to scale patent counts <code>population_total</code> alternative scaling variable <code>bank_credit_gdp</code> Ratio of bank credit to GDP, represents size of banking sector <code>market_cap_gdp</code> Market Cap of domestically listed companies, represents depth of stock market <code>patent_applications_residents</code><br>
+<code>tertiary_enrollment_percent</code> tertiary enrollment, control</p>
+<p><code>researchers_per_million_x</code> researchers per million, used to scale patent counts <code>population_total</code> alternative scaling variable</p>
+<p><code>bank_credit_gdp</code> Ratio of bank credit to GDP, represents size of banking sector <code>market_cap_gdp</code> Market Cap of domestically listed companies, represents depth of stock market</p>
+<p><code>patent_applications_residents</code><br>
 <code>researchers_per_million_y</code></p>
 </section>
 
