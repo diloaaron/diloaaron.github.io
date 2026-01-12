@@ -38,7 +38,9 @@ number-sections: true
 self-contained: true  
 ---
 
-### Python Code for Merged and Transformed PQI Data
+### Merged and Transformed PQI Data
+
+This script transforms individual raw data sets from the OECD’s Quality Indicator, Cohort, and HAN/HARM databases into analysis-ready patent quality indicators, following the OECD paper’s methodology. The pipeline applies normalization/winsorization procedures, and produces both patent-level and country-year aggregated datasets suitable for econometric analysis of innovation quality. Source: Squicciarini, M., Dernis, H., & Criscuolo, C. (2013). Measuring Patent Quality: Indicators of Technological and Economic Value. OECD Science, Technology and Industry Working Papers, 2013/03.
 
 ```{python}
 """
@@ -263,7 +265,11 @@ if __name__ == "__main__":
 
 
 ```
-### Merging all the data
+
+### Combining the Patent Quality Indicators with Additional Variables (Park Index, Financial Development Measures, & Controls)
+
+*going to add a more substantial description here, include sources for the data*
+
 ```{python}
 '''
 Master Panel Script - combines financial development data, ipr data, quality data, and controls
@@ -327,9 +333,8 @@ out_path = os.path.join(data_dir, "Master_Panel.csv")
 master.to_csv(out_path, index=False)
 ```
 
-
-### R code for running regressions
-
+### Executing the Analysis
+*description will go here as well*
 ```{r}
 rm(list = ls())
 library(reticulate)
