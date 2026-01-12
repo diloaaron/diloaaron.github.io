@@ -1,7 +1,7 @@
 ---
 title: "Thesis Data Work"
 author: Aaron DiLorenzo
-date: "Jan 11, 2024"
+date: "Jan 12, 2024"
 format: 
   html:
     theme: cosmo
@@ -540,3 +540,35 @@ stargazer(qual_bank, qual_market, qual_vc,
           notes.append = FALSE,
           align = TRUE)
 ```
+### Variable Glossary
+
+`iso3c` Every country's unique iso3 code, used to standardize and merge all data 
+`year`  Observation year	
+`country_name`  Country name
+`avg_patent_scope_norm` Number of countries where patent is filed
+`avg_family_size_norm`  Size of patent family  	
+`avg_grant_lag_norm`  Days between application and grant	
+`avg_bwd_cits_norm` Number of backward citations	
+`avg_npl_cits_norm` Non-patent literature citations	
+`avg_claims_norm` Number of claims	
+`avg_fwd_cits5_norm`  Forward citations within 5 years	
+`avg_fwd_cits7_norm`  Forward citations within 7 years	
+`avg_generality`  Technological breadth index (0-1)	
+`avg_originality` Citation diversity index (0-1)	
+`avg_radicalness` Novelty index (0-1)	
+`avg_quality_index_4` Composite index (4 indicators)	
+`avg_quality_index_6`	Composite index (6 indicators)
+`pct_breakthrough`  Binary indicator (1 = top 1% cited)	
+`avg_renewal` Years patent was renewed	
+`VC_investment` Venture Capital investment as % of GDP
+`ipp_index_IP_transformed` Park Index of IP protection, 5-year fill interpolation 	
+`rd_expenditure_percent_gdp` R&D expenditure as a % of GDP, control	
+`trade_percent_gdp` Trade as a % of GDP, control	
+`gdp_pc_const2015usd` GDP per capita, constant 2015 USD, control	
+`tertiary_enrollment_percent`	tertiary enrollment, control
+`researchers_per_million_x`	researchers per million, used to scale patent counts
+`population_total` alternative scaling variable
+`bank_credit_gdp` Ratio of bank credit to GDP, represents size of banking sector
+`market_cap_gdp`	Market Cap of domestically listed companies, represents depth of stock market
+`patent_applications_residents`  	
+`researchers_per_million_y` 

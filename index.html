@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Aaron DiLorenzo">
-<meta name="dcterms.date" content="2024-01-11">
+<meta name="dcterms.date" content="2024-01-12">
 
 <title>Thesis Data Work</title>
 <style>
@@ -3099,6 +3099,7 @@ display: none;
   <li><a href="#merged-and-transformed-pqi-data" id="toc-merged-and-transformed-pqi-data" class="nav-link active" data-scroll-target="#merged-and-transformed-pqi-data"><span class="header-section-number">0.1</span> Merged and Transformed PQI Data</a></li>
   <li><a href="#combining-the-patent-quality-indicators-with-additional-variables-park-index-financial-development-measures-controls" id="toc-combining-the-patent-quality-indicators-with-additional-variables-park-index-financial-development-measures-controls" class="nav-link" data-scroll-target="#combining-the-patent-quality-indicators-with-additional-variables-park-index-financial-development-measures-controls"><span class="header-section-number">0.2</span> Combining the Patent Quality Indicators with Additional Variables (Park Index, Financial Development Measures, &amp; Controls)</a></li>
   <li><a href="#executing-the-analysis" id="toc-executing-the-analysis" class="nav-link" data-scroll-target="#executing-the-analysis"><span class="header-section-number">0.3</span> Executing the Analysis</a></li>
+  <li><a href="#variable-glossary" id="toc-variable-glossary" class="nav-link" data-scroll-target="#variable-glossary"><span class="header-section-number">0.4</span> Variable Glossary</a></li>
   </ul>
 </nav>
 </div>
@@ -3123,7 +3124,7 @@ display: none;
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">January 11, 2024</p>
+      <p class="date">January 12, 2024</p>
     </div>
   </div>
   
@@ -3642,6 +3643,25 @@ display: none;
 <span id="cb3-203"><a href="#cb3-203"></a>          <span class="at">align =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
+</section>
+<section id="variable-glossary" class="level3" data-number="0.4">
+<h3 data-number="0.4" class="anchored" data-anchor-id="variable-glossary"><span class="header-section-number">0.4</span> Variable Glossary</h3>
+<p><code>iso3c</code> Every country’s unique iso3 code, used to standardize and merge all data <code>year</code> Observation year<br>
+<code>country_name</code> Country name <code>avg_patent_scope_norm</code> Number of countries where patent is filed <code>avg_family_size_norm</code> Size of patent family<br>
+<code>avg_grant_lag_norm</code> Days between application and grant<br>
+<code>avg_bwd_cits_norm</code> Number of backward citations<br>
+<code>avg_npl_cits_norm</code> Non-patent literature citations <code>avg_claims_norm</code> Number of claims<br>
+<code>avg_fwd_cits5_norm</code> Forward citations within 5 years<br>
+<code>avg_fwd_cits7_norm</code> Forward citations within 7 years<br>
+<code>avg_generality</code> Technological breadth index (0-1) <code>avg_originality</code> Citation diversity index (0-1)<br>
+<code>avg_radicalness</code> Novelty index (0-1)<br>
+<code>avg_quality_index_4</code> Composite index (4 indicators)<br>
+<code>avg_quality_index_6</code> Composite index (6 indicators) <code>pct_breakthrough</code> Binary indicator (1 = top 1% cited) <code>avg_renewal</code> Years patent was renewed<br>
+<code>VC_investment</code> Venture Capital investment as % of GDP <code>ipp_index_IP_transformed</code> Park Index of IP protection, 5-year fill interpolation<br>
+<code>rd_expenditure_percent_gdp</code> R&amp;D expenditure as a % of GDP, control <code>trade_percent_gdp</code> Trade as a % of GDP, control<br>
+<code>gdp_pc_const2015usd</code> GDP per capita, constant 2015 USD, control<br>
+<code>tertiary_enrollment_percent</code> tertiary enrollment, control <code>researchers_per_million_x</code> researchers per million, used to scale patent counts <code>population_total</code> alternative scaling variable <code>bank_credit_gdp</code> Ratio of bank credit to GDP, represents size of banking sector <code>market_cap_gdp</code> Market Cap of domestically listed companies, represents depth of stock market <code>patent_applications_residents</code><br>
+<code>researchers_per_million_y</code></p>
 </section>
 
 </main>
