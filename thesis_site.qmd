@@ -1,7 +1,7 @@
 ---
 title: "Thesis Data Work"
 author: Aaron DiLorenzo
-date: "Jan 12, 2024"
+date: "Jan 17, 2024"
 format: 
   html:
     theme: cosmo
@@ -27,12 +27,16 @@ format:
         }
         </style>
     
-execute: 
+execute:
+  enabled: true
+  python: false
+
   echo: true      
-  eval: false     
+  eval: true     
   warning: false
-  message: false
-  fig.show: "hide"
+  message: true
+  cache: true
+  freeze: auto
   
 number-sections: true
 self-contained: true  
@@ -42,7 +46,8 @@ self-contained: true
 
 This script transforms individual raw data sets from the OECD’s Quality Indicator, Cohort, and HAN/HARM databases into analysis-ready patent quality indicators, following the OECD paper’s methodology. The pipeline applies normalization/winsorization procedures, and produces both patent-level and country-year aggregated datasets suitable for econometric analysis of innovation quality. Source: Squicciarini, M., Dernis, H., & Criscuolo, C. (2013). Measuring Patent Quality: Indicators of Technological and Economic Value. OECD Science, Technology and Industry Working Papers, 2013/03.
 
-```{python}
+```python
+
 """
 OECD Patent Quality Indicators - Data handling: merging, normalization, and aggregation of patent quality data
 """
@@ -270,7 +275,8 @@ if __name__ == "__main__":
 
 *going to add a more substantial description here, include sources for the data*
 
-```{python}
+```python
+
 '''
 Master Panel Script - combines financial development data, ipr data, quality data, and controls
 '''
@@ -330,11 +336,10 @@ out_path = os.path.join(data_dir, "Master_Panel.csv")
 master.to_csv(out_path, index=False)
 ```
 
-### Executing the Analysis
+### Executing the Analysis 
 
-*description will go here as well*
 
-```{r}
+```{r echo=FALSE, eval=FALSE}
 rm(list = ls())
 library(reticulate)
 library(tidyverse)
@@ -344,7 +349,7 @@ library(data.table)
 library(lmtest)
 library(sandwich)
 
-master <- fread("~/Desktop/DATATHES/FINAL WORKING DATA/Master_Panel.csv")
+master <- fread("data/Master_Panel.csv")
 
 master_clean <- master %>%
   mutate(researchers_per_million = coalesce(researchers_per_million_y, researchers_per_million_x)) %>%
@@ -538,6 +543,564 @@ stargazer(qual_bank, qual_market, qual_vc,
           notes = "All specifications include country and year fixed effects. Standard errors clustered by country.",
           notes.append = FALSE,
           align = TRUE)
+```
+
+
+```{r echo = FALSE, eval = FALSE}
+#regression tables script
+library(tidyverse)
+library(data.table)
+library(plm)
+library(lmtest)
+library(sandwich)
+library(stargazer)
+
+
+master <- fread("data/Master_Panel.csv")
+summary(master)
+master_clean <- master %>%
+  
+  # fix the researcher duplicate
+  mutate(researchers_per_million = coalesce(
+    as.numeric(researchers_per_million_y),
+    as.numeric(researchers_per_million_x)
+  )) %>%
+  
+  # convert numerics 
+  mutate(across(c(
+    year,
+    avg_quality_index_4,
+    avg_quality_index_6,
+    VC_investment,
+    bank_credit_gdp,
+    market_cap_gdp,
+    ipp_index_IP_transformed,
+    patent_applications_residents,
+    gdp_pc_const2015usd,
+    trade_percent_gdp,
+    rd_expenditure_percent_gdp,
+    tertiary_enrollment_percent
+  ), as.numeric)) %>%
+  
+  # scale variables for interpretability and accuracy
+  mutate(
+    VC_investment_pct = VC_investment * 100,
+    quality_index_100 = avg_quality_index_4 * 100,
+    patents_per_1000_researchers =
+      patent_applications_residents / (researchers_per_million * 1000)
+  ) %>%
+  
+  # create interaction terms
+  mutate(
+    bank_x_ipr   = bank_credit_gdp   * ipp_index_IP_transformed,
+    market_x_ipr = market_cap_gdp    * ipp_index_IP_transformed,
+    vc_x_ipr     = VC_investment_pct * ipp_index_IP_transformed
+  )
+
+############################################
+# 3. SAMPLE CONSTRUCTION (EXPLICIT & CLEAN)
+############################################
+
+# ---- Bank & Market sample ----
+bm_sample <- master_clean %>%
+  filter(
+    !is.na(quality_index_100),
+    !is.na(patents_per_1000_researchers),
+    !is.na(ipp_index_IP_transformed),
+    !is.na(gdp_pc_const2015usd),
+    !is.na(trade_percent_gdp),
+    !is.na(rd_expenditure_percent_gdp),
+    !is.na(tertiary_enrollment_percent),
+    !is.na(bank_credit_gdp) | !is.na(market_cap_gdp)
+  )
+
+bm_panel <- pdata.frame(bm_sample, index = c("iso3c", "year"))
+
+#VC sample 
+vc_sample <- master_clean %>%
+  filter(
+    !is.na(quality_index_100),
+    !is.na(patents_per_1000_researchers),
+    !is.na(VC_investment_pct),
+    !is.na(ipp_index_IP_transformed),
+    !is.na(gdp_pc_const2015usd),
+    !is.na(trade_percent_gdp),
+    !is.na(rd_expenditure_percent_gdp),
+    !is.na(tertiary_enrollment_percent)
+  )
+
+vc_panel <- pdata.frame(vc_sample, index = c("iso3c", "year"))
+
+
+#regressions: quality
+
+
+qual_bank <- plm(
+  quality_index_100 ~ bank_credit_gdp + ipp_index_IP_transformed + bank_x_ipr +
+    gdp_pc_const2015usd + trade_percent_gdp +
+    rd_expenditure_percent_gdp + tertiary_enrollment_percent,
+  data = bm_panel,
+  model = "within",
+  effect = "twoways"
+)
+
+qual_market <- plm(
+  quality_index_100 ~ market_cap_gdp + ipp_index_IP_transformed + market_x_ipr +
+    gdp_pc_const2015usd + trade_percent_gdp +
+    rd_expenditure_percent_gdp + tertiary_enrollment_percent,
+  data = bm_panel,
+  model = "within",
+  effect = "twoways"
+)
+
+# VC: interaction retained but interpreted cautiously
+qual_vc <- plm(
+  quality_index_100 ~ VC_investment_pct + ipp_index_IP_transformed + vc_x_ipr +
+    gdp_pc_const2015usd + trade_percent_gdp +
+    rd_expenditure_percent_gdp + tertiary_enrollment_percent,
+  data = vc_panel,
+  model = "within",
+  effect = "twoways"
+)
+
+# Regressions: counts
+
+count_bank <- plm(
+  patents_per_1000_researchers ~ bank_credit_gdp + ipp_index_IP_transformed + bank_x_ipr +
+    gdp_pc_const2015usd + trade_percent_gdp +
+    rd_expenditure_percent_gdp + tertiary_enrollment_percent,
+  data = bm_panel,
+  model = "within",
+  effect = "twoways"
+)
+
+count_market <- plm(
+  patents_per_1000_researchers ~ market_cap_gdp + ipp_index_IP_transformed + market_x_ipr +
+    gdp_pc_const2015usd + trade_percent_gdp +
+    rd_expenditure_percent_gdp + tertiary_enrollment_percent,
+  data = bm_panel,
+  model = "within",
+  effect = "twoways"
+)
+
+count_vc <- plm(
+  patents_per_1000_researchers ~ VC_investment_pct + ipp_index_IP_transformed + vc_x_ipr +
+    gdp_pc_const2015usd + trade_percent_gdp +
+    rd_expenditure_percent_gdp + tertiary_enrollment_percent,
+  data = vc_panel,
+  model = "within",
+  effect = "twoways"
+)
+
+
+#clustered SE
+
+se <- function(model) {
+  sqrt(diag(vcovHC(model, type = "HC1", cluster = "group")))
+}
+
+qual_se   <- list(se(qual_bank), se(qual_market), se(qual_vc))
+count_se  <- list(se(count_bank), se(count_market), se(count_vc))
+
+#stargazer tables
+
+stargazer(
+  qual_bank, qual_market, qual_vc,
+  type = "text",
+  title = "Financial Development, IP Protection, and Patent Quality",
+  dep.var.labels = "",
+  dep.var.caption = "Dependant Variable: Patent Quality Index (0–100) ",
+  column.labels = c("Bank-Based", "Market-Based", "VC-Based"),
+  keep = c(
+    "bank_credit_gdp", "market_cap_gdp", "VC_investment_pct",
+    "ipp_index_IP_transformed",
+    "bank_x_ipr", "market_x_ipr", "vc_x_ipr",
+    "gdp_pc_const2015usd", "trade_percent_gdp",
+    "rd_expenditure_percent_gdp", "tertiary_enrollment_percent"
+  ),
+  covariate.labels = c(
+    "Bank Credit / GDP",
+    "Market Capitalization / GDP",
+    "VC Investment / GDP",
+    "IP Protection",
+    "Bank FD × IP Protection",
+    "Market FD × IP Protection",
+    "VC FD × IP Protection",
+    "GDP per Capita",
+    "Trade / GDP",
+    "R&D Expenditure / GDP",
+    "Tertiary Enrollment"
+  ),
+  se = qual_se,
+  omit.stat = c("ser", "f"),
+  notes = "All models include country and year fixed effects. Standard errors clustered by country.",
+  align = TRUE
+)
+
+stargazer(
+  count_bank, count_market, count_vc,
+  type = "text",
+  title = "Financial Development, IP Protection, and Patent Quantity",
+  dep.var.labels = "",
+  dep.var.caption = "Dependant Variable: Patents per 1,000 Researchers",
+  column.labels = c("Bank-Based", "Market-Based", "VC-Based"),
+  keep = c(
+    "bank_credit_gdp", "market_cap_gdp", "VC_investment_pct",
+    "ipp_index_IP_transformed",
+    "bank_x_ipr", "market_x_ipr", "vc_x_ipr",
+    "gdp_pc_const2015usd", "trade_percent_gdp",
+    "rd_expenditure_percent_gdp", "tertiary_enrollment_percent"
+  ),
+  covariate.labels = c(
+    "Bank Credit / GDP",
+    "Market Capitalization / GDP",
+    "VC Investment / GDP",
+    "IP Protection",
+    "Bank FD × IP Protection",
+    "Market FD × IP Protection",
+    "VC FD × IP Protection",
+    "GDP per Capita",
+    "Trade / GDP",
+    "R&D Expenditure / GDP",
+    "Tertiary Enrollment"
+  ),
+  se = count_se,
+  omit.stat = c("ser", "f"),
+  notes = "All models include country and year fixed effects. Standard errors clustered by country.",
+  align = TRUE
+)
+```
+###### Squeezing the data (now log transformations have been applied)
+
+panel data regressions to investigate how bank-based, market-based, and venture capital financial development interact with intellectual property protection to influence patent quality and quantity. The methodology uses two-way fixed effects models with country and year controls, clustering standard errors by country. All continuous variables are log-transformed, interaction terms capture how IP protection moderates financial development effects. Three separate models test each financial system type, controlling for GDP per capita, trade openness, R&D expenditure, and tertiary education.
+
+```{r echo=TRUE, eval=TRUE}
+# squeezing the data, applying log transformations
+
+rm(list = ls())
+library(tidyverse)
+library(data.table)
+library(plm)
+library(stargazer)
+library(lmtest)
+library(sandwich)
+
+# Load data
+master <- fread("data/Master_Panel.csv")
+
+# Clean and transform data 
+master_clean <- master %>%
+  # fix the researcher variable
+  mutate(
+    researchers_per_million = coalesce(
+      as.numeric(researchers_per_million_y),
+      as.numeric(researchers_per_million_x)
+    ),
+    population_total = as.numeric(population_total)
+  ) %>%
+  
+  # Convert variables to numeric
+  mutate(across(c(
+    year, avg_quality_index_4, VC_investment,
+    bank_credit_gdp, market_cap_gdp, ipp_index_IP_transformed,
+    patent_applications_residents, gdp_pc_const2015usd,
+    trade_percent_gdp, rd_expenditure_percent_gdp,
+    tertiary_enrollment_percent
+  ), as.numeric)) %>%
+  
+  # proper scaling
+  mutate(
+    researchers_total = researchers_per_million * (population_total / 1e6),
+    patents_per_1000_researchers = (patent_applications_residents / researchers_total) * 1000,
+    patents_per_1000_researchers = ifelse(
+      is.infinite(patents_per_1000_researchers) | 
+        patents_per_1000_researchers < 0,
+      NA, 
+      patents_per_1000_researchers
+    )
+  ) %>%
+  
+  # scale variables
+  mutate(
+    VC_investment_pct = VC_investment * 100,
+    quality_index_100 = avg_quality_index_4 * 100
+  ) %>%
+  
+  # log transformations
+  mutate(
+    ln_gdp_pc = log(gdp_pc_const2015usd + 1),
+    ln_patents = log(patents_per_1000_researchers + 1),
+    ln_bank = log(bank_credit_gdp + 1),
+    ln_market = log(market_cap_gdp + 1),
+    ln_vc = log(VC_investment_pct + 1),
+    ln_trade = log(trade_percent_gdp + 1),
+    ln_rd = log(rd_expenditure_percent_gdp + 1),
+    ln_tertiary = log(tertiary_enrollment_percent + 1)
+  ) %>%
+  
+  # interaction terms
+  mutate(
+    ln_bank_x_ipr = ln_bank * ipp_index_IP_transformed,
+    ln_market_x_ipr = ln_market * ipp_index_IP_transformed,
+    ln_vc_x_ipr = ln_vc * ipp_index_IP_transformed
+  )
+
+# convert to panel data
+master_panel <- pdata.frame(master_clean, index = c("iso3c", "year"))
+
+# filter nas
+master_levels <- master_panel %>%
+  filter(
+    !is.na(quality_index_100),
+    !is.na(patents_per_1000_researchers),
+    !is.na(ipp_index_IP_transformed),
+    !is.na(gdp_pc_const2015usd)
+  )
+
+# split samples
+master_bank_market <- master_levels %>% 
+  filter(!is.na(bank_credit_gdp) | !is.na(market_cap_gdp))
+
+master_vc <- master_levels %>% 
+  filter(!is.na(VC_investment_pct))
+
+#patent quality regressions
+
+# Bank-based FD
+qual_bank <- plm(
+  quality_index_100 ~ ln_bank + ipp_index_IP_transformed + ln_bank_x_ipr +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary,
+  data = master_bank_market, 
+  model = "within", 
+  effect = "twoways"
+)
+
+# Market-based FD  
+qual_market <- plm(
+  quality_index_100 ~ ln_market + ipp_index_IP_transformed + ln_market_x_ipr +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary,
+  data = master_bank_market, 
+  model = "within", 
+  effect = "twoways"
+)
+
+# VC-based FD
+qual_vc <- plm(
+  quality_index_100 ~ ln_vc + ipp_index_IP_transformed + ln_vc_x_ipr +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary,
+  data = master_vc, 
+  model = "within", 
+  effect = "twoways"
+)
+
+#patent quantity regressions
+
+# Bank FD
+count_bank <- plm(
+  ln_patents ~ ln_bank + ipp_index_IP_transformed + ln_bank_x_ipr +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary,
+  data = master_bank_market, 
+  model = "within", 
+  effect = "twoways"
+)
+
+# Market FD
+count_market <- plm(
+  ln_patents ~ ln_market + ipp_index_IP_transformed + ln_market_x_ipr +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary,
+  data = master_bank_market, 
+  model = "within", 
+  effect = "twoways"
+)
+
+# VC FD
+count_vc <- plm(
+  ln_patents ~ ln_vc + ipp_index_IP_transformed + ln_vc_x_ipr +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary,
+  data = master_vc, 
+  model = "within", 
+  effect = "twoways"
+)
+
+#clustered se
+
+qual_bank_se <- sqrt(diag(vcovHC(qual_bank, type = "HC1", cluster = "group")))
+qual_market_se <- sqrt(diag(vcovHC(qual_market, type = "HC1", cluster = "group")))
+qual_vc_se <- sqrt(diag(vcovHC(qual_vc, type = "HC1", cluster = "group")))
+
+count_bank_se <- sqrt(diag(vcovHC(count_bank, type = "HC1", cluster = "group")))
+count_market_se <- sqrt(diag(vcovHC(count_market, type = "HC1", cluster = "group")))
+count_vc_se <- sqrt(diag(vcovHC(count_vc, type = "HC1", cluster = "group")))
+
+#table one
+
+stargazer(
+  qual_bank, qual_market, qual_vc,
+  type = "text",
+  font.size = "tiny",
+  column.sep.width = "0pt",
+  single.row = FALSE,
+  no.space = TRUE,
+  float = FALSE,
+  title = "Financial Development, IP Protection and Patent Quality (Log Specification)",
+  dep.var.labels = "",
+  dep.var.caption = "Dependant Variable: Patent Quality",
+  column.labels = c("Bank-based", "Market-based", "VC-based"),
+  covariate.labels = c(
+    "ln(Bank Credit/GDP)",
+    "ln(Market Capitalization/GDP)", 
+    "ln(VC Investment/GDP)",
+    "IP Protection Index", 
+    "ln(Bank FD) × IP Protection", 
+    "ln(Market FD) × IP Protection",
+    "ln(VC FD) × IP Protection",
+    "ln(GDP per Capita)", 
+    "ln(Trade/GDP)", 
+    "ln(R&D Expenditure/GDP)", 
+    "ln(Tertiary Enrollment)"
+  ),
+  se = list(qual_bank_se, qual_market_se, qual_vc_se),
+  omit.stat = c("ser", "f"),
+  add.lines = list(
+    c("Observations", 
+      nobs(qual_bank), 
+      nobs(qual_market), 
+      nobs(qual_vc)),
+    c("R-squared", 
+      round(summary(qual_bank)$r.squared["rsq"], 3),
+      round(summary(qual_market)$r.squared["rsq"], 3),
+      round(summary(qual_vc)$r.squared["rsq"], 3)),
+    c("Adj. R-squared", 
+      round(summary(qual_bank)$r.squared["adjrsq"], 3),
+      round(summary(qual_market)$r.squared["adjrsq"], 3),
+      round(summary(qual_vc)$r.squared["adjrsq"], 3)),
+    c("F Statistic", 
+      paste0(round(summary(qual_bank)$fstatistic$statistic, 2), "***"),
+      paste0(round(summary(qual_market)$fstatistic$statistic, 2), "***"),
+      paste0(round(summary(qual_vc)$fstatistic$statistic, 2), "***"))
+  ),
+  notes = paste(
+    "All specifications include country and year fixed effects.",
+    "Standard errors clustered by country in parentheses.",
+    "*p<0.1; **p<0.05; ***p<0.01"
+  ),
+  align = TRUE
+)
+#table 2
+stargazer(
+  count_bank, count_market, count_vc,
+  type = "text",  
+  font.size = "tiny",
+  column.sep.width = "0pt",
+  single.row = FALSE,
+  no.space = TRUE,
+  float = FALSE,
+  title = "Financial Development, IP Protection and Patent Quantity (Log Specification)",
+  dep.var.labels = "",
+  dep.var.caption = "Dependant Variable: Patents per 1,000 Researchers",
+  column.labels = c("Bank-based", "Market-based", "VC-based"),
+  covariate.labels = c(
+    "ln(Bank Credit/GDP)",
+    "ln(Market Capitalization/GDP)", 
+    "ln(VC Investment/GDP)",
+    "IP Protection Index", 
+    "ln(Bank FD) × IP Protection", 
+    "ln(Market FD) × IP Protection",
+    "ln(VC FD) × IP Protection",
+    "ln(GDP per Capita)", 
+    "ln(Trade/GDP)", 
+    "ln(R&D Expenditure/GDP)", 
+    "ln(Tertiary Enrollment)"
+  ),
+  se = list(count_bank_se, count_market_se, count_vc_se),
+  omit.stat = c("ser", "f"),
+  add.lines = list(
+    c("Observations", 
+      nobs(count_bank), 
+      nobs(count_market), 
+      nobs(count_vc)),
+    c("R-squared", 
+      round(summary(count_bank)$r.squared["rsq"], 3),
+      round(summary(count_market)$r.squared["rsq"], 3),
+      round(summary(count_vc)$r.squared["rsq"], 3)),
+    c("Adj. R-squared", 
+      round(summary(count_bank)$r.squared["adjrsq"], 3),
+      round(summary(count_market)$r.squared["adjrsq"], 3),
+      round(summary(count_vc)$r.squared["adjrsq"], 3)),
+    c("F Statistic", 
+      paste0(round(summary(count_bank)$fstatistic$statistic, 2), "***"),
+      paste0(round(summary(count_market)$fstatistic$statistic, 2), "***"),
+      paste0(round(summary(count_vc)$fstatistic$statistic, 2), "***"))
+  ),
+  notes = paste(
+    "All specifications include country and year fixed effects.",
+    "Standard errors clustered by country in parentheses.",
+    "*p<0.1; **p<0.05; ***p<0.01"
+  ),
+  align = TRUE
+)
+#save the html tables to my computer
+
+stargazer(
+  qual_bank, qual_market, qual_vc,
+  type = "html",
+  title = "Table 1: Financial Development, IP Protection and Patent Quality",
+  dep.var.labels = "Patent Quality Index (0-100 scale)",
+  column.labels = c("Bank-based", "Market-based", "VC-based"),
+  covariate.labels = c(
+    "ln(Bank Credit/GDP)",
+    "ln(Market Capitalization/GDP)", 
+    "ln(VC Investment/GDP)",
+    "IP Protection Index", 
+    "ln(Bank FD) × IP Protection", 
+    "ln(Market FD) × IP Protection",
+    "ln(VC FD) × IP Protection",
+    "ln(GDP per Capita)", 
+    "ln(Trade/GDP)", 
+    "ln(R&D Expenditure/GDP)", 
+    "ln(Tertiary Enrollment)"
+  ),
+  se = list(qual_bank_se, qual_market_se, qual_vc_se),
+  omit.stat = c("ser", "f"),
+  out = "table1_quality_log.html"
+)
+
+stargazer(
+  count_bank, count_market, count_vc,
+  type = "html",
+  title = "Table 2: Financial Development, IP Protection and Patent Quantity",
+  dep.var.labels = "ln(Patents per 1,000 Researchers)",
+  column.labels = c("Bank-based", "Market-based", "VC-based"),
+  covariate.labels = c(
+    "ln(Bank Credit/GDP)",
+    "ln(Market Capitalization/GDP)", 
+    "ln(VC Investment/GDP)",
+    "IP Protection Index", 
+    "ln(Bank FD) × IP Protection", 
+    "ln(Market FD) × IP Protection",
+    "ln(VC FD) × IP Protection",
+    "ln(GDP per Capita)", 
+    "ln(Trade/GDP)", 
+    "ln(R&D Expenditure/GDP)", 
+    "ln(Tertiary Enrollment)"
+  ),
+  se = list(count_bank_se, count_market_se, count_vc_se),
+  omit.stat = c("ser", "f"),
+  out = "table2_quantity_log.html"
+)
+
+#sample size summary
+
+cat("\n\n=== SAMPLE SIZES ===\n")
+cat("Bank/Market Models:\n")
+cat("  Quality:", nobs(qual_bank), "observations\n")
+cat("  Quantity:", nobs(count_bank), "observations\n")
+cat("VC Models:\n")
+cat("  Quality:", nobs(qual_vc), "observations\n")
+cat("  Quantity:", nobs(count_vc), "observations\n")
+cat("Countries (Bank/Market):", length(unique(master_bank_market$iso3c)), "\n")
+cat("Countries (VC):", length(unique(master_vc$iso3c)), "\n")
+
 ```
 
 ### Variable Glossary

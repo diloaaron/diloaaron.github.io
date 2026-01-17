@@ -6,3 +6,6 @@ update_thesis_site <- function() {
   system(paste("git commit -m 'Update:", Sys.time(), "'"))
   system("git push")
 }
+
+source("update_thesis.R")
+update_thesis_site()
