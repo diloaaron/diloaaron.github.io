@@ -597,11 +597,7 @@ master_clean <- master %>%
     vc_x_ipr     = VC_investment_pct * ipp_index_IP_transformed
   )
 
-############################################
-# 3. SAMPLE CONSTRUCTION (EXPLICIT & CLEAN)
-############################################
-
-# ---- Bank & Market sample ----
+# bank and mkt sample
 bm_sample <- master_clean %>%
   filter(
     !is.na(quality_index_100),
@@ -772,7 +768,7 @@ stargazer(
 ```
 #### Squeezing the data (now log transformations have been applied)
 
-panel data regressions to investigate how bank-based, market-based, and venture capital financial development interact with intellectual property protection to influence patent quality and quantity. The methodology uses two-way fixed effects models with country and year controls, clustering standard errors by country. All continuous variables are log-transformed, interaction terms capture how IP protection moderates financial development effects. Three separate models test each financial system type, controlling for GDP per capita, trade openness, R&D expenditure, and tertiary education. 
+This R script runs panel data regressions to investigate how bank-based, market-based, and venture capital financial development interact with intellectual property protection to influence patent quality and quantity. The methodology uses two-way fixed effects models with country and year controls, clustering standard errors by country. All continuous variables are log-transformed, interaction terms capture how IP protection moderates financial development effects. Three separate models test each financial system type, controlling for GDP per capita, trade openness, R&D expenditure, and tertiary education 
 
 #### log transformations
 
@@ -1107,7 +1103,7 @@ stargazer(
 #### z-score standardization
 ```{r}
 # z score standardization
-# Same models but with standardized variables for effect size comparison
+# Same models but with standardized variables for effect size comparison, controls are just logged
 
 # Create standardized variables
 master_clean <- master_clean %>%
@@ -1335,6 +1331,49 @@ stargazer(
   ),
   align = TRUE
 )
+
+```
+
+```{r echo=FALSE , eval= FALSE}
+# Select key variables for correlation
+cor_vars <- master_clean %>%
+  select(
+    quality_index_100,
+    ln_patents,
+    ln_bank,
+    ln_market, 
+    ln_vc,
+    ipp_index_IP_transformed,
+    ln_gdp_pc,
+    ln_trade,
+    ln_rd,
+    ln_tertiary
+  ) %>%
+  na.omit()
+
+# Create correlation matrix
+
+if (!dir.exists("figures")) {
+  dir.create("figures")
+}
+
+cor_matrix <- cor(cor_vars)
+
+
+library(corrplot)
+corr_mtx <- png("figures/correlation_matrix.png", width = 10, height = 8, units = "in", res = 300)
+corrplot(cor_matrix, 
+         method = "color",
+         type = "upper",
+         tl.col = "black",
+         tl.srt = 45,
+         addCoef.col = "black",
+         number.cex = 0.7,
+         title = "Correlation Matrix of Key Variables",
+         mar = c(0,0,2,0))
+dev.off()
+
+corr_mtx
 
 ```
 

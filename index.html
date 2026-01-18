@@ -3433,7 +3433,7 @@ display: none;
 <p>the preliminary results are currently hidden for neatness, as i’d imagine the final R script will more closely resemble the ones below. I can make them reappear at any time</p>
 <section id="squeezing-the-data-now-log-transformations-have-been-applied" class="level4" data-number="0.3.1">
 <h4 data-number="0.3.1" class="anchored" data-anchor-id="squeezing-the-data-now-log-transformations-have-been-applied"><span class="header-section-number">0.3.1</span> Squeezing the data (now log transformations have been applied)</h4>
-<p>panel data regressions to investigate how bank-based, market-based, and venture capital financial development interact with intellectual property protection to influence patent quality and quantity. The methodology uses two-way fixed effects models with country and year controls, clustering standard errors by country. All continuous variables are log-transformed, interaction terms capture how IP protection moderates financial development effects. Three separate models test each financial system type, controlling for GDP per capita, trade openness, R&amp;D expenditure, and tertiary education.</p>
+<p>This R script runs panel data regressions to investigate how bank-based, market-based, and venture capital financial development interact with intellectual property protection to influence patent quality and quantity. The methodology uses two-way fixed effects models with country and year controls, clustering standard errors by country. All continuous variables are log-transformed, interaction terms capture how IP protection moderates financial development effects. Three separate models test each financial system type, controlling for GDP per capita, trade openness, R&amp;D expenditure, and tertiary education</p>
 </section>
 <section id="log-transformations" class="level4" data-number="0.3.2">
 <h4 data-number="0.3.2" class="anchored" data-anchor-id="log-transformations"><span class="header-section-number">0.3.2</span> log transformations</h4>
@@ -3866,7 +3866,7 @@ Note:                                                                           
 <details open class="code-fold">
 <summary>Show code</summary>
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="co"># z score standardization</span></span>
-<span id="cb8-2"><a href="#cb8-2"></a><span class="co"># Same models but with standardized variables for effect size comparison</span></span>
+<span id="cb8-2"><a href="#cb8-2"></a><span class="co"># Same models but with standardized variables for effect size comparison, controls are just logged</span></span>
 <span id="cb8-3"><a href="#cb8-3"></a></span>
 <span id="cb8-4"><a href="#cb8-4"></a><span class="co"># Create standardized variables</span></span>
 <span id="cb8-5"><a href="#cb8-5"></a>master_clean <span class="ot">&lt;-</span> master_clean <span class="sc">%&gt;%</span></span>
