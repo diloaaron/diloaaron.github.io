@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Aaron DiLorenzo">
-<meta name="dcterms.date" content="2024-01-17">
+<meta name="dcterms.date" content="2024-01-19">
 
 <title>Thesis Data Work</title>
 <style>
@@ -3097,14 +3097,21 @@ display: none;
    
   <ul>
   <li><a href="#merged-and-transformed-pqi-data" id="toc-merged-and-transformed-pqi-data" class="nav-link active" data-scroll-target="#merged-and-transformed-pqi-data"><span class="header-section-number">0.1</span> Merged and Transformed PQI Data</a></li>
-  <li><a href="#combining-the-patent-quality-indicators-with-additional-variables-park-index-financial-development-measures-controls" id="toc-combining-the-patent-quality-indicators-with-additional-variables-park-index-financial-development-measures-controls" class="nav-link" data-scroll-target="#combining-the-patent-quality-indicators-with-additional-variables-park-index-financial-development-measures-controls"><span class="header-section-number">0.2</span> Combining the Patent Quality Indicators with Additional Variables (Park Index, Financial Development Measures, &amp; Controls)</a></li>
+  <li><a href="#combining-the-patent-quality-indicators-with-additional-variables-park-index-financial-development-measures-controls" id="toc-combining-the-patent-quality-indicators-with-additional-variables-park-index-financial-development-measures-controls" class="nav-link" data-scroll-target="#combining-the-patent-quality-indicators-with-additional-variables-park-index-financial-development-measures-controls"><span class="header-section-number">0.2</span> Combining the Patent Quality Indicators with Additional Variables (Park Index, Financial Development Measures, &amp; Controls)</a>
+  <ul>
+  <li><a href="#apply-transformations" id="toc-apply-transformations" class="nav-link" data-scroll-target="#apply-transformations"><span class="header-section-number">0.2.1</span> apply transformations</a></li>
+  </ul></li>
   <li><a href="#executing-the-analysis" id="toc-executing-the-analysis" class="nav-link" data-scroll-target="#executing-the-analysis"><span class="header-section-number">0.3</span> Executing the Analysis</a>
   <ul>
-  <li><a href="#squeezing-the-data-now-log-transformations-have-been-applied" id="toc-squeezing-the-data-now-log-transformations-have-been-applied" class="nav-link" data-scroll-target="#squeezing-the-data-now-log-transformations-have-been-applied"><span class="header-section-number">0.3.1</span> Squeezing the data (now log transformations have been applied)</a></li>
-  <li><a href="#log-transformations" id="toc-log-transformations" class="nav-link" data-scroll-target="#log-transformations"><span class="header-section-number">0.3.2</span> log transformations</a></li>
-  <li><a href="#z-score-standardization" id="toc-z-score-standardization" class="nav-link" data-scroll-target="#z-score-standardization"><span class="header-section-number">0.3.3</span> z-score standardization</a></li>
+  <li><a href="#closer-look-at-the-samples" id="toc-closer-look-at-the-samples" class="nav-link" data-scroll-target="#closer-look-at-the-samples"><span class="header-section-number">0.3.1</span> closer look at the samples</a></li>
   </ul></li>
-  <li><a href="#variable-glossary" id="toc-variable-glossary" class="nav-link" data-scroll-target="#variable-glossary"><span class="header-section-number">0.4</span> Variable Glossary</a></li>
+  <li><a href="#ignore-everything-below-this" id="toc-ignore-everything-below-this" class="nav-link" data-scroll-target="#ignore-everything-below-this"><span class="header-section-number">0.4</span> ignore everything below this</a>
+  <ul>
+  <li><a href="#squeezing-the-data-now-log-transformations-have-been-applied" id="toc-squeezing-the-data-now-log-transformations-have-been-applied" class="nav-link" data-scroll-target="#squeezing-the-data-now-log-transformations-have-been-applied"><span class="header-section-number">0.4.1</span> Squeezing the data (now log transformations have been applied)</a></li>
+  <li><a href="#log-transformations" id="toc-log-transformations" class="nav-link" data-scroll-target="#log-transformations"><span class="header-section-number">0.4.2</span> log transformations</a></li>
+  <li><a href="#z-score-standardization" id="toc-z-score-standardization" class="nav-link" data-scroll-target="#z-score-standardization"><span class="header-section-number">0.4.3</span> z-score standardization</a></li>
+  </ul></li>
+  <li><a href="#variable-glossary" id="toc-variable-glossary" class="nav-link" data-scroll-target="#variable-glossary"><span class="header-section-number">0.5</span> Variable Glossary</a></li>
   </ul>
 </nav>
 </div>
@@ -3129,7 +3136,7 @@ display: none;
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">January 17, 2024</p>
+      <p class="date">January 19, 2024</p>
     </div>
   </div>
   
@@ -3368,828 +3375,589 @@ display: none;
 </section>
 <section id="combining-the-patent-quality-indicators-with-additional-variables-park-index-financial-development-measures-controls" class="level3" data-number="0.2">
 <h3 data-number="0.2" class="anchored" data-anchor-id="combining-the-patent-quality-indicators-with-additional-variables-park-index-financial-development-measures-controls"><span class="header-section-number">0.2</span> Combining the Patent Quality Indicators with Additional Variables (Park Index, Financial Development Measures, &amp; Controls)</h3>
-<p>This python script merges the transformed PQI data with the Park Index of intellectual property right protections (5-year fill interpolation), measures of financial development, and control variables.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1"></a></span>
-<span id="cb2-2"><a href="#cb2-2"></a><span class="co">&#39;&#39;&#39;</span></span>
-<span id="cb2-3"><a href="#cb2-3"></a><span class="co">Master Panel Script - combines financial development data, ipr data, quality data, and controls</span></span>
-<span id="cb2-4"><a href="#cb2-4"></a><span class="co">&#39;&#39;&#39;</span></span>
-<span id="cb2-5"><a href="#cb2-5"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb2-6"><a href="#cb2-6"></a><span class="im">import</span> os</span>
-<span id="cb2-7"><a href="#cb2-7"></a></span>
-<span id="cb2-8"><a href="#cb2-8"></a><span class="co"># Set directory</span></span>
-<span id="cb2-9"><a href="#cb2-9"></a>data_dir <span class="op">=</span> <span class="st">&quot;/Users/aarondilorenzo/Desktop/DATATHES/FINAL WORKING DATA&quot;</span></span>
-<span id="cb2-10"><a href="#cb2-10"></a></span>
-<span id="cb2-11"><a href="#cb2-11"></a>files <span class="op">=</span> {</span>
-<span id="cb2-12"><a href="#cb2-12"></a>    <span class="st">&quot;quality&quot;</span>: <span class="st">&quot;quality_final.csv&quot;</span>,</span>
-<span id="cb2-13"><a href="#cb2-13"></a>    <span class="st">&quot;vc&quot;</span>: <span class="st">&quot;VC_final.csv&quot;</span>,</span>
-<span id="cb2-14"><a href="#cb2-14"></a>    <span class="st">&quot;park&quot;</span>: <span class="st">&quot;Park_final.csv&quot;</span>,</span>
-<span id="cb2-15"><a href="#cb2-15"></a>    <span class="st">&quot;controls&quot;</span>: <span class="st">&quot;Controls_final.csv&quot;</span>,</span>
-<span id="cb2-16"><a href="#cb2-16"></a>    <span class="st">&quot;finance&quot;</span>: <span class="st">&quot;FD_Final.csv&quot;</span>,</span>
-<span id="cb2-17"><a href="#cb2-17"></a>    <span class="st">&quot;counts&quot;</span>: <span class="st">&quot;Counts_res_final.csv&quot;</span></span>
-<span id="cb2-18"><a href="#cb2-18"></a>}</span>
-<span id="cb2-19"><a href="#cb2-19"></a></span>
-<span id="cb2-20"><a href="#cb2-20"></a>dfs <span class="op">=</span> {}</span>
-<span id="cb2-21"><a href="#cb2-21"></a><span class="cf">for</span> key, fname <span class="kw">in</span> files.items():</span>
-<span id="cb2-22"><a href="#cb2-22"></a>    path <span class="op">=</span> os.path.join(data_dir, fname)</span>
-<span id="cb2-23"><a href="#cb2-23"></a>    <span class="cf">try</span>:</span>
-<span id="cb2-24"><a href="#cb2-24"></a>        df <span class="op">=</span> pd.read_csv(path)</span>
-<span id="cb2-25"><a href="#cb2-25"></a></span>
-<span id="cb2-26"><a href="#cb2-26"></a>        <span class="co"># Standardize column names</span></span>
-<span id="cb2-27"><a href="#cb2-27"></a>        <span class="cf">for</span> col <span class="kw">in</span> df.columns:</span>
-<span id="cb2-28"><a href="#cb2-28"></a>            <span class="cf">if</span> col.lower() <span class="kw">in</span> [<span class="st">&quot;iso3&quot;</span>, <span class="st">&quot;iso3c&quot;</span>, <span class="st">&quot;country_code&quot;</span>]:</span>
-<span id="cb2-29"><a href="#cb2-29"></a>                df <span class="op">=</span> df.rename(columns<span class="op">=</span>{col: <span class="st">&quot;iso3c&quot;</span>})</span>
-<span id="cb2-30"><a href="#cb2-30"></a>            <span class="cf">if</span> col.lower() <span class="kw">in</span> [<span class="st">&quot;country&quot;</span>, <span class="st">&quot;country name&quot;</span>]:</span>
-<span id="cb2-31"><a href="#cb2-31"></a>                df <span class="op">=</span> df.rename(columns<span class="op">=</span>{col: <span class="st">&quot;country_name&quot;</span>})</span>
-<span id="cb2-32"><a href="#cb2-32"></a>        cols <span class="op">=</span> [c <span class="cf">for</span> c <span class="kw">in</span> df.columns <span class="cf">if</span> c <span class="op">!=</span> <span class="st">&quot;country_name&quot;</span>]</span>
-<span id="cb2-33"><a href="#cb2-33"></a>        df <span class="op">=</span> df[[<span class="st">&quot;iso3c&quot;</span>, <span class="st">&quot;year&quot;</span>, <span class="st">&quot;country_name&quot;</span>] <span class="op">+</span> [c <span class="cf">for</span> c <span class="kw">in</span> cols <span class="cf">if</span> c <span class="kw">not</span> <span class="kw">in</span> [<span class="st">&quot;iso3c&quot;</span>, <span class="st">&quot;year&quot;</span>]]]</span>
+<div class="cell">
+<details open class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="fu">library</span>(data.table)</span>
+<span id="cb2-3"><a href="#cb2-3"></a></span>
+<span id="cb2-4"><a href="#cb2-4"></a><span class="fu">options</span>(<span class="at">dplyr.summarise.inform =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb2-5"><a href="#cb2-5"></a></span>
+<span id="cb2-6"><a href="#cb2-6"></a>data_dir <span class="ot">&lt;-</span> <span class="st">&quot;data&quot;</span></span>
+<span id="cb2-7"><a href="#cb2-7"></a>out_file <span class="ot">&lt;-</span> <span class="fu">file.path</span>(data_dir, <span class="st">&quot;monarch_panel_raw.csv&quot;</span>)</span>
+<span id="cb2-8"><a href="#cb2-8"></a></span>
+<span id="cb2-9"><a href="#cb2-9"></a><span class="co"># load the datasets</span></span>
+<span id="cb2-10"><a href="#cb2-10"></a>quality  <span class="ot">&lt;-</span> <span class="fu">fread</span>(<span class="fu">file.path</span>(data_dir, <span class="st">&quot;quality_final.csv&quot;</span>))</span>
+<span id="cb2-11"><a href="#cb2-11"></a>vc       <span class="ot">&lt;-</span> <span class="fu">fread</span>(<span class="fu">file.path</span>(data_dir, <span class="st">&quot;VC_final.csv&quot;</span>))</span>
+<span id="cb2-12"><a href="#cb2-12"></a>park     <span class="ot">&lt;-</span> <span class="fu">fread</span>(<span class="fu">file.path</span>(data_dir, <span class="st">&quot;Park_final.csv&quot;</span>))</span>
+<span id="cb2-13"><a href="#cb2-13"></a>controls <span class="ot">&lt;-</span> <span class="fu">fread</span>(<span class="fu">file.path</span>(data_dir, <span class="st">&quot;Controls_final.csv&quot;</span>))</span>
+<span id="cb2-14"><a href="#cb2-14"></a>finance  <span class="ot">&lt;-</span> <span class="fu">fread</span>(<span class="fu">file.path</span>(data_dir, <span class="st">&quot;FD_Final.csv&quot;</span>))</span>
+<span id="cb2-15"><a href="#cb2-15"></a>counts   <span class="ot">&lt;-</span> <span class="fu">fread</span>(<span class="fu">file.path</span>(data_dir, <span class="st">&quot;counts_res_final.csv&quot;</span>))</span>
+<span id="cb2-16"><a href="#cb2-16"></a></span>
+<span id="cb2-17"><a href="#cb2-17"></a></span>
+<span id="cb2-18"><a href="#cb2-18"></a></span>
+<span id="cb2-19"><a href="#cb2-19"></a><span class="fu">stopifnot</span>(<span class="sc">!</span><span class="fu">anyDuplicated</span>(quality[, .(iso3c, year)]))</span>
+<span id="cb2-20"><a href="#cb2-20"></a></span>
+<span id="cb2-21"><a href="#cb2-21"></a>monarch <span class="ot">&lt;-</span> quality</span>
+<span id="cb2-22"><a href="#cb2-22"></a></span>
+<span id="cb2-23"><a href="#cb2-23"></a><span class="co">#drop dupe columns</span></span>
+<span id="cb2-24"><a href="#cb2-24"></a></span>
+<span id="cb2-25"><a href="#cb2-25"></a>vc <span class="ot">&lt;-</span> vc <span class="sc">%&gt;%</span></span>
+<span id="cb2-26"><a href="#cb2-26"></a>  <span class="fu">select</span>(iso3c, year, VC_investment)</span>
+<span id="cb2-27"><a href="#cb2-27"></a></span>
+<span id="cb2-28"><a href="#cb2-28"></a><span class="fu">stopifnot</span>(<span class="sc">!</span><span class="fu">anyDuplicated</span>(vc[, .(iso3c, year)]))</span>
+<span id="cb2-29"><a href="#cb2-29"></a></span>
+<span id="cb2-30"><a href="#cb2-30"></a>monarch <span class="ot">&lt;-</span> monarch <span class="sc">%&gt;%</span></span>
+<span id="cb2-31"><a href="#cb2-31"></a>  <span class="fu">left_join</span>(vc, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;iso3c&quot;</span>, <span class="st">&quot;year&quot;</span>))</span>
+<span id="cb2-32"><a href="#cb2-32"></a></span>
+<span id="cb2-33"><a href="#cb2-33"></a><span class="co">#drop dupe columns</span></span>
 <span id="cb2-34"><a href="#cb2-34"></a></span>
-<span id="cb2-35"><a href="#cb2-35"></a>        </span>
-<span id="cb2-36"><a href="#cb2-36"></a>        <span class="cf">if</span> <span class="st">&quot;year&quot;</span> <span class="kw">in</span> df.columns:</span>
-<span id="cb2-37"><a href="#cb2-37"></a>            df[<span class="st">&quot;year&quot;</span>] <span class="op">=</span> df[<span class="st">&quot;year&quot;</span>].astype(<span class="bu">int</span>)</span>
+<span id="cb2-35"><a href="#cb2-35"></a>park <span class="ot">&lt;-</span> park <span class="sc">%&gt;%</span></span>
+<span id="cb2-36"><a href="#cb2-36"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(iso3c), iso3c <span class="sc">!=</span> <span class="st">&quot;&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb2-37"><a href="#cb2-37"></a>  <span class="fu">select</span>(iso3c, year, ipp_index_IP_transformed)</span>
 <span id="cb2-38"><a href="#cb2-38"></a></span>
-<span id="cb2-39"><a href="#cb2-39"></a>        dfs[key] <span class="op">=</span> df</span>
+<span id="cb2-39"><a href="#cb2-39"></a><span class="fu">stopifnot</span>(<span class="sc">!</span><span class="fu">anyDuplicated</span>(park[, .(iso3c, year)]))</span>
 <span id="cb2-40"><a href="#cb2-40"></a></span>
-<span id="cb2-41"><a href="#cb2-41"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
-<span id="cb2-42"><a href="#cb2-42"></a></span>
-<span id="cb2-43"><a href="#cb2-43"></a><span class="co"># Merge</span></span>
-<span id="cb2-44"><a href="#cb2-44"></a>master <span class="op">=</span> <span class="va">None</span></span>
-<span id="cb2-45"><a href="#cb2-45"></a><span class="cf">for</span> name, df <span class="kw">in</span> dfs.items():</span>
-<span id="cb2-46"><a href="#cb2-46"></a>    <span class="cf">if</span> master <span class="kw">is</span> <span class="va">None</span>:</span>
-<span id="cb2-47"><a href="#cb2-47"></a>        master <span class="op">=</span> df</span>
-<span id="cb2-48"><a href="#cb2-48"></a>    <span class="cf">else</span>:</span>
-<span id="cb2-49"><a href="#cb2-49"></a>        <span class="cf">if</span> <span class="st">&quot;country_name&quot;</span> <span class="kw">in</span> master.columns <span class="kw">and</span> <span class="st">&quot;country_name&quot;</span> <span class="kw">in</span> df.columns:</span>
-<span id="cb2-50"><a href="#cb2-50"></a>            df <span class="op">=</span> df.drop(columns<span class="op">=</span>[<span class="st">&quot;country_name&quot;</span>])</span>
-<span id="cb2-51"><a href="#cb2-51"></a>        master <span class="op">=</span> pd.merge(master, df, on<span class="op">=</span>[<span class="st">&quot;iso3c&quot;</span>, <span class="st">&quot;year&quot;</span>], how<span class="op">=</span><span class="st">&quot;outer&quot;</span>)</span>
-<span id="cb2-52"><a href="#cb2-52"></a></span>
-<span id="cb2-53"><a href="#cb2-53"></a><span class="co"># sort and organize</span></span>
-<span id="cb2-54"><a href="#cb2-54"></a>master <span class="op">=</span> master.sort_values([<span class="st">&quot;iso3c&quot;</span>, <span class="st">&quot;year&quot;</span>]).reset_index(drop<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb2-55"><a href="#cb2-55"></a></span>
-<span id="cb2-56"><a href="#cb2-56"></a><span class="co"># save</span></span>
-<span id="cb2-57"><a href="#cb2-57"></a>out_path <span class="op">=</span> os.path.join(data_dir, <span class="st">&quot;Master_Panel.csv&quot;</span>)</span>
-<span id="cb2-58"><a href="#cb2-58"></a>master.to_csv(out_path, index<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-41"><a href="#cb2-41"></a>monarch <span class="ot">&lt;-</span> monarch <span class="sc">%&gt;%</span></span>
+<span id="cb2-42"><a href="#cb2-42"></a>  <span class="fu">left_join</span>(park, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;iso3c&quot;</span>, <span class="st">&quot;year&quot;</span>))</span>
+<span id="cb2-43"><a href="#cb2-43"></a></span>
+<span id="cb2-44"><a href="#cb2-44"></a><span class="co">#clean the controls</span></span>
+<span id="cb2-45"><a href="#cb2-45"></a></span>
+<span id="cb2-46"><a href="#cb2-46"></a>controls <span class="ot">&lt;-</span> controls <span class="sc">%&gt;%</span></span>
+<span id="cb2-47"><a href="#cb2-47"></a>  <span class="fu">select</span>(</span>
+<span id="cb2-48"><a href="#cb2-48"></a>    iso3c, year,</span>
+<span id="cb2-49"><a href="#cb2-49"></a>    gdp_pc_const2015usd,</span>
+<span id="cb2-50"><a href="#cb2-50"></a>    trade_percent_gdp,</span>
+<span id="cb2-51"><a href="#cb2-51"></a>    rd_expenditure_percent_gdp,</span>
+<span id="cb2-52"><a href="#cb2-52"></a>    tertiary_enrollment_percent,</span>
+<span id="cb2-53"><a href="#cb2-53"></a>    researchers_per_million,</span>
+<span id="cb2-54"><a href="#cb2-54"></a>    population_total</span>
+<span id="cb2-55"><a href="#cb2-55"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb2-56"><a href="#cb2-56"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(</span>
+<span id="cb2-57"><a href="#cb2-57"></a>    <span class="sc">-</span><span class="fu">c</span>(iso3c, year),</span>
+<span id="cb2-58"><a href="#cb2-58"></a>    <span class="sc">~</span> <span class="fu">as.numeric</span>(<span class="fu">na_if</span>(.x, <span class="st">&quot;..&quot;</span>))</span>
+<span id="cb2-59"><a href="#cb2-59"></a>  ))</span>
+<span id="cb2-60"><a href="#cb2-60"></a></span>
+<span id="cb2-61"><a href="#cb2-61"></a><span class="fu">stopifnot</span>(<span class="sc">!</span><span class="fu">anyDuplicated</span>(controls[, .(iso3c, year)]))</span>
+<span id="cb2-62"><a href="#cb2-62"></a></span>
+<span id="cb2-63"><a href="#cb2-63"></a>monarch <span class="ot">&lt;-</span> monarch <span class="sc">%&gt;%</span></span>
+<span id="cb2-64"><a href="#cb2-64"></a>  <span class="fu">left_join</span>(controls, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;iso3c&quot;</span>, <span class="st">&quot;year&quot;</span>))</span>
+<span id="cb2-65"><a href="#cb2-65"></a></span>
+<span id="cb2-66"><a href="#cb2-66"></a><span class="co">#clean fd variables</span></span>
+<span id="cb2-67"><a href="#cb2-67"></a></span>
+<span id="cb2-68"><a href="#cb2-68"></a>finance <span class="ot">&lt;-</span> finance <span class="sc">%&gt;%</span></span>
+<span id="cb2-69"><a href="#cb2-69"></a>  <span class="fu">select</span>(</span>
+<span id="cb2-70"><a href="#cb2-70"></a>    iso3c, year,</span>
+<span id="cb2-71"><a href="#cb2-71"></a>    bank_credit_gdp,</span>
+<span id="cb2-72"><a href="#cb2-72"></a>    market_cap_gdp</span>
+<span id="cb2-73"><a href="#cb2-73"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb2-74"><a href="#cb2-74"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(</span>
+<span id="cb2-75"><a href="#cb2-75"></a>    <span class="sc">-</span><span class="fu">c</span>(iso3c, year),</span>
+<span id="cb2-76"><a href="#cb2-76"></a>    <span class="sc">~</span> <span class="fu">as.numeric</span>(<span class="fu">na_if</span>(.x, <span class="st">&quot;..&quot;</span>))</span>
+<span id="cb2-77"><a href="#cb2-77"></a>  ))</span>
+<span id="cb2-78"><a href="#cb2-78"></a></span>
+<span id="cb2-79"><a href="#cb2-79"></a><span class="fu">stopifnot</span>(<span class="sc">!</span><span class="fu">anyDuplicated</span>(finance[, .(iso3c, year)]))</span>
+<span id="cb2-80"><a href="#cb2-80"></a></span>
+<span id="cb2-81"><a href="#cb2-81"></a>monarch <span class="ot">&lt;-</span> monarch <span class="sc">%&gt;%</span></span>
+<span id="cb2-82"><a href="#cb2-82"></a>  <span class="fu">left_join</span>(finance, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;iso3c&quot;</span>, <span class="st">&quot;year&quot;</span>))</span>
+<span id="cb2-83"><a href="#cb2-83"></a></span>
+<span id="cb2-84"><a href="#cb2-84"></a><span class="co">#ensure counts are good</span></span>
+<span id="cb2-85"><a href="#cb2-85"></a></span>
+<span id="cb2-86"><a href="#cb2-86"></a>counts <span class="ot">&lt;-</span> counts <span class="sc">%&gt;%</span></span>
+<span id="cb2-87"><a href="#cb2-87"></a>  <span class="fu">select</span>(</span>
+<span id="cb2-88"><a href="#cb2-88"></a>    iso3c, year,</span>
+<span id="cb2-89"><a href="#cb2-89"></a>    patent_applications_residents</span>
+<span id="cb2-90"><a href="#cb2-90"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb2-91"><a href="#cb2-91"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(</span>
+<span id="cb2-92"><a href="#cb2-92"></a>    <span class="sc">-</span><span class="fu">c</span>(iso3c, year),</span>
+<span id="cb2-93"><a href="#cb2-93"></a>    <span class="sc">~</span> <span class="fu">as.numeric</span>(<span class="fu">na_if</span>(.x, <span class="st">&quot;..&quot;</span>))</span>
+<span id="cb2-94"><a href="#cb2-94"></a>  ))</span>
+<span id="cb2-95"><a href="#cb2-95"></a></span>
+<span id="cb2-96"><a href="#cb2-96"></a><span class="fu">stopifnot</span>(<span class="sc">!</span><span class="fu">anyDuplicated</span>(counts[, .(iso3c, year)]))</span>
+<span id="cb2-97"><a href="#cb2-97"></a></span>
+<span id="cb2-98"><a href="#cb2-98"></a>monarch <span class="ot">&lt;-</span> monarch <span class="sc">%&gt;%</span></span>
+<span id="cb2-99"><a href="#cb2-99"></a>  <span class="fu">left_join</span>(counts, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;iso3c&quot;</span>, <span class="st">&quot;year&quot;</span>))</span>
+<span id="cb2-100"><a href="#cb2-100"></a></span>
+<span id="cb2-101"><a href="#cb2-101"></a><span class="co">#double make sure no duplicates</span></span>
+<span id="cb2-102"><a href="#cb2-102"></a></span>
+<span id="cb2-103"><a href="#cb2-103"></a><span class="co"># One row per country-year</span></span>
+<span id="cb2-104"><a href="#cb2-104"></a><span class="fu">stopifnot</span>(<span class="sc">!</span><span class="fu">anyDuplicated</span>(monarch[, .(iso3c, year)]))</span>
+<span id="cb2-105"><a href="#cb2-105"></a></span>
+<span id="cb2-106"><a href="#cb2-106"></a><span class="co"># No missing keys (iso3c and years)</span></span>
+<span id="cb2-107"><a href="#cb2-107"></a><span class="fu">stopifnot</span>(<span class="sc">!</span><span class="fu">any</span>(<span class="fu">is.na</span>(monarch<span class="sc">$</span>iso3c)))</span>
+<span id="cb2-108"><a href="#cb2-108"></a><span class="fu">stopifnot</span>(<span class="sc">!</span><span class="fu">any</span>(<span class="fu">is.na</span>(monarch<span class="sc">$</span>year)))</span>
+<span id="cb2-109"><a href="#cb2-109"></a></span>
+<span id="cb2-110"><a href="#cb2-110"></a><span class="co">#save the clean data</span></span>
+<span id="cb2-111"><a href="#cb2-111"></a></span>
+<span id="cb2-112"><a href="#cb2-112"></a><span class="fu">fwrite</span>(monarch, out_file)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>rows: 2783 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>countries: 71 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>years: 47 </code></pre>
+</div>
+</div>
+<section id="apply-transformations" class="level4" data-number="0.2.1">
+<h4 data-number="0.2.1" class="anchored" data-anchor-id="apply-transformations"><span class="header-section-number">0.2.1</span> apply transformations</h4>
+<div class="cell">
+<details open class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="fu">rm</span>(<span class="at">list =</span> <span class="fu">ls</span>())</span>
+<span id="cb6-2"><a href="#cb6-2"></a></span>
+<span id="cb6-3"><a href="#cb6-3"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb6-4"><a href="#cb6-4"></a><span class="fu">library</span>(data.table)</span>
+<span id="cb6-5"><a href="#cb6-5"></a></span>
+<span id="cb6-6"><a href="#cb6-6"></a><span class="fu">options</span>(<span class="at">dplyr.summarise.inform =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb6-7"><a href="#cb6-7"></a></span>
+<span id="cb6-8"><a href="#cb6-8"></a></span>
+<span id="cb6-9"><a href="#cb6-9"></a></span>
+<span id="cb6-10"><a href="#cb6-10"></a>monarch <span class="ot">&lt;-</span> <span class="fu">fread</span>(<span class="st">&quot;data/monarch_panel_raw.csv&quot;</span>)</span>
+<span id="cb6-11"><a href="#cb6-11"></a></span>
+<span id="cb6-12"><a href="#cb6-12"></a></span>
+<span id="cb6-13"><a href="#cb6-13"></a></span>
+<span id="cb6-14"><a href="#cb6-14"></a>monarch_t <span class="ot">&lt;-</span> monarch <span class="sc">%&gt;%</span></span>
+<span id="cb6-15"><a href="#cb6-15"></a>  </span>
+<span id="cb6-16"><a href="#cb6-16"></a>  <span class="co"># normalise counts based on researchers</span></span>
+<span id="cb6-17"><a href="#cb6-17"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb6-18"><a href="#cb6-18"></a>    <span class="at">researchers_total =</span> researchers_per_million <span class="sc">*</span> (population_total <span class="sc">/</span> <span class="fl">1e6</span>),</span>
+<span id="cb6-19"><a href="#cb6-19"></a>    <span class="at">patents_per_1000_researchers =</span></span>
+<span id="cb6-20"><a href="#cb6-20"></a>      (patent_applications_residents <span class="sc">/</span> researchers_total) <span class="sc">*</span> <span class="dv">1000</span>,</span>
+<span id="cb6-21"><a href="#cb6-21"></a>    <span class="at">patents_per_1000_researchers =</span></span>
+<span id="cb6-22"><a href="#cb6-22"></a>      <span class="fu">ifelse</span>(</span>
+<span id="cb6-23"><a href="#cb6-23"></a>        <span class="fu">is.infinite</span>(patents_per_1000_researchers) <span class="sc">|</span></span>
+<span id="cb6-24"><a href="#cb6-24"></a>          patents_per_1000_researchers <span class="sc">&lt;</span> <span class="dv">0</span>,</span>
+<span id="cb6-25"><a href="#cb6-25"></a>        <span class="cn">NA</span>,</span>
+<span id="cb6-26"><a href="#cb6-26"></a>        patents_per_1000_researchers</span>
+<span id="cb6-27"><a href="#cb6-27"></a>      )</span>
+<span id="cb6-28"><a href="#cb6-28"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb6-29"><a href="#cb6-29"></a>  </span>
+<span id="cb6-30"><a href="#cb6-30"></a>  <span class="co">#scale quality for interpretability</span></span>
+<span id="cb6-31"><a href="#cb6-31"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb6-32"><a href="#cb6-32"></a>    <span class="at">quality_index_100 =</span> avg_quality_index_4 <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb6-33"><a href="#cb6-33"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb6-34"><a href="#cb6-34"></a>  </span>
+<span id="cb6-35"><a href="#cb6-35"></a>  <span class="co">#log variables</span></span>
+<span id="cb6-36"><a href="#cb6-36"></a>  </span>
+<span id="cb6-37"><a href="#cb6-37"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb6-38"><a href="#cb6-38"></a>    <span class="at">ln_patents =</span> <span class="fu">log</span>(patents_per_1000_researchers <span class="sc">+</span> <span class="dv">1</span>),</span>
+<span id="cb6-39"><a href="#cb6-39"></a>    <span class="at">ln_gdp_pc  =</span> <span class="fu">log</span>(gdp_pc_const2015usd <span class="sc">+</span> <span class="dv">1</span>),</span>
+<span id="cb6-40"><a href="#cb6-40"></a>    <span class="at">ln_bank    =</span> <span class="fu">log</span>(bank_credit_gdp <span class="sc">+</span> <span class="dv">1</span>),</span>
+<span id="cb6-41"><a href="#cb6-41"></a>    <span class="at">ln_market =</span> <span class="fu">log</span>(market_cap_gdp <span class="sc">+</span> <span class="dv">1</span>),</span>
+<span id="cb6-42"><a href="#cb6-42"></a>    <span class="at">ln_vc     =</span> <span class="fu">log</span>(VC_investment <span class="sc">+</span> <span class="dv">1</span>),</span>
+<span id="cb6-43"><a href="#cb6-43"></a>    <span class="at">ln_trade  =</span> <span class="fu">log</span>(trade_percent_gdp <span class="sc">+</span> <span class="dv">1</span>),</span>
+<span id="cb6-44"><a href="#cb6-44"></a>    <span class="at">ln_rd     =</span> <span class="fu">log</span>(rd_expenditure_percent_gdp <span class="sc">+</span> <span class="dv">1</span>),</span>
+<span id="cb6-45"><a href="#cb6-45"></a>    <span class="at">ln_tertiary =</span> <span class="fu">log</span>(tertiary_enrollment_percent <span class="sc">+</span> <span class="dv">1</span>)</span>
+<span id="cb6-46"><a href="#cb6-46"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb6-47"><a href="#cb6-47"></a>  </span>
+<span id="cb6-48"><a href="#cb6-48"></a>  <span class="co">#mean center the park index</span></span>
+<span id="cb6-49"><a href="#cb6-49"></a>  </span>
+<span id="cb6-50"><a href="#cb6-50"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb6-51"><a href="#cb6-51"></a>    <span class="at">ipr_c =</span> ipp_index_IP_transformed <span class="sc">-</span></span>
+<span id="cb6-52"><a href="#cb6-52"></a>      <span class="fu">mean</span>(ipp_index_IP_transformed, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb6-53"><a href="#cb6-53"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb6-54"><a href="#cb6-54"></a>  </span>
+<span id="cb6-55"><a href="#cb6-55"></a>  <span class="co">#interactions</span></span>
+<span id="cb6-56"><a href="#cb6-56"></a>  </span>
+<span id="cb6-57"><a href="#cb6-57"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb6-58"><a href="#cb6-58"></a>    <span class="at">ln_bank_x_ipr   =</span> ln_bank   <span class="sc">*</span> ipr_c,</span>
+<span id="cb6-59"><a href="#cb6-59"></a>    <span class="at">ln_market_x_ipr =</span> ln_market <span class="sc">*</span> ipr_c,</span>
+<span id="cb6-60"><a href="#cb6-60"></a>    <span class="at">ln_vc_x_ipr     =</span> ln_vc     <span class="sc">*</span> ipr_c</span>
+<span id="cb6-61"><a href="#cb6-61"></a>  )</span>
+<span id="cb6-62"><a href="#cb6-62"></a></span>
+<span id="cb6-63"><a href="#cb6-63"></a><span class="co">#save</span></span>
+<span id="cb6-64"><a href="#cb6-64"></a><span class="fu">fwrite</span>(monarch_t, <span class="st">&quot;data/monarch_panel_transformed.csv&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>rows: 2783 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>countries: 71 </code></pre>
+</div>
+</div>
+</section>
 </section>
 <section id="executing-the-analysis" class="level3" data-number="0.3">
 <h3 data-number="0.3" class="anchored" data-anchor-id="executing-the-analysis"><span class="header-section-number">0.3</span> Executing the Analysis</h3>
+<div class="cell">
+<details open class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="fu">rm</span>(<span class="at">list =</span> <span class="fu">ls</span>())</span>
+<span id="cb9-2"><a href="#cb9-2"></a></span>
+<span id="cb9-3"><a href="#cb9-3"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb9-4"><a href="#cb9-4"></a><span class="fu">library</span>(data.table)</span>
+<span id="cb9-5"><a href="#cb9-5"></a><span class="fu">library</span>(plm)</span>
+<span id="cb9-6"><a href="#cb9-6"></a><span class="fu">library</span>(stargazer)</span>
+<span id="cb9-7"><a href="#cb9-7"></a><span class="fu">library</span>(lmtest)</span>
+<span id="cb9-8"><a href="#cb9-8"></a><span class="fu">library</span>(sandwich)</span>
+<span id="cb9-9"><a href="#cb9-9"></a></span>
+<span id="cb9-10"><a href="#cb9-10"></a><span class="fu">options</span>(<span class="at">dplyr.summarise.inform =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb9-11"><a href="#cb9-11"></a></span>
+<span id="cb9-12"><a href="#cb9-12"></a><span class="co">#load data</span></span>
+<span id="cb9-13"><a href="#cb9-13"></a></span>
+<span id="cb9-14"><a href="#cb9-14"></a>df <span class="ot">&lt;-</span> <span class="fu">fread</span>(<span class="st">&quot;data/monarch_panel_transformed.csv&quot;</span>)</span>
+<span id="cb9-15"><a href="#cb9-15"></a></span>
+<span id="cb9-16"><a href="#cb9-16"></a><span class="co">#filter nas</span></span>
+<span id="cb9-17"><a href="#cb9-17"></a></span>
+<span id="cb9-18"><a href="#cb9-18"></a>base_df <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb9-19"><a href="#cb9-19"></a>  <span class="fu">filter</span>(</span>
+<span id="cb9-20"><a href="#cb9-20"></a>    <span class="sc">!</span><span class="fu">is.na</span>(quality_index_100),</span>
+<span id="cb9-21"><a href="#cb9-21"></a>    <span class="sc">!</span><span class="fu">is.na</span>(ln_patents),</span>
+<span id="cb9-22"><a href="#cb9-22"></a>    <span class="sc">!</span><span class="fu">is.na</span>(ipr_c),</span>
+<span id="cb9-23"><a href="#cb9-23"></a>    <span class="sc">!</span><span class="fu">is.na</span>(ln_gdp_pc)</span>
+<span id="cb9-24"><a href="#cb9-24"></a>  )</span>
+<span id="cb9-25"><a href="#cb9-25"></a></span>
+<span id="cb9-26"><a href="#cb9-26"></a><span class="co">#split the samples so vc coverage doesnt obliterate everything</span></span>
+<span id="cb9-27"><a href="#cb9-27"></a></span>
+<span id="cb9-28"><a href="#cb9-28"></a>bank_market <span class="ot">&lt;-</span> <span class="fu">pdata.frame</span>(</span>
+<span id="cb9-29"><a href="#cb9-29"></a>  base_df <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(ln_bank) <span class="sc">|</span> <span class="sc">!</span><span class="fu">is.na</span>(ln_market)),</span>
+<span id="cb9-30"><a href="#cb9-30"></a>  <span class="at">index =</span> <span class="fu">c</span>(<span class="st">&quot;iso3c&quot;</span>, <span class="st">&quot;year&quot;</span>)</span>
+<span id="cb9-31"><a href="#cb9-31"></a>)</span>
+<span id="cb9-32"><a href="#cb9-32"></a></span>
+<span id="cb9-33"><a href="#cb9-33"></a>vc_sample <span class="ot">&lt;-</span> <span class="fu">pdata.frame</span>(</span>
+<span id="cb9-34"><a href="#cb9-34"></a>  base_df <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(ln_vc)),</span>
+<span id="cb9-35"><a href="#cb9-35"></a>  <span class="at">index =</span> <span class="fu">c</span>(<span class="st">&quot;iso3c&quot;</span>, <span class="st">&quot;year&quot;</span>)</span>
+<span id="cb9-36"><a href="#cb9-36"></a>)</span>
+<span id="cb9-37"><a href="#cb9-37"></a></span>
+<span id="cb9-38"><a href="#cb9-38"></a><span class="co">#quality models</span></span>
+<span id="cb9-39"><a href="#cb9-39"></a></span>
+<span id="cb9-40"><a href="#cb9-40"></a>qual_bank <span class="ot">&lt;-</span> <span class="fu">plm</span>(</span>
+<span id="cb9-41"><a href="#cb9-41"></a>  quality_index_100 <span class="sc">~</span> ln_bank <span class="sc">+</span> ipr_c <span class="sc">+</span> ln_bank_x_ipr <span class="sc">+</span></span>
+<span id="cb9-42"><a href="#cb9-42"></a>    ln_gdp_pc <span class="sc">+</span> ln_trade <span class="sc">+</span> ln_rd <span class="sc">+</span> ln_tertiary,</span>
+<span id="cb9-43"><a href="#cb9-43"></a>  <span class="at">data =</span> bank_market,</span>
+<span id="cb9-44"><a href="#cb9-44"></a>  <span class="at">model =</span> <span class="st">&quot;within&quot;</span>,</span>
+<span id="cb9-45"><a href="#cb9-45"></a>  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span></span>
+<span id="cb9-46"><a href="#cb9-46"></a>)</span>
+<span id="cb9-47"><a href="#cb9-47"></a></span>
+<span id="cb9-48"><a href="#cb9-48"></a>qual_market <span class="ot">&lt;-</span> <span class="fu">plm</span>(</span>
+<span id="cb9-49"><a href="#cb9-49"></a>  quality_index_100 <span class="sc">~</span> ln_market <span class="sc">+</span> ipr_c <span class="sc">+</span> ln_market_x_ipr <span class="sc">+</span></span>
+<span id="cb9-50"><a href="#cb9-50"></a>    ln_gdp_pc <span class="sc">+</span> ln_trade <span class="sc">+</span> ln_rd <span class="sc">+</span> ln_tertiary,</span>
+<span id="cb9-51"><a href="#cb9-51"></a>  <span class="at">data =</span> bank_market,</span>
+<span id="cb9-52"><a href="#cb9-52"></a>  <span class="at">model =</span> <span class="st">&quot;within&quot;</span>,</span>
+<span id="cb9-53"><a href="#cb9-53"></a>  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span></span>
+<span id="cb9-54"><a href="#cb9-54"></a>)</span>
+<span id="cb9-55"><a href="#cb9-55"></a></span>
+<span id="cb9-56"><a href="#cb9-56"></a>qual_vc <span class="ot">&lt;-</span> <span class="fu">plm</span>(</span>
+<span id="cb9-57"><a href="#cb9-57"></a>  quality_index_100 <span class="sc">~</span> ln_vc <span class="sc">+</span> ipr_c <span class="sc">+</span> ln_vc_x_ipr <span class="sc">+</span></span>
+<span id="cb9-58"><a href="#cb9-58"></a>    ln_gdp_pc <span class="sc">+</span> ln_trade <span class="sc">+</span> ln_rd <span class="sc">+</span> ln_tertiary,</span>
+<span id="cb9-59"><a href="#cb9-59"></a>  <span class="at">data =</span> vc_sample,</span>
+<span id="cb9-60"><a href="#cb9-60"></a>  <span class="at">model =</span> <span class="st">&quot;within&quot;</span>,</span>
+<span id="cb9-61"><a href="#cb9-61"></a>  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span></span>
+<span id="cb9-62"><a href="#cb9-62"></a>)</span>
+<span id="cb9-63"><a href="#cb9-63"></a></span>
+<span id="cb9-64"><a href="#cb9-64"></a><span class="co">#patent quantity models</span></span>
+<span id="cb9-65"><a href="#cb9-65"></a></span>
+<span id="cb9-66"><a href="#cb9-66"></a>count_bank <span class="ot">&lt;-</span> <span class="fu">plm</span>(</span>
+<span id="cb9-67"><a href="#cb9-67"></a>  ln_patents <span class="sc">~</span> ln_bank <span class="sc">+</span> ipr_c <span class="sc">+</span> ln_bank_x_ipr <span class="sc">+</span></span>
+<span id="cb9-68"><a href="#cb9-68"></a>    ln_gdp_pc <span class="sc">+</span> ln_trade <span class="sc">+</span> ln_rd <span class="sc">+</span> ln_tertiary,</span>
+<span id="cb9-69"><a href="#cb9-69"></a>  <span class="at">data =</span> bank_market,</span>
+<span id="cb9-70"><a href="#cb9-70"></a>  <span class="at">model =</span> <span class="st">&quot;within&quot;</span>,</span>
+<span id="cb9-71"><a href="#cb9-71"></a>  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span></span>
+<span id="cb9-72"><a href="#cb9-72"></a>)</span>
+<span id="cb9-73"><a href="#cb9-73"></a></span>
+<span id="cb9-74"><a href="#cb9-74"></a>count_market <span class="ot">&lt;-</span> <span class="fu">plm</span>(</span>
+<span id="cb9-75"><a href="#cb9-75"></a>  ln_patents <span class="sc">~</span> ln_market <span class="sc">+</span> ipr_c <span class="sc">+</span> ln_market_x_ipr <span class="sc">+</span></span>
+<span id="cb9-76"><a href="#cb9-76"></a>    ln_gdp_pc <span class="sc">+</span> ln_trade <span class="sc">+</span> ln_rd <span class="sc">+</span> ln_tertiary,</span>
+<span id="cb9-77"><a href="#cb9-77"></a>  <span class="at">data =</span> bank_market,</span>
+<span id="cb9-78"><a href="#cb9-78"></a>  <span class="at">model =</span> <span class="st">&quot;within&quot;</span>,</span>
+<span id="cb9-79"><a href="#cb9-79"></a>  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span></span>
+<span id="cb9-80"><a href="#cb9-80"></a>)</span>
+<span id="cb9-81"><a href="#cb9-81"></a></span>
+<span id="cb9-82"><a href="#cb9-82"></a>count_vc <span class="ot">&lt;-</span> <span class="fu">plm</span>(</span>
+<span id="cb9-83"><a href="#cb9-83"></a>  ln_patents <span class="sc">~</span> ln_vc <span class="sc">+</span> ipr_c <span class="sc">+</span> ln_vc_x_ipr <span class="sc">+</span></span>
+<span id="cb9-84"><a href="#cb9-84"></a>    ln_gdp_pc <span class="sc">+</span> ln_trade <span class="sc">+</span> ln_rd <span class="sc">+</span> ln_tertiary,</span>
+<span id="cb9-85"><a href="#cb9-85"></a>  <span class="at">data =</span> vc_sample,</span>
+<span id="cb9-86"><a href="#cb9-86"></a>  <span class="at">model =</span> <span class="st">&quot;within&quot;</span>,</span>
+<span id="cb9-87"><a href="#cb9-87"></a>  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span></span>
+<span id="cb9-88"><a href="#cb9-88"></a>)</span>
+<span id="cb9-89"><a href="#cb9-89"></a></span>
+<span id="cb9-90"><a href="#cb9-90"></a><span class="co">#function that makes the clustered se</span></span>
+<span id="cb9-91"><a href="#cb9-91"></a>se <span class="ot">&lt;-</span> <span class="cf">function</span>(model) {</span>
+<span id="cb9-92"><a href="#cb9-92"></a>  <span class="fu">sqrt</span>(<span class="fu">diag</span>(<span class="fu">vcovHC</span>(model, <span class="at">type =</span> <span class="st">&quot;HC1&quot;</span>, <span class="at">cluster =</span> <span class="st">&quot;group&quot;</span>)))</span>
+<span id="cb9-93"><a href="#cb9-93"></a>}</span>
+<span id="cb9-94"><a href="#cb9-94"></a></span>
+<span id="cb9-95"><a href="#cb9-95"></a><span class="co">#patent quality table-</span></span>
+<span id="cb9-96"><a href="#cb9-96"></a></span>
+<span id="cb9-97"><a href="#cb9-97"></a><span class="fu">stargazer</span>(</span>
+<span id="cb9-98"><a href="#cb9-98"></a>  qual_bank, qual_market, qual_vc,</span>
+<span id="cb9-99"><a href="#cb9-99"></a>  <span class="at">type =</span> <span class="st">&quot;text&quot;</span>,</span>
+<span id="cb9-100"><a href="#cb9-100"></a>  <span class="at">title =</span> <span class="st">&quot;Financial Development, IP Protection, and Patent Quality&quot;</span>,</span>
+<span id="cb9-101"><a href="#cb9-101"></a>  <span class="at">dep.var.caption =</span> <span class="st">&quot;Dependent Variable: Patent Quality (0–100)&quot;</span>,</span>
+<span id="cb9-102"><a href="#cb9-102"></a>  <span class="at">column.labels =</span> <span class="fu">c</span>(<span class="st">&quot;Bank-Based&quot;</span>, <span class="st">&quot;Market-Based&quot;</span>, <span class="st">&quot;VC-Based&quot;</span>),</span>
+<span id="cb9-103"><a href="#cb9-103"></a>  <span class="at">se =</span> <span class="fu">list</span>(<span class="fu">se</span>(qual_bank), <span class="fu">se</span>(qual_market), <span class="fu">se</span>(qual_vc)),</span>
+<span id="cb9-104"><a href="#cb9-104"></a>  <span class="at">omit.stat =</span> <span class="fu">c</span>(<span class="st">&quot;ser&quot;</span>, <span class="st">&quot;f&quot;</span>),</span>
+<span id="cb9-105"><a href="#cb9-105"></a>  <span class="at">notes =</span> <span class="fu">c</span>(</span>
+<span id="cb9-106"><a href="#cb9-106"></a>    <span class="st">&quot;All models include country and year fixed effects.&quot;</span>,</span>
+<span id="cb9-107"><a href="#cb9-107"></a>    <span class="st">&quot;Standard errors clustered by country.&quot;</span>,</span>
+<span id="cb9-108"><a href="#cb9-108"></a>    <span class="st">&quot;* p&lt;0.1, ** p&lt;0.05, *** p&lt;0.01&quot;</span></span>
+<span id="cb9-109"><a href="#cb9-109"></a>  )</span>
+<span id="cb9-110"><a href="#cb9-110"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Financial Development, IP Protection, and Patent Quality
+====================================================================
+                     Dependent Variable: Patent Quality (0–100)     
+                ----------------------------------------------------
+                                 quality_index_100                  
+                    Bank-Based        Market-Based       VC-Based   
+                       (1)                (2)              (3)      
+--------------------------------------------------------------------
+ln_bank               -1.065                                        
+                     (1.095)                                        
+                                                                    
+ln_market                                0.630                      
+                                        (0.710)                     
+                                                                    
+ln_vc                                                     8.183     
+                                                         (10.815)   
+                                                                    
+ipr_c                 4.246             4.601***          1.279     
+                     (3.393)            (1.274)          (1.246)    
+                                                                    
+ln_bank_x_ipr         -0.971                                        
+                     (0.822)                                        
+                                                                    
+ln_market_x_ipr                        -1.327***                    
+                                        (0.481)                     
+                                                                    
+ln_vc_x_ipr                                              -10.483    
+                                                         (7.902)    
+                                                                    
+ln_gdp_pc            -2.654**            -1.918           -6.747    
+                     (1.181)            (1.605)          (4.643)    
+                                                                    
+ln_trade              -1.594             -2.059           2.726     
+                     (1.727)            (2.140)          (2.896)    
+                                                                    
+ln_rd                 3.420              0.401            1.806     
+                     (2.182)            (2.726)          (3.030)    
+                                                                    
+ln_tertiary           0.207              -1.098           -4.541    
+                     (0.886)            (0.694)          (2.858)    
+                                                                    
+--------------------------------------------------------------------
+Observations           610                528              329      
+R2                    0.022              0.021            0.032     
+Adjusted R2           -0.120             -0.139           -0.142    
+====================================================================
+Note:                                    *p&lt;0.1; **p&lt;0.05; ***p&lt;0.01
+                  All models include country and year fixed effects.
+                               Standard errors clustered by country.
+                                      * p&lt;0.1, ** p&lt;0.05, *** p&lt;0.01</code></pre>
+</div>
+<details open class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="co">#quantity table</span></span>
+<span id="cb11-2"><a href="#cb11-2"></a></span>
+<span id="cb11-3"><a href="#cb11-3"></a><span class="fu">stargazer</span>(</span>
+<span id="cb11-4"><a href="#cb11-4"></a>  count_bank, count_market, count_vc,</span>
+<span id="cb11-5"><a href="#cb11-5"></a>  <span class="at">type =</span> <span class="st">&quot;text&quot;</span>,</span>
+<span id="cb11-6"><a href="#cb11-6"></a>  <span class="at">title =</span> <span class="st">&quot;Financial Development, IP Protection, and Patent Quantity&quot;</span>,</span>
+<span id="cb11-7"><a href="#cb11-7"></a>  <span class="at">dep.var.caption =</span> <span class="st">&quot;Dependent Variable: ln(Patents per 1,000 Researchers)&quot;</span>,</span>
+<span id="cb11-8"><a href="#cb11-8"></a>  <span class="at">column.labels =</span> <span class="fu">c</span>(<span class="st">&quot;Bank-Based&quot;</span>, <span class="st">&quot;Market-Based&quot;</span>, <span class="st">&quot;VC-Based&quot;</span>),</span>
+<span id="cb11-9"><a href="#cb11-9"></a>  <span class="at">se =</span> <span class="fu">list</span>(<span class="fu">se</span>(count_bank), <span class="fu">se</span>(count_market), <span class="fu">se</span>(count_vc)),</span>
+<span id="cb11-10"><a href="#cb11-10"></a>  <span class="at">omit.stat =</span> <span class="fu">c</span>(<span class="st">&quot;ser&quot;</span>, <span class="st">&quot;f&quot;</span>),</span>
+<span id="cb11-11"><a href="#cb11-11"></a>  <span class="at">notes =</span> <span class="fu">c</span>(</span>
+<span id="cb11-12"><a href="#cb11-12"></a>    <span class="st">&quot;All models include country and year fixed effects.&quot;</span>,</span>
+<span id="cb11-13"><a href="#cb11-13"></a>    <span class="st">&quot;Standard errors clustered by country.&quot;</span>,</span>
+<span id="cb11-14"><a href="#cb11-14"></a>    <span class="st">&quot;* p&lt;0.1, ** p&lt;0.05, *** p&lt;0.01&quot;</span></span>
+<span id="cb11-15"><a href="#cb11-15"></a>  )</span>
+<span id="cb11-16"><a href="#cb11-16"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Financial Development, IP Protection, and Patent Quantity
+=======================================================================
+                 Dependent Variable: ln(Patents per 1,000 Researchers) 
+                -------------------------------------------------------
+                                      ln_patents                       
+                    Bank-Based         Market-Based        VC-Based    
+                        (1)                (2)               (3)       
+-----------------------------------------------------------------------
+ln_bank                0.200                                           
+                      (0.215)                                          
+                                                                       
+ln_market                                 0.073                        
+                                         (0.144)                       
+                                                                       
+ln_vc                                                       0.231      
+                                                           (1.173)     
+                                                                       
+ipr_c                 -1.388*            -0.528*            -0.243     
+                      (0.824)            (0.314)           (0.162)     
+                                                                       
+ln_bank_x_ipr         0.369*                                           
+                      (0.192)                                          
+                                                                       
+ln_market_x_ipr                           0.135                        
+                                         (0.087)                       
+                                                                       
+ln_vc_x_ipr                                                 0.565      
+                                                           (0.821)     
+                                                                       
+ln_gdp_pc             1.164**             0.774            0.814***    
+                      (0.507)            (0.600)           (0.235)     
+                                                                       
+ln_trade               0.230              -0.129            0.250      
+                      (0.296)            (0.395)           (0.317)     
+                                                                       
+ln_rd                 -0.648              -0.805           -0.738*     
+                      (0.443)            (0.526)           (0.391)     
+                                                                       
+ln_tertiary           0.513*             0.726***           0.242      
+                      (0.270)            (0.264)           (0.285)     
+                                                                       
+-----------------------------------------------------------------------
+Observations            610                528               329       
+R2                     0.373              0.228             0.091      
+Adjusted R2            0.282              0.101             -0.073     
+=======================================================================
+Note:                                       *p&lt;0.1; **p&lt;0.05; ***p&lt;0.01
+                     All models include country and year fixed effects.
+                                  Standard errors clustered by country.
+                                         * p&lt;0.1, ** p&lt;0.05, *** p&lt;0.01</code></pre>
+</div>
+</div>
+<section id="closer-look-at-the-samples" class="level4" data-number="0.3.1">
+<h4 data-number="0.3.1" class="anchored" data-anchor-id="closer-look-at-the-samples"><span class="header-section-number">0.3.1</span> closer look at the samples</h4>
+<div class="cell">
+<details open class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a><span class="fu">rm</span>(<span class="at">list =</span> <span class="fu">ls</span>())</span>
+<span id="cb13-2"><a href="#cb13-2"></a></span>
+<span id="cb13-3"><a href="#cb13-3"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb13-4"><a href="#cb13-4"></a><span class="fu">library</span>(data.table)</span>
+<span id="cb13-5"><a href="#cb13-5"></a><span class="fu">library</span>(plm)</span>
+<span id="cb13-6"><a href="#cb13-6"></a></span>
+<span id="cb13-7"><a href="#cb13-7"></a>df <span class="ot">&lt;-</span> <span class="fu">fread</span>(<span class="st">&quot;data/monarch_panel_transformed.csv&quot;</span>)</span>
+<span id="cb13-8"><a href="#cb13-8"></a></span>
+<span id="cb13-9"><a href="#cb13-9"></a><span class="co">#base sample, same as regressions</span></span>
+<span id="cb13-10"><a href="#cb13-10"></a>base_df <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb13-11"><a href="#cb13-11"></a>  <span class="fu">filter</span>(</span>
+<span id="cb13-12"><a href="#cb13-12"></a>    <span class="sc">!</span><span class="fu">is.na</span>(quality_index_100),</span>
+<span id="cb13-13"><a href="#cb13-13"></a>    <span class="sc">!</span><span class="fu">is.na</span>(ln_patents),</span>
+<span id="cb13-14"><a href="#cb13-14"></a>    <span class="sc">!</span><span class="fu">is.na</span>(ipr_c),</span>
+<span id="cb13-15"><a href="#cb13-15"></a>    <span class="sc">!</span><span class="fu">is.na</span>(ln_gdp_pc)</span>
+<span id="cb13-16"><a href="#cb13-16"></a>  )</span>
+<span id="cb13-17"><a href="#cb13-17"></a></span>
+<span id="cb13-18"><a href="#cb13-18"></a><span class="co">#bank/market sample</span></span>
+<span id="cb13-19"><a href="#cb13-19"></a></span>
+<span id="cb13-20"><a href="#cb13-20"></a>bank_market_df <span class="ot">&lt;-</span> base_df <span class="sc">%&gt;%</span></span>
+<span id="cb13-21"><a href="#cb13-21"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(ln_bank) <span class="sc">|</span> <span class="sc">!</span><span class="fu">is.na</span>(ln_market))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>BANK / MARKET SAMPLE COVERAGE</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>observations:</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>878 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>countries:</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>49 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>years covered:</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1996 2019</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+countries included:</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] &quot;ARG&quot; &quot;AUS&quot; &quot;AUT&quot; &quot;BEL&quot; &quot;BGR&quot; &quot;BRA&quot; &quot;CAN&quot; &quot;CHE&quot; &quot;CHL&quot; &quot;CHN&quot; &quot;COL&quot; &quot;CRI&quot;
+[13] &quot;CYP&quot; &quot;CZE&quot; &quot;DEU&quot; &quot;DNK&quot; &quot;ESP&quot; &quot;FIN&quot; &quot;FRA&quot; &quot;GBR&quot; &quot;GRC&quot; &quot;HKG&quot; &quot;HUN&quot; &quot;IDN&quot;
+[25] &quot;IND&quot; &quot;IRL&quot; &quot;ISL&quot; &quot;ITA&quot; &quot;JPN&quot; &quot;KOR&quot; &quot;LTU&quot; &quot;LUX&quot; &quot;MEX&quot; &quot;MLT&quot; &quot;MYS&quot; &quot;NLD&quot;
+[37] &quot;NOR&quot; &quot;NZL&quot; &quot;PAN&quot; &quot;POL&quot; &quot;PRT&quot; &quot;ROU&quot; &quot;RUS&quot; &quot;SGP&quot; &quot;SVK&quot; &quot;SWE&quot; &quot;TUR&quot; &quot;USA&quot;
+[49] &quot;ZAF&quot;</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+year counts (obs per year):</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+1996 1997 1998 1999 2000 2001 2002 2003 2004 2005 2006 2007 2008 2009 2010 2011 
+  27   27   28   28   30   32   29   35   36   37   36   39   40   40   40   41 
+2012 2013 2014 2015 2016 2017 2018 2019 
+  40   43   41   43   41   44   41   40 </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>VC SAMPLE COVERAGE</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>observations:</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>375 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>countries:</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>32 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>years covered:</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 2006 2019</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+countries included:</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] &quot;AUS&quot; &quot;AUT&quot; &quot;BEL&quot; &quot;BGR&quot; &quot;CAN&quot; &quot;CHE&quot; &quot;CZE&quot; &quot;DEU&quot; &quot;DNK&quot; &quot;ESP&quot; &quot;FIN&quot; &quot;FRA&quot;
+[13] &quot;GBR&quot; &quot;GRC&quot; &quot;HUN&quot; &quot;IRL&quot; &quot;ITA&quot; &quot;JPN&quot; &quot;KOR&quot; &quot;LTU&quot; &quot;LUX&quot; &quot;NLD&quot; &quot;NOR&quot; &quot;NZL&quot;
+[25] &quot;POL&quot; &quot;PRT&quot; &quot;ROU&quot; &quot;RUS&quot; &quot;SVK&quot; &quot;SWE&quot; &quot;USA&quot; &quot;ZAF&quot;</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+year counts (obs per year):</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+2006 2007 2008 2009 2010 2011 2012 2013 2014 2015 2016 2017 2018 2019 
+   3   28   27   28   28   29   28   29   28   29   29   31   28   30 </code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="ignore-everything-below-this" class="level3" data-number="0.4">
+<h3 data-number="0.4" class="anchored" data-anchor-id="ignore-everything-below-this"><span class="header-section-number">0.4</span> ignore everything below this</h3>
 <p>the preliminary results are currently hidden for neatness, as i’d imagine the final R script will more closely resemble the ones below. I can make them reappear at any time</p>
-<section id="squeezing-the-data-now-log-transformations-have-been-applied" class="level4" data-number="0.3.1">
-<h4 data-number="0.3.1" class="anchored" data-anchor-id="squeezing-the-data-now-log-transformations-have-been-applied"><span class="header-section-number">0.3.1</span> Squeezing the data (now log transformations have been applied)</h4>
+<section id="squeezing-the-data-now-log-transformations-have-been-applied" class="level4" data-number="0.4.1">
+<h4 data-number="0.4.1" class="anchored" data-anchor-id="squeezing-the-data-now-log-transformations-have-been-applied"><span class="header-section-number">0.4.1</span> Squeezing the data (now log transformations have been applied)</h4>
 <p>This R script runs panel data regressions to investigate how bank-based, market-based, and venture capital financial development interact with intellectual property protection to influence patent quality and quantity. The methodology uses two-way fixed effects models with country and year controls, clustering standard errors by country. All continuous variables are log-transformed, interaction terms capture how IP protection moderates financial development effects. Three separate models test each financial system type, controlling for GDP per capita, trade openness, R&amp;D expenditure, and tertiary education</p>
 </section>
-<section id="log-transformations" class="level4" data-number="0.3.2">
-<h4 data-number="0.3.2" class="anchored" data-anchor-id="log-transformations"><span class="header-section-number">0.3.2</span> log transformations</h4>
-<div class="cell">
-<details open class="code-fold">
-<summary>Show code</summary>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="co"># squeezing the data, applying log transformations</span></span>
-<span id="cb3-2"><a href="#cb3-2"></a></span>
-<span id="cb3-3"><a href="#cb3-3"></a><span class="fu">rm</span>(<span class="at">list =</span> <span class="fu">ls</span>())</span>
-<span id="cb3-4"><a href="#cb3-4"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb3-5"><a href="#cb3-5"></a><span class="fu">library</span>(data.table)</span>
-<span id="cb3-6"><a href="#cb3-6"></a><span class="fu">library</span>(plm)</span>
-<span id="cb3-7"><a href="#cb3-7"></a><span class="fu">library</span>(stargazer)</span>
-<span id="cb3-8"><a href="#cb3-8"></a><span class="fu">library</span>(lmtest)</span>
-<span id="cb3-9"><a href="#cb3-9"></a><span class="fu">library</span>(sandwich)</span>
-<span id="cb3-10"><a href="#cb3-10"></a></span>
-<span id="cb3-11"><a href="#cb3-11"></a><span class="co"># Load data</span></span>
-<span id="cb3-12"><a href="#cb3-12"></a>master <span class="ot">&lt;-</span> <span class="fu">fread</span>(<span class="st">&quot;data/Master_Panel.csv&quot;</span>)</span>
-<span id="cb3-13"><a href="#cb3-13"></a></span>
-<span id="cb3-14"><a href="#cb3-14"></a><span class="co"># Clean and transform data </span></span>
-<span id="cb3-15"><a href="#cb3-15"></a>master_clean <span class="ot">&lt;-</span> master <span class="sc">%&gt;%</span></span>
-<span id="cb3-16"><a href="#cb3-16"></a>  <span class="co"># fix the researcher variable</span></span>
-<span id="cb3-17"><a href="#cb3-17"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb3-18"><a href="#cb3-18"></a>    <span class="at">researchers_per_million =</span> <span class="fu">coalesce</span>(</span>
-<span id="cb3-19"><a href="#cb3-19"></a>      <span class="fu">as.numeric</span>(researchers_per_million_y),</span>
-<span id="cb3-20"><a href="#cb3-20"></a>      <span class="fu">as.numeric</span>(researchers_per_million_x)</span>
-<span id="cb3-21"><a href="#cb3-21"></a>    ),</span>
-<span id="cb3-22"><a href="#cb3-22"></a>    <span class="at">population_total =</span> <span class="fu">as.numeric</span>(population_total)</span>
-<span id="cb3-23"><a href="#cb3-23"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb3-24"><a href="#cb3-24"></a>  </span>
-<span id="cb3-25"><a href="#cb3-25"></a>  <span class="co"># Convert variables to numeric</span></span>
-<span id="cb3-26"><a href="#cb3-26"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">c</span>(</span>
-<span id="cb3-27"><a href="#cb3-27"></a>    year, avg_quality_index_4, VC_investment,</span>
-<span id="cb3-28"><a href="#cb3-28"></a>    bank_credit_gdp, market_cap_gdp, ipp_index_IP_transformed,</span>
-<span id="cb3-29"><a href="#cb3-29"></a>    patent_applications_residents, gdp_pc_const2015usd,</span>
-<span id="cb3-30"><a href="#cb3-30"></a>    trade_percent_gdp, rd_expenditure_percent_gdp,</span>
-<span id="cb3-31"><a href="#cb3-31"></a>    tertiary_enrollment_percent</span>
-<span id="cb3-32"><a href="#cb3-32"></a>  ), as.numeric)) <span class="sc">%&gt;%</span></span>
-<span id="cb3-33"><a href="#cb3-33"></a>  </span>
-<span id="cb3-34"><a href="#cb3-34"></a>  <span class="co"># proper scaling</span></span>
-<span id="cb3-35"><a href="#cb3-35"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb3-36"><a href="#cb3-36"></a>    <span class="at">researchers_total =</span> researchers_per_million <span class="sc">*</span> (population_total <span class="sc">/</span> <span class="dv">1000000</span>),</span>
-<span id="cb3-37"><a href="#cb3-37"></a>    <span class="at">patents_per_1000_researchers =</span> (patent_applications_residents <span class="sc">/</span> researchers_total) <span class="sc">*</span> <span class="dv">1000</span>,</span>
-<span id="cb3-38"><a href="#cb3-38"></a>    <span class="at">patents_per_1000_researchers =</span> <span class="fu">ifelse</span>(</span>
-<span id="cb3-39"><a href="#cb3-39"></a>      <span class="fu">is.infinite</span>(patents_per_1000_researchers) <span class="sc">|</span> </span>
-<span id="cb3-40"><a href="#cb3-40"></a>        patents_per_1000_researchers <span class="sc">&lt;</span> <span class="dv">0</span>,</span>
-<span id="cb3-41"><a href="#cb3-41"></a>      <span class="cn">NA</span>, </span>
-<span id="cb3-42"><a href="#cb3-42"></a>      patents_per_1000_researchers</span>
-<span id="cb3-43"><a href="#cb3-43"></a>    )</span>
-<span id="cb3-44"><a href="#cb3-44"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb3-45"><a href="#cb3-45"></a>  </span>
-<span id="cb3-46"><a href="#cb3-46"></a>  <span class="co"># scale variables</span></span>
-<span id="cb3-47"><a href="#cb3-47"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb3-48"><a href="#cb3-48"></a>    <span class="at">VC_investment_pct =</span> VC_investment <span class="sc">*</span> <span class="dv">100</span>,</span>
-<span id="cb3-49"><a href="#cb3-49"></a>    <span class="at">quality_index_100 =</span> avg_quality_index_4 <span class="sc">*</span> <span class="dv">100</span></span>
-<span id="cb3-50"><a href="#cb3-50"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb3-51"><a href="#cb3-51"></a>  </span>
-<span id="cb3-52"><a href="#cb3-52"></a>  <span class="co"># log transformations</span></span>
-<span id="cb3-53"><a href="#cb3-53"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb3-54"><a href="#cb3-54"></a>    <span class="at">ln_gdp_pc =</span> <span class="fu">log</span>(gdp_pc_const2015usd <span class="sc">+</span> <span class="dv">1</span>),</span>
-<span id="cb3-55"><a href="#cb3-55"></a>    <span class="at">ln_patents =</span> <span class="fu">log</span>(patents_per_1000_researchers <span class="sc">+</span> <span class="dv">1</span>),</span>
-<span id="cb3-56"><a href="#cb3-56"></a>    <span class="at">ln_bank =</span> <span class="fu">log</span>(bank_credit_gdp <span class="sc">+</span> <span class="dv">1</span>),</span>
-<span id="cb3-57"><a href="#cb3-57"></a>    <span class="at">ln_market =</span> <span class="fu">log</span>(market_cap_gdp <span class="sc">+</span> <span class="dv">1</span>),</span>
-<span id="cb3-58"><a href="#cb3-58"></a>    <span class="at">ln_vc =</span> <span class="fu">log</span>(VC_investment_pct <span class="sc">+</span> <span class="dv">1</span>),</span>
-<span id="cb3-59"><a href="#cb3-59"></a>    <span class="at">ln_trade =</span> <span class="fu">log</span>(trade_percent_gdp <span class="sc">+</span> <span class="dv">1</span>),</span>
-<span id="cb3-60"><a href="#cb3-60"></a>    <span class="at">ln_rd =</span> <span class="fu">log</span>(rd_expenditure_percent_gdp <span class="sc">+</span> <span class="dv">1</span>),</span>
-<span id="cb3-61"><a href="#cb3-61"></a>    <span class="at">ln_tertiary =</span> <span class="fu">log</span>(tertiary_enrollment_percent <span class="sc">+</span> <span class="dv">1</span>)</span>
-<span id="cb3-62"><a href="#cb3-62"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb3-63"><a href="#cb3-63"></a>  </span>
-<span id="cb3-64"><a href="#cb3-64"></a>  <span class="co"># interaction terms</span></span>
-<span id="cb3-65"><a href="#cb3-65"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb3-66"><a href="#cb3-66"></a>    <span class="at">ln_bank_x_ipr =</span> ln_bank <span class="sc">*</span> ipp_index_IP_transformed,</span>
-<span id="cb3-67"><a href="#cb3-67"></a>    <span class="at">ln_market_x_ipr =</span> ln_market <span class="sc">*</span> ipp_index_IP_transformed,</span>
-<span id="cb3-68"><a href="#cb3-68"></a>    <span class="at">ln_vc_x_ipr =</span> ln_vc <span class="sc">*</span> ipp_index_IP_transformed</span>
-<span id="cb3-69"><a href="#cb3-69"></a>  )</span>
-<span id="cb3-70"><a href="#cb3-70"></a></span>
-<span id="cb3-71"><a href="#cb3-71"></a><span class="co"># convert to panel data</span></span>
-<span id="cb3-72"><a href="#cb3-72"></a>master_panel <span class="ot">&lt;-</span> <span class="fu">pdata.frame</span>(master_clean, <span class="at">index =</span> <span class="fu">c</span>(<span class="st">&quot;iso3c&quot;</span>, <span class="st">&quot;year&quot;</span>))</span>
-<span id="cb3-73"><a href="#cb3-73"></a></span>
-<span id="cb3-74"><a href="#cb3-74"></a><span class="co"># filter nas</span></span>
-<span id="cb3-75"><a href="#cb3-75"></a>master_levels <span class="ot">&lt;-</span> master_panel <span class="sc">%&gt;%</span></span>
-<span id="cb3-76"><a href="#cb3-76"></a>  <span class="fu">filter</span>(</span>
-<span id="cb3-77"><a href="#cb3-77"></a>    <span class="sc">!</span><span class="fu">is.na</span>(quality_index_100),</span>
-<span id="cb3-78"><a href="#cb3-78"></a>    <span class="sc">!</span><span class="fu">is.na</span>(patents_per_1000_researchers),</span>
-<span id="cb3-79"><a href="#cb3-79"></a>    <span class="sc">!</span><span class="fu">is.na</span>(ipp_index_IP_transformed),</span>
-<span id="cb3-80"><a href="#cb3-80"></a>    <span class="sc">!</span><span class="fu">is.na</span>(gdp_pc_const2015usd)</span>
-<span id="cb3-81"><a href="#cb3-81"></a>  )</span>
-<span id="cb3-82"><a href="#cb3-82"></a></span>
-<span id="cb3-83"><a href="#cb3-83"></a><span class="co"># split samples</span></span>
-<span id="cb3-84"><a href="#cb3-84"></a>master_bank_market <span class="ot">&lt;-</span> master_levels <span class="sc">%&gt;%</span> </span>
-<span id="cb3-85"><a href="#cb3-85"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(bank_credit_gdp) <span class="sc">|</span> <span class="sc">!</span><span class="fu">is.na</span>(market_cap_gdp))</span>
-<span id="cb3-86"><a href="#cb3-86"></a></span>
-<span id="cb3-87"><a href="#cb3-87"></a>master_vc <span class="ot">&lt;-</span> master_levels <span class="sc">%&gt;%</span> </span>
-<span id="cb3-88"><a href="#cb3-88"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(VC_investment_pct))</span>
-<span id="cb3-89"><a href="#cb3-89"></a></span>
-<span id="cb3-90"><a href="#cb3-90"></a><span class="co">#patent quality regressions</span></span>
-<span id="cb3-91"><a href="#cb3-91"></a></span>
-<span id="cb3-92"><a href="#cb3-92"></a><span class="co"># Bank-based FD</span></span>
-<span id="cb3-93"><a href="#cb3-93"></a>qual_bank <span class="ot">&lt;-</span> <span class="fu">plm</span>(</span>
-<span id="cb3-94"><a href="#cb3-94"></a>  quality_index_100 <span class="sc">~</span> ln_bank <span class="sc">+</span> ipp_index_IP_transformed <span class="sc">+</span> ln_bank_x_ipr <span class="sc">+</span></span>
-<span id="cb3-95"><a href="#cb3-95"></a>    ln_gdp_pc <span class="sc">+</span> ln_trade <span class="sc">+</span> ln_rd <span class="sc">+</span> ln_tertiary,</span>
-<span id="cb3-96"><a href="#cb3-96"></a>  <span class="at">data =</span> master_bank_market, </span>
-<span id="cb3-97"><a href="#cb3-97"></a>  <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, </span>
-<span id="cb3-98"><a href="#cb3-98"></a>  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span></span>
-<span id="cb3-99"><a href="#cb3-99"></a>)</span>
-<span id="cb3-100"><a href="#cb3-100"></a></span>
-<span id="cb3-101"><a href="#cb3-101"></a><span class="co"># Market-based FD  </span></span>
-<span id="cb3-102"><a href="#cb3-102"></a>qual_market <span class="ot">&lt;-</span> <span class="fu">plm</span>(</span>
-<span id="cb3-103"><a href="#cb3-103"></a>  quality_index_100 <span class="sc">~</span> ln_market <span class="sc">+</span> ipp_index_IP_transformed <span class="sc">+</span> ln_market_x_ipr <span class="sc">+</span></span>
-<span id="cb3-104"><a href="#cb3-104"></a>    ln_gdp_pc <span class="sc">+</span> ln_trade <span class="sc">+</span> ln_rd <span class="sc">+</span> ln_tertiary,</span>
-<span id="cb3-105"><a href="#cb3-105"></a>  <span class="at">data =</span> master_bank_market, </span>
-<span id="cb3-106"><a href="#cb3-106"></a>  <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, </span>
-<span id="cb3-107"><a href="#cb3-107"></a>  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span></span>
-<span id="cb3-108"><a href="#cb3-108"></a>)</span>
-<span id="cb3-109"><a href="#cb3-109"></a></span>
-<span id="cb3-110"><a href="#cb3-110"></a><span class="co"># VC-based FD</span></span>
-<span id="cb3-111"><a href="#cb3-111"></a>qual_vc <span class="ot">&lt;-</span> <span class="fu">plm</span>(</span>
-<span id="cb3-112"><a href="#cb3-112"></a>  quality_index_100 <span class="sc">~</span> ln_vc <span class="sc">+</span> ipp_index_IP_transformed <span class="sc">+</span> ln_vc_x_ipr <span class="sc">+</span></span>
-<span id="cb3-113"><a href="#cb3-113"></a>    ln_gdp_pc <span class="sc">+</span> ln_trade <span class="sc">+</span> ln_rd <span class="sc">+</span> ln_tertiary,</span>
-<span id="cb3-114"><a href="#cb3-114"></a>  <span class="at">data =</span> master_vc, </span>
-<span id="cb3-115"><a href="#cb3-115"></a>  <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, </span>
-<span id="cb3-116"><a href="#cb3-116"></a>  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span></span>
-<span id="cb3-117"><a href="#cb3-117"></a>)</span>
-<span id="cb3-118"><a href="#cb3-118"></a></span>
-<span id="cb3-119"><a href="#cb3-119"></a><span class="co">#patent quantity regressions</span></span>
-<span id="cb3-120"><a href="#cb3-120"></a></span>
-<span id="cb3-121"><a href="#cb3-121"></a><span class="co"># Bank FD</span></span>
-<span id="cb3-122"><a href="#cb3-122"></a>count_bank <span class="ot">&lt;-</span> <span class="fu">plm</span>(</span>
-<span id="cb3-123"><a href="#cb3-123"></a>  ln_patents <span class="sc">~</span> ln_bank <span class="sc">+</span> ipp_index_IP_transformed <span class="sc">+</span> ln_bank_x_ipr <span class="sc">+</span></span>
-<span id="cb3-124"><a href="#cb3-124"></a>    ln_gdp_pc <span class="sc">+</span> ln_trade <span class="sc">+</span> ln_rd <span class="sc">+</span> ln_tertiary,</span>
-<span id="cb3-125"><a href="#cb3-125"></a>  <span class="at">data =</span> master_bank_market, </span>
-<span id="cb3-126"><a href="#cb3-126"></a>  <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, </span>
-<span id="cb3-127"><a href="#cb3-127"></a>  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span></span>
-<span id="cb3-128"><a href="#cb3-128"></a>)</span>
-<span id="cb3-129"><a href="#cb3-129"></a></span>
-<span id="cb3-130"><a href="#cb3-130"></a><span class="co"># Market FD</span></span>
-<span id="cb3-131"><a href="#cb3-131"></a>count_market <span class="ot">&lt;-</span> <span class="fu">plm</span>(</span>
-<span id="cb3-132"><a href="#cb3-132"></a>  ln_patents <span class="sc">~</span> ln_market <span class="sc">+</span> ipp_index_IP_transformed <span class="sc">+</span> ln_market_x_ipr <span class="sc">+</span></span>
-<span id="cb3-133"><a href="#cb3-133"></a>    ln_gdp_pc <span class="sc">+</span> ln_trade <span class="sc">+</span> ln_rd <span class="sc">+</span> ln_tertiary,</span>
-<span id="cb3-134"><a href="#cb3-134"></a>  <span class="at">data =</span> master_bank_market, </span>
-<span id="cb3-135"><a href="#cb3-135"></a>  <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, </span>
-<span id="cb3-136"><a href="#cb3-136"></a>  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span></span>
-<span id="cb3-137"><a href="#cb3-137"></a>)</span>
-<span id="cb3-138"><a href="#cb3-138"></a></span>
-<span id="cb3-139"><a href="#cb3-139"></a><span class="co"># VC FD</span></span>
-<span id="cb3-140"><a href="#cb3-140"></a>count_vc <span class="ot">&lt;-</span> <span class="fu">plm</span>(</span>
-<span id="cb3-141"><a href="#cb3-141"></a>  ln_patents <span class="sc">~</span> ln_vc <span class="sc">+</span> ipp_index_IP_transformed <span class="sc">+</span> ln_vc_x_ipr <span class="sc">+</span></span>
-<span id="cb3-142"><a href="#cb3-142"></a>    ln_gdp_pc <span class="sc">+</span> ln_trade <span class="sc">+</span> ln_rd <span class="sc">+</span> ln_tertiary,</span>
-<span id="cb3-143"><a href="#cb3-143"></a>  <span class="at">data =</span> master_vc, </span>
-<span id="cb3-144"><a href="#cb3-144"></a>  <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, </span>
-<span id="cb3-145"><a href="#cb3-145"></a>  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span></span>
-<span id="cb3-146"><a href="#cb3-146"></a>)</span>
-<span id="cb3-147"><a href="#cb3-147"></a></span>
-<span id="cb3-148"><a href="#cb3-148"></a><span class="co">#clustered se</span></span>
-<span id="cb3-149"><a href="#cb3-149"></a></span>
-<span id="cb3-150"><a href="#cb3-150"></a>qual_bank_se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(<span class="fu">vcovHC</span>(qual_bank, <span class="at">type =</span> <span class="st">&quot;HC1&quot;</span>, <span class="at">cluster =</span> <span class="st">&quot;group&quot;</span>)))</span>
-<span id="cb3-151"><a href="#cb3-151"></a>qual_market_se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(<span class="fu">vcovHC</span>(qual_market, <span class="at">type =</span> <span class="st">&quot;HC1&quot;</span>, <span class="at">cluster =</span> <span class="st">&quot;group&quot;</span>)))</span>
-<span id="cb3-152"><a href="#cb3-152"></a>qual_vc_se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(<span class="fu">vcovHC</span>(qual_vc, <span class="at">type =</span> <span class="st">&quot;HC1&quot;</span>, <span class="at">cluster =</span> <span class="st">&quot;group&quot;</span>)))</span>
-<span id="cb3-153"><a href="#cb3-153"></a></span>
-<span id="cb3-154"><a href="#cb3-154"></a>count_bank_se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(<span class="fu">vcovHC</span>(count_bank, <span class="at">type =</span> <span class="st">&quot;HC1&quot;</span>, <span class="at">cluster =</span> <span class="st">&quot;group&quot;</span>)))</span>
-<span id="cb3-155"><a href="#cb3-155"></a>count_market_se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(<span class="fu">vcovHC</span>(count_market, <span class="at">type =</span> <span class="st">&quot;HC1&quot;</span>, <span class="at">cluster =</span> <span class="st">&quot;group&quot;</span>)))</span>
-<span id="cb3-156"><a href="#cb3-156"></a>count_vc_se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(<span class="fu">vcovHC</span>(count_vc, <span class="at">type =</span> <span class="st">&quot;HC1&quot;</span>, <span class="at">cluster =</span> <span class="st">&quot;group&quot;</span>)))</span>
-<span id="cb3-157"><a href="#cb3-157"></a></span>
-<span id="cb3-158"><a href="#cb3-158"></a><span class="co">#table one</span></span>
-<span id="cb3-159"><a href="#cb3-159"></a></span>
-<span id="cb3-160"><a href="#cb3-160"></a><span class="fu">stargazer</span>(</span>
-<span id="cb3-161"><a href="#cb3-161"></a>  qual_bank, qual_market, qual_vc,</span>
-<span id="cb3-162"><a href="#cb3-162"></a>  <span class="at">type =</span> <span class="st">&quot;text&quot;</span>,</span>
-<span id="cb3-163"><a href="#cb3-163"></a>  <span class="at">font.size =</span> <span class="st">&quot;tiny&quot;</span>,</span>
-<span id="cb3-164"><a href="#cb3-164"></a>  <span class="at">column.sep.width =</span> <span class="st">&quot;0pt&quot;</span>,</span>
-<span id="cb3-165"><a href="#cb3-165"></a>  <span class="at">single.row =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb3-166"><a href="#cb3-166"></a>  <span class="at">no.space =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb3-167"><a href="#cb3-167"></a>  <span class="at">float =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb3-168"><a href="#cb3-168"></a>  <span class="at">title =</span> <span class="st">&quot;Financial Development, IP Protection and Patent Quality (Log Specification)&quot;</span>,</span>
-<span id="cb3-169"><a href="#cb3-169"></a>  <span class="at">dep.var.labels =</span> <span class="st">&quot;&quot;</span>,</span>
-<span id="cb3-170"><a href="#cb3-170"></a>  <span class="at">dep.var.caption =</span> <span class="st">&quot;Dependant Variable: Patent Quality&quot;</span>,</span>
-<span id="cb3-171"><a href="#cb3-171"></a>  <span class="at">column.labels =</span> <span class="fu">c</span>(<span class="st">&quot;Bank-based&quot;</span>, <span class="st">&quot;Market-based&quot;</span>, <span class="st">&quot;VC-based&quot;</span>),</span>
-<span id="cb3-172"><a href="#cb3-172"></a>  <span class="at">covariate.labels =</span> <span class="fu">c</span>(</span>
-<span id="cb3-173"><a href="#cb3-173"></a>    <span class="st">&quot;ln(Bank Credit/GDP)&quot;</span>,</span>
-<span id="cb3-174"><a href="#cb3-174"></a>    <span class="st">&quot;ln(Market Capitalization/GDP)&quot;</span>, </span>
-<span id="cb3-175"><a href="#cb3-175"></a>    <span class="st">&quot;ln(VC Investment/GDP)&quot;</span>,</span>
-<span id="cb3-176"><a href="#cb3-176"></a>    <span class="st">&quot;IP Protection Index&quot;</span>, </span>
-<span id="cb3-177"><a href="#cb3-177"></a>    <span class="st">&quot;ln(Bank FD) × IP Protection&quot;</span>, </span>
-<span id="cb3-178"><a href="#cb3-178"></a>    <span class="st">&quot;ln(Market FD) × IP Protection&quot;</span>,</span>
-<span id="cb3-179"><a href="#cb3-179"></a>    <span class="st">&quot;ln(VC FD) × IP Protection&quot;</span>,</span>
-<span id="cb3-180"><a href="#cb3-180"></a>    <span class="st">&quot;ln(GDP per Capita)&quot;</span>, </span>
-<span id="cb3-181"><a href="#cb3-181"></a>    <span class="st">&quot;ln(Trade/GDP)&quot;</span>, </span>
-<span id="cb3-182"><a href="#cb3-182"></a>    <span class="st">&quot;ln(R&amp;D Expenditure/GDP)&quot;</span>, </span>
-<span id="cb3-183"><a href="#cb3-183"></a>    <span class="st">&quot;ln(Tertiary Enrollment)&quot;</span></span>
-<span id="cb3-184"><a href="#cb3-184"></a>  ),</span>
-<span id="cb3-185"><a href="#cb3-185"></a>  <span class="at">se =</span> <span class="fu">list</span>(qual_bank_se, qual_market_se, qual_vc_se),</span>
-<span id="cb3-186"><a href="#cb3-186"></a>  <span class="at">omit.stat =</span> <span class="fu">c</span>(<span class="st">&quot;ser&quot;</span>, <span class="st">&quot;f&quot;</span>),</span>
-<span id="cb3-187"><a href="#cb3-187"></a>  <span class="at">add.lines =</span> <span class="fu">list</span>(</span>
-<span id="cb3-188"><a href="#cb3-188"></a>    <span class="fu">c</span>(<span class="st">&quot;Observations&quot;</span>, </span>
-<span id="cb3-189"><a href="#cb3-189"></a>      <span class="fu">nobs</span>(qual_bank), </span>
-<span id="cb3-190"><a href="#cb3-190"></a>      <span class="fu">nobs</span>(qual_market), </span>
-<span id="cb3-191"><a href="#cb3-191"></a>      <span class="fu">nobs</span>(qual_vc)),</span>
-<span id="cb3-192"><a href="#cb3-192"></a>    <span class="fu">c</span>(<span class="st">&quot;R-squared&quot;</span>, </span>
-<span id="cb3-193"><a href="#cb3-193"></a>      <span class="fu">round</span>(<span class="fu">summary</span>(qual_bank)<span class="sc">$</span>r.squared[<span class="st">&quot;rsq&quot;</span>], <span class="dv">3</span>),</span>
-<span id="cb3-194"><a href="#cb3-194"></a>      <span class="fu">round</span>(<span class="fu">summary</span>(qual_market)<span class="sc">$</span>r.squared[<span class="st">&quot;rsq&quot;</span>], <span class="dv">3</span>),</span>
-<span id="cb3-195"><a href="#cb3-195"></a>      <span class="fu">round</span>(<span class="fu">summary</span>(qual_vc)<span class="sc">$</span>r.squared[<span class="st">&quot;rsq&quot;</span>], <span class="dv">3</span>)),</span>
-<span id="cb3-196"><a href="#cb3-196"></a>    <span class="fu">c</span>(<span class="st">&quot;Adj. R-squared&quot;</span>, </span>
-<span id="cb3-197"><a href="#cb3-197"></a>      <span class="fu">round</span>(<span class="fu">summary</span>(qual_bank)<span class="sc">$</span>r.squared[<span class="st">&quot;adjrsq&quot;</span>], <span class="dv">3</span>),</span>
-<span id="cb3-198"><a href="#cb3-198"></a>      <span class="fu">round</span>(<span class="fu">summary</span>(qual_market)<span class="sc">$</span>r.squared[<span class="st">&quot;adjrsq&quot;</span>], <span class="dv">3</span>),</span>
-<span id="cb3-199"><a href="#cb3-199"></a>      <span class="fu">round</span>(<span class="fu">summary</span>(qual_vc)<span class="sc">$</span>r.squared[<span class="st">&quot;adjrsq&quot;</span>], <span class="dv">3</span>)),</span>
-<span id="cb3-200"><a href="#cb3-200"></a>    <span class="fu">c</span>(<span class="st">&quot;F Statistic&quot;</span>, </span>
-<span id="cb3-201"><a href="#cb3-201"></a>      <span class="fu">paste0</span>(<span class="fu">round</span>(<span class="fu">summary</span>(qual_bank)<span class="sc">$</span>fstatistic<span class="sc">$</span>statistic, <span class="dv">2</span>), <span class="st">&quot;***&quot;</span>),</span>
-<span id="cb3-202"><a href="#cb3-202"></a>      <span class="fu">paste0</span>(<span class="fu">round</span>(<span class="fu">summary</span>(qual_market)<span class="sc">$</span>fstatistic<span class="sc">$</span>statistic, <span class="dv">2</span>), <span class="st">&quot;***&quot;</span>),</span>
-<span id="cb3-203"><a href="#cb3-203"></a>      <span class="fu">paste0</span>(<span class="fu">round</span>(<span class="fu">summary</span>(qual_vc)<span class="sc">$</span>fstatistic<span class="sc">$</span>statistic, <span class="dv">2</span>), <span class="st">&quot;***&quot;</span>))</span>
-<span id="cb3-204"><a href="#cb3-204"></a>  ),</span>
-<span id="cb3-205"><a href="#cb3-205"></a>  <span class="at">notes =</span> <span class="fu">paste</span>(</span>
-<span id="cb3-206"><a href="#cb3-206"></a>    <span class="st">&quot;All specifications include country and year fixed effects.&quot;</span>,</span>
-<span id="cb3-207"><a href="#cb3-207"></a>    <span class="st">&quot;Standard errors clustered by country in parentheses.&quot;</span>,</span>
-<span id="cb3-208"><a href="#cb3-208"></a>    <span class="st">&quot;*p&lt;0.1; **p&lt;0.05; ***p&lt;0.01&quot;</span></span>
-<span id="cb3-209"><a href="#cb3-209"></a>  ),</span>
-<span id="cb3-210"><a href="#cb3-210"></a>  <span class="at">align =</span> <span class="cn">TRUE</span></span>
-<span id="cb3-211"><a href="#cb3-211"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-===========================================================================================================================================================================
-                                                                                   Dependant Variable: Patent Quality                                                      
-                              ---------------------------------------------------------------------------------------------------------------------------------------------
-                                                                                                                                                                           
-                                                Bank-based                                     Market-based                                     VC-based                   
-                                                    (1)                                             (2)                                            (3)                     
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-ln(Bank Credit/GDP)                               8.599**                                                                                                                  
-                                                  (4.129)                                                                                                                  
-ln(Market Capitalization/GDP)                                                                    9.862***                                                                  
-                                                                                                  (2.299)                                                                  
-ln(VC Investment/GDP)                                                                                                                            7.248**                   
-                                                                                                                                                 (3.373)                   
-IP Protection Index                                6.342                                         7.097***                                         0.231                    
-                                                  (4.668)                                         (2.414)                                        (1.040)                   
-ln(Bank FD) × IP Protection                       -1.658                                                                                                                   
-                                                  (1.061)                                                                                                                  
-ln(Market FD) × IP Protection                                                                    -2.528***                                                                 
-                                                                                                  (0.625)                                                                  
-ln(VC FD) × IP Protection                                                                                                                        -1.480*                   
-                                                                                                                                                 (0.794)                   
-ln(GDP per Capita)                               2.392***                                        3.390***                                       3.035***                   
-                                                  (0.803)                                         (1.012)                                        (0.620)                   
-ln(Trade/GDP)                                     -1.146                                          -0.726                                        -0.769**                   
-                                                  (1.085)                                         (0.707)                                        (0.378)                   
-ln(R&amp;D Expenditure/GDP)                           -1.443                                          -1.337                                         -0.546                    
-                                                  (2.071)                                         (1.856)                                        (0.686)                   
-ln(Tertiary Enrollment)                            1.642                                          2.518**                                       -1.642**                   
-                                                  (1.097)                                         (1.275)                                        (0.795)                   
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Observations                                        610                                             528                                            329                     
-R-squared                                          0.242                                           0.238                                          0.318                    
-Adj. R-squared                                     0.117                                           0.089                                          0.112                    
-F Statistic                                      23.84***                                        19.63***                                       16.75***                   
-Observations                                        610                                             528                                            329                     
-R2                                                 0.242                                           0.238                                          0.318                    
-Adjusted R2                                        0.117                                           0.089                                          0.112                    
-===========================================================================================================================================================================
-Note:                                                                                                                                           *p&lt;0.1; **p&lt;0.05; ***p&lt;0.01
-                                All specifications include country and year fixed effects. Standard errors clustered by country in parentheses. *p&lt;0.1; **p&lt;0.05; ***p&lt;0.01</code></pre>
-</div>
-<details open class="code-fold">
-<summary>Show code</summary>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="co">#table 2</span></span>
-<span id="cb5-2"><a href="#cb5-2"></a><span class="fu">stargazer</span>(</span>
-<span id="cb5-3"><a href="#cb5-3"></a>  count_bank, count_market, count_vc,</span>
-<span id="cb5-4"><a href="#cb5-4"></a>  <span class="at">type =</span> <span class="st">&quot;text&quot;</span>,  </span>
-<span id="cb5-5"><a href="#cb5-5"></a>  <span class="at">font.size =</span> <span class="st">&quot;tiny&quot;</span>,</span>
-<span id="cb5-6"><a href="#cb5-6"></a>  <span class="at">column.sep.width =</span> <span class="st">&quot;0pt&quot;</span>,</span>
-<span id="cb5-7"><a href="#cb5-7"></a>  <span class="at">single.row =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb5-8"><a href="#cb5-8"></a>  <span class="at">no.space =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb5-9"><a href="#cb5-9"></a>  <span class="at">float =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb5-10"><a href="#cb5-10"></a>  <span class="at">title =</span> <span class="st">&quot;Financial Development, IP Protection and Patent Quantity (Log Specification)&quot;</span>,</span>
-<span id="cb5-11"><a href="#cb5-11"></a>  <span class="at">dep.var.labels =</span> <span class="st">&quot;&quot;</span>,</span>
-<span id="cb5-12"><a href="#cb5-12"></a>  <span class="at">dep.var.caption =</span> <span class="st">&quot;Dependant Variable: Patents per 1,000 Researchers&quot;</span>,</span>
-<span id="cb5-13"><a href="#cb5-13"></a>  <span class="at">column.labels =</span> <span class="fu">c</span>(<span class="st">&quot;Bank-based&quot;</span>, <span class="st">&quot;Market-based&quot;</span>, <span class="st">&quot;VC-based&quot;</span>),</span>
-<span id="cb5-14"><a href="#cb5-14"></a>  <span class="at">covariate.labels =</span> <span class="fu">c</span>(</span>
-<span id="cb5-15"><a href="#cb5-15"></a>    <span class="st">&quot;ln(Bank Credit/GDP)&quot;</span>,</span>
-<span id="cb5-16"><a href="#cb5-16"></a>    <span class="st">&quot;ln(Market Capitalization/GDP)&quot;</span>, </span>
-<span id="cb5-17"><a href="#cb5-17"></a>    <span class="st">&quot;ln(VC Investment/GDP)&quot;</span>,</span>
-<span id="cb5-18"><a href="#cb5-18"></a>    <span class="st">&quot;IP Protection Index&quot;</span>, </span>
-<span id="cb5-19"><a href="#cb5-19"></a>    <span class="st">&quot;ln(Bank FD) × IP Protection&quot;</span>, </span>
-<span id="cb5-20"><a href="#cb5-20"></a>    <span class="st">&quot;ln(Market FD) × IP Protection&quot;</span>,</span>
-<span id="cb5-21"><a href="#cb5-21"></a>    <span class="st">&quot;ln(VC FD) × IP Protection&quot;</span>,</span>
-<span id="cb5-22"><a href="#cb5-22"></a>    <span class="st">&quot;ln(GDP per Capita)&quot;</span>, </span>
-<span id="cb5-23"><a href="#cb5-23"></a>    <span class="st">&quot;ln(Trade/GDP)&quot;</span>, </span>
-<span id="cb5-24"><a href="#cb5-24"></a>    <span class="st">&quot;ln(R&amp;D Expenditure/GDP)&quot;</span>, </span>
-<span id="cb5-25"><a href="#cb5-25"></a>    <span class="st">&quot;ln(Tertiary Enrollment)&quot;</span></span>
-<span id="cb5-26"><a href="#cb5-26"></a>  ),</span>
-<span id="cb5-27"><a href="#cb5-27"></a>  <span class="at">se =</span> <span class="fu">list</span>(count_bank_se, count_market_se, count_vc_se),</span>
-<span id="cb5-28"><a href="#cb5-28"></a>  <span class="at">omit.stat =</span> <span class="fu">c</span>(<span class="st">&quot;ser&quot;</span>, <span class="st">&quot;f&quot;</span>),</span>
-<span id="cb5-29"><a href="#cb5-29"></a>  <span class="at">add.lines =</span> <span class="fu">list</span>(</span>
-<span id="cb5-30"><a href="#cb5-30"></a>    <span class="fu">c</span>(<span class="st">&quot;Observations&quot;</span>, </span>
-<span id="cb5-31"><a href="#cb5-31"></a>      <span class="fu">nobs</span>(count_bank), </span>
-<span id="cb5-32"><a href="#cb5-32"></a>      <span class="fu">nobs</span>(count_market), </span>
-<span id="cb5-33"><a href="#cb5-33"></a>      <span class="fu">nobs</span>(count_vc)),</span>
-<span id="cb5-34"><a href="#cb5-34"></a>    <span class="fu">c</span>(<span class="st">&quot;R-squared&quot;</span>, </span>
-<span id="cb5-35"><a href="#cb5-35"></a>      <span class="fu">round</span>(<span class="fu">summary</span>(count_bank)<span class="sc">$</span>r.squared[<span class="st">&quot;rsq&quot;</span>], <span class="dv">3</span>),</span>
-<span id="cb5-36"><a href="#cb5-36"></a>      <span class="fu">round</span>(<span class="fu">summary</span>(count_market)<span class="sc">$</span>r.squared[<span class="st">&quot;rsq&quot;</span>], <span class="dv">3</span>),</span>
-<span id="cb5-37"><a href="#cb5-37"></a>      <span class="fu">round</span>(<span class="fu">summary</span>(count_vc)<span class="sc">$</span>r.squared[<span class="st">&quot;rsq&quot;</span>], <span class="dv">3</span>)),</span>
-<span id="cb5-38"><a href="#cb5-38"></a>    <span class="fu">c</span>(<span class="st">&quot;Adj. R-squared&quot;</span>, </span>
-<span id="cb5-39"><a href="#cb5-39"></a>      <span class="fu">round</span>(<span class="fu">summary</span>(count_bank)<span class="sc">$</span>r.squared[<span class="st">&quot;adjrsq&quot;</span>], <span class="dv">3</span>),</span>
-<span id="cb5-40"><a href="#cb5-40"></a>      <span class="fu">round</span>(<span class="fu">summary</span>(count_market)<span class="sc">$</span>r.squared[<span class="st">&quot;adjrsq&quot;</span>], <span class="dv">3</span>),</span>
-<span id="cb5-41"><a href="#cb5-41"></a>      <span class="fu">round</span>(<span class="fu">summary</span>(count_vc)<span class="sc">$</span>r.squared[<span class="st">&quot;adjrsq&quot;</span>], <span class="dv">3</span>)),</span>
-<span id="cb5-42"><a href="#cb5-42"></a>    <span class="fu">c</span>(<span class="st">&quot;F Statistic&quot;</span>, </span>
-<span id="cb5-43"><a href="#cb5-43"></a>      <span class="fu">paste0</span>(<span class="fu">round</span>(<span class="fu">summary</span>(count_bank)<span class="sc">$</span>fstatistic<span class="sc">$</span>statistic, <span class="dv">2</span>), <span class="st">&quot;***&quot;</span>),</span>
-<span id="cb5-44"><a href="#cb5-44"></a>      <span class="fu">paste0</span>(<span class="fu">round</span>(<span class="fu">summary</span>(count_market)<span class="sc">$</span>fstatistic<span class="sc">$</span>statistic, <span class="dv">2</span>), <span class="st">&quot;***&quot;</span>),</span>
-<span id="cb5-45"><a href="#cb5-45"></a>      <span class="fu">paste0</span>(<span class="fu">round</span>(<span class="fu">summary</span>(count_vc)<span class="sc">$</span>fstatistic<span class="sc">$</span>statistic, <span class="dv">2</span>), <span class="st">&quot;***&quot;</span>))</span>
-<span id="cb5-46"><a href="#cb5-46"></a>  ),</span>
-<span id="cb5-47"><a href="#cb5-47"></a>  <span class="at">notes =</span> <span class="fu">paste</span>(</span>
-<span id="cb5-48"><a href="#cb5-48"></a>    <span class="st">&quot;All specifications include country and year fixed effects.&quot;</span>,</span>
-<span id="cb5-49"><a href="#cb5-49"></a>    <span class="st">&quot;Standard errors clustered by country in parentheses.&quot;</span>,</span>
-<span id="cb5-50"><a href="#cb5-50"></a>    <span class="st">&quot;*p&lt;0.1; **p&lt;0.05; ***p&lt;0.01&quot;</span></span>
-<span id="cb5-51"><a href="#cb5-51"></a>  ),</span>
-<span id="cb5-52"><a href="#cb5-52"></a>  <span class="at">align =</span> <span class="cn">TRUE</span></span>
-<span id="cb5-53"><a href="#cb5-53"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-===========================================================================================================================================================================
-                                                                            Dependant Variable: Patents per 1,000 Researchers                                              
-                              ---------------------------------------------------------------------------------------------------------------------------------------------
-                                                                                                                                                                           
-                                                Bank-based                                     Market-based                                     VC-based                   
-                                                    (1)                                             (2)                                            (3)                     
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-ln(Bank Credit/GDP)                               -1.073                                                                                                                   
-                                                  (1.250)                                                                                                                  
-ln(Market Capitalization/GDP)                                                                     -0.792                                                                   
-                                                                                                  (0.485)                                                                  
-ln(VC Investment/GDP)                                                                                                                           -3.937***                  
-                                                                                                                                                 (0.955)                   
-IP Protection Index                               -0.854                                          -0.474                                        -1.346***                  
-                                                  (1.265)                                         (0.451)                                        (0.332)                   
-ln(Bank FD) × IP Protection                        0.341                                                                                                                   
-                                                  (0.305)                                                                                                                  
-ln(Market FD) × IP Protection                                                                     0.244*                                                                   
-                                                                                                  (0.129)                                                                  
-ln(VC FD) × IP Protection                                                                                                                       0.898***                   
-                                                                                                                                                 (0.213)                   
-ln(GDP per Capita)                               -0.628***                                       -0.712***                                      -0.586**                   
-                                                  (0.173)                                         (0.246)                                        (0.270)                   
-ln(Trade/GDP)                                    -0.566***                                        -0.336*                                       -0.754***                  
-                                                  (0.154)                                         (0.190)                                        (0.106)                   
-ln(R&amp;D Expenditure/GDP)                          1.540***                                        1.670***                                       2.451***                   
-                                                  (0.411)                                         (0.345)                                        (0.584)                   
-ln(Tertiary Enrollment)                            0.121                                           0.162                                        -0.767***                  
-                                                  (0.217)                                         (0.234)                                        (0.216)                   
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Observations                                        610                                             528                                            329                     
-R-squared                                          0.549                                           0.472                                          0.605                    
-Adj. R-squared                                     0.475                                           0.369                                          0.486                    
-F Statistic                                      90.94***                                        56.23***                                       55.15***                   
-Observations                                        610                                             528                                            329                     
-R2                                                 0.549                                           0.472                                          0.605                    
-Adjusted R2                                        0.475                                           0.369                                          0.486                    
-===========================================================================================================================================================================
-Note:                                                                                                                                           *p&lt;0.1; **p&lt;0.05; ***p&lt;0.01
-                                All specifications include country and year fixed effects. Standard errors clustered by country in parentheses. *p&lt;0.1; **p&lt;0.05; ***p&lt;0.01</code></pre>
-</div>
-<details open class="code-fold">
-<summary>Show code</summary>
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="co">#save the html tables to my computer</span></span>
-<span id="cb7-2"><a href="#cb7-2"></a><span class="co"># </span></span>
-<span id="cb7-3"><a href="#cb7-3"></a><span class="co"># stargazer(</span></span>
-<span id="cb7-4"><a href="#cb7-4"></a><span class="co">#   qual_bank, qual_market, qual_vc,</span></span>
-<span id="cb7-5"><a href="#cb7-5"></a><span class="co">#   type = &quot;html&quot;,</span></span>
-<span id="cb7-6"><a href="#cb7-6"></a><span class="co">#   title = &quot;Table 1: Financial Development, IP Protection and Patent Quality&quot;,</span></span>
-<span id="cb7-7"><a href="#cb7-7"></a><span class="co">#   dep.var.labels = &quot;Patent Quality Index (0-100 scale)&quot;,</span></span>
-<span id="cb7-8"><a href="#cb7-8"></a><span class="co">#   column.labels = c(&quot;Bank-based&quot;, &quot;Market-based&quot;, &quot;VC-based&quot;),</span></span>
-<span id="cb7-9"><a href="#cb7-9"></a><span class="co">#   covariate.labels = c(</span></span>
-<span id="cb7-10"><a href="#cb7-10"></a><span class="co">#     &quot;ln(Bank Credit/GDP)&quot;,</span></span>
-<span id="cb7-11"><a href="#cb7-11"></a><span class="co">#     &quot;ln(Market Capitalization/GDP)&quot;, </span></span>
-<span id="cb7-12"><a href="#cb7-12"></a><span class="co">#     &quot;ln(VC Investment/GDP)&quot;,</span></span>
-<span id="cb7-13"><a href="#cb7-13"></a><span class="co">#     &quot;IP Protection Index&quot;, </span></span>
-<span id="cb7-14"><a href="#cb7-14"></a><span class="co">#     &quot;ln(Bank FD) × IP Protection&quot;, </span></span>
-<span id="cb7-15"><a href="#cb7-15"></a><span class="co">#     &quot;ln(Market FD) × IP Protection&quot;,</span></span>
-<span id="cb7-16"><a href="#cb7-16"></a><span class="co">#     &quot;ln(VC FD) × IP Protection&quot;,</span></span>
-<span id="cb7-17"><a href="#cb7-17"></a><span class="co">#     &quot;ln(GDP per Capita)&quot;, </span></span>
-<span id="cb7-18"><a href="#cb7-18"></a><span class="co">#     &quot;ln(Trade/GDP)&quot;, </span></span>
-<span id="cb7-19"><a href="#cb7-19"></a><span class="co">#     &quot;ln(R&amp;D Expenditure/GDP)&quot;, </span></span>
-<span id="cb7-20"><a href="#cb7-20"></a><span class="co">#     &quot;ln(Tertiary Enrollment)&quot;</span></span>
-<span id="cb7-21"><a href="#cb7-21"></a><span class="co">#   ),</span></span>
-<span id="cb7-22"><a href="#cb7-22"></a><span class="co">#   se = list(qual_bank_se, qual_market_se, qual_vc_se),</span></span>
-<span id="cb7-23"><a href="#cb7-23"></a><span class="co">#   omit.stat = c(&quot;ser&quot;, &quot;f&quot;),</span></span>
-<span id="cb7-24"><a href="#cb7-24"></a><span class="co">#   out = &quot;table1_quality_log.html&quot;</span></span>
-<span id="cb7-25"><a href="#cb7-25"></a><span class="co"># )</span></span>
-<span id="cb7-26"><a href="#cb7-26"></a><span class="co"># </span></span>
-<span id="cb7-27"><a href="#cb7-27"></a><span class="co"># stargazer(</span></span>
-<span id="cb7-28"><a href="#cb7-28"></a><span class="co">#   count_bank, count_market, count_vc,</span></span>
-<span id="cb7-29"><a href="#cb7-29"></a><span class="co">#   type = &quot;html&quot;,</span></span>
-<span id="cb7-30"><a href="#cb7-30"></a><span class="co">#   title = &quot;Table 2: Financial Development, IP Protection and Patent Quantity&quot;,</span></span>
-<span id="cb7-31"><a href="#cb7-31"></a><span class="co">#   dep.var.labels = &quot;ln(Patents per 1,000 Researchers)&quot;,</span></span>
-<span id="cb7-32"><a href="#cb7-32"></a><span class="co">#   column.labels = c(&quot;Bank-based&quot;, &quot;Market-based&quot;, &quot;VC-based&quot;),</span></span>
-<span id="cb7-33"><a href="#cb7-33"></a><span class="co">#   covariate.labels = c(</span></span>
-<span id="cb7-34"><a href="#cb7-34"></a><span class="co">#     &quot;ln(Bank Credit/GDP)&quot;,</span></span>
-<span id="cb7-35"><a href="#cb7-35"></a><span class="co">#     &quot;ln(Market Capitalization/GDP)&quot;, </span></span>
-<span id="cb7-36"><a href="#cb7-36"></a><span class="co">#     &quot;ln(VC Investment/GDP)&quot;,</span></span>
-<span id="cb7-37"><a href="#cb7-37"></a><span class="co">#     &quot;IP Protection Index&quot;, </span></span>
-<span id="cb7-38"><a href="#cb7-38"></a><span class="co">#     &quot;ln(Bank FD) × IP Protection&quot;, </span></span>
-<span id="cb7-39"><a href="#cb7-39"></a><span class="co">#     &quot;ln(Market FD) × IP Protection&quot;,</span></span>
-<span id="cb7-40"><a href="#cb7-40"></a><span class="co">#     &quot;ln(VC FD) × IP Protection&quot;,</span></span>
-<span id="cb7-41"><a href="#cb7-41"></a><span class="co">#     &quot;ln(GDP per Capita)&quot;, </span></span>
-<span id="cb7-42"><a href="#cb7-42"></a><span class="co">#     &quot;ln(Trade/GDP)&quot;, </span></span>
-<span id="cb7-43"><a href="#cb7-43"></a><span class="co">#     &quot;ln(R&amp;D Expenditure/GDP)&quot;, </span></span>
-<span id="cb7-44"><a href="#cb7-44"></a><span class="co">#     &quot;ln(Tertiary Enrollment)&quot;</span></span>
-<span id="cb7-45"><a href="#cb7-45"></a><span class="co">#   ),</span></span>
-<span id="cb7-46"><a href="#cb7-46"></a><span class="co">#   se = list(count_bank_se, count_market_se, count_vc_se),</span></span>
-<span id="cb7-47"><a href="#cb7-47"></a><span class="co">#   omit.stat = c(&quot;ser&quot;, &quot;f&quot;),</span></span>
-<span id="cb7-48"><a href="#cb7-48"></a><span class="co">#   out = &quot;table2_quantity_log.html&quot;</span></span>
-<span id="cb7-49"><a href="#cb7-49"></a><span class="co"># )</span></span>
-<span id="cb7-50"><a href="#cb7-50"></a><span class="co"># </span></span>
-<span id="cb7-51"><a href="#cb7-51"></a><span class="co"># #sample size summary</span></span>
-<span id="cb7-52"><a href="#cb7-52"></a><span class="co"># </span></span>
-<span id="cb7-53"><a href="#cb7-53"></a><span class="co"># cat(&quot;\n\n SAMPLE SIZES \n&quot;)</span></span>
-<span id="cb7-54"><a href="#cb7-54"></a><span class="co"># cat(&quot;Bank/Market Models:\n&quot;)</span></span>
-<span id="cb7-55"><a href="#cb7-55"></a><span class="co"># cat(&quot;  Quality:&quot;, nobs(qual_bank), &quot;observations\n&quot;)</span></span>
-<span id="cb7-56"><a href="#cb7-56"></a><span class="co"># cat(&quot;  Quantity:&quot;, nobs(count_bank), &quot;observations\n&quot;)</span></span>
-<span id="cb7-57"><a href="#cb7-57"></a><span class="co"># cat(&quot;VC Models:\n&quot;)</span></span>
-<span id="cb7-58"><a href="#cb7-58"></a><span class="co"># cat(&quot;  Quality:&quot;, nobs(qual_vc), &quot;observations\n&quot;)</span></span>
-<span id="cb7-59"><a href="#cb7-59"></a><span class="co"># cat(&quot;  Quantity:&quot;, nobs(count_vc), &quot;observations\n&quot;)</span></span>
-<span id="cb7-60"><a href="#cb7-60"></a><span class="co"># cat(&quot;Countries (Bank/Market):&quot;, length(unique(master_bank_market$iso3c)), &quot;\n&quot;)</span></span>
-<span id="cb7-61"><a href="#cb7-61"></a><span class="co"># cat(&quot;Countries (VC):&quot;, length(unique(master_vc$iso3c)), &quot;\n&quot;)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
+<section id="log-transformations" class="level4" data-number="0.4.2">
+<h4 data-number="0.4.2" class="anchored" data-anchor-id="log-transformations"><span class="header-section-number">0.4.2</span> log transformations</h4>
 </section>
-<section id="z-score-standardization" class="level4" data-number="0.3.3">
-<h4 data-number="0.3.3" class="anchored" data-anchor-id="z-score-standardization"><span class="header-section-number">0.3.3</span> z-score standardization</h4>
-<div class="cell">
-<details open class="code-fold">
-<summary>Show code</summary>
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="co"># z score standardization</span></span>
-<span id="cb8-2"><a href="#cb8-2"></a><span class="co"># Same models but with standardized variables for effect size comparison, controls are just logged</span></span>
-<span id="cb8-3"><a href="#cb8-3"></a></span>
-<span id="cb8-4"><a href="#cb8-4"></a><span class="co"># Create standardized variables</span></span>
-<span id="cb8-5"><a href="#cb8-5"></a>master_clean <span class="ot">&lt;-</span> master_clean <span class="sc">%&gt;%</span></span>
-<span id="cb8-6"><a href="#cb8-6"></a>  <span class="co"># standardize variables (z-scores)</span></span>
-<span id="cb8-7"><a href="#cb8-7"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb8-8"><a href="#cb8-8"></a>    <span class="at">z_quality =</span> <span class="fu">as.numeric</span>(<span class="fu">scale</span>(quality_index_100)),</span>
-<span id="cb8-9"><a href="#cb8-9"></a>    <span class="at">z_patents =</span> <span class="fu">as.numeric</span>(<span class="fu">scale</span>(ln_patents)),</span>
-<span id="cb8-10"><a href="#cb8-10"></a>    <span class="at">z_bank =</span> <span class="fu">as.numeric</span>(<span class="fu">scale</span>(ln_bank)),</span>
-<span id="cb8-11"><a href="#cb8-11"></a>    <span class="at">z_market =</span> <span class="fu">as.numeric</span>(<span class="fu">scale</span>(ln_market)),</span>
-<span id="cb8-12"><a href="#cb8-12"></a>    <span class="at">z_vc =</span> <span class="fu">as.numeric</span>(<span class="fu">scale</span>(ln_vc)),</span>
-<span id="cb8-13"><a href="#cb8-13"></a>    <span class="at">z_ipp =</span> <span class="fu">as.numeric</span>(<span class="fu">scale</span>(ipp_index_IP_transformed))</span>
-<span id="cb8-14"><a href="#cb8-14"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb8-15"><a href="#cb8-15"></a>  <span class="co"># Create standardized interactions</span></span>
-<span id="cb8-16"><a href="#cb8-16"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb8-17"><a href="#cb8-17"></a>    <span class="at">z_bank_x_ipr =</span> z_bank <span class="sc">*</span> z_ipp,</span>
-<span id="cb8-18"><a href="#cb8-18"></a>    <span class="at">z_market_x_ipr =</span> z_market <span class="sc">*</span> z_ipp,</span>
-<span id="cb8-19"><a href="#cb8-19"></a>    <span class="at">z_vc_x_ipr =</span> z_vc <span class="sc">*</span> z_ipp</span>
-<span id="cb8-20"><a href="#cb8-20"></a>  )</span>
-<span id="cb8-21"><a href="#cb8-21"></a></span>
-<span id="cb8-22"><a href="#cb8-22"></a><span class="co"># Convert to panel </span></span>
-<span id="cb8-23"><a href="#cb8-23"></a>master_panel <span class="ot">&lt;-</span> <span class="fu">pdata.frame</span>(master_clean, <span class="at">index =</span> <span class="fu">c</span>(<span class="st">&quot;iso3c&quot;</span>, <span class="st">&quot;year&quot;</span>))</span>
-<span id="cb8-24"><a href="#cb8-24"></a></span>
-<span id="cb8-25"><a href="#cb8-25"></a><span class="co"># filter nas</span></span>
-<span id="cb8-26"><a href="#cb8-26"></a>master_levels <span class="ot">&lt;-</span> master_panel <span class="sc">%&gt;%</span></span>
-<span id="cb8-27"><a href="#cb8-27"></a>  <span class="fu">filter</span>(</span>
-<span id="cb8-28"><a href="#cb8-28"></a>    <span class="sc">!</span><span class="fu">is.na</span>(quality_index_100),</span>
-<span id="cb8-29"><a href="#cb8-29"></a>    <span class="sc">!</span><span class="fu">is.na</span>(patents_per_1000_researchers),</span>
-<span id="cb8-30"><a href="#cb8-30"></a>    <span class="sc">!</span><span class="fu">is.na</span>(ipp_index_IP_transformed),</span>
-<span id="cb8-31"><a href="#cb8-31"></a>    <span class="sc">!</span><span class="fu">is.na</span>(gdp_pc_const2015usd)</span>
-<span id="cb8-32"><a href="#cb8-32"></a>  )</span>
-<span id="cb8-33"><a href="#cb8-33"></a></span>
-<span id="cb8-34"><a href="#cb8-34"></a><span class="co"># split samples, just clearly label this, and make it VERY clear in the write-up</span></span>
-<span id="cb8-35"><a href="#cb8-35"></a>master_bank_market <span class="ot">&lt;-</span> master_levels <span class="sc">%&gt;%</span> </span>
-<span id="cb8-36"><a href="#cb8-36"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(bank_credit_gdp) <span class="sc">|</span> <span class="sc">!</span><span class="fu">is.na</span>(market_cap_gdp))</span>
-<span id="cb8-37"><a href="#cb8-37"></a></span>
-<span id="cb8-38"><a href="#cb8-38"></a>master_vc <span class="ot">&lt;-</span> master_levels <span class="sc">%&gt;%</span> </span>
-<span id="cb8-39"><a href="#cb8-39"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(VC_investment_pct))</span>
-<span id="cb8-40"><a href="#cb8-40"></a></span>
-<span id="cb8-41"><a href="#cb8-41"></a><span class="co">#quality regressions</span></span>
-<span id="cb8-42"><a href="#cb8-42"></a></span>
-<span id="cb8-43"><a href="#cb8-43"></a><span class="co"># Bank-based FD (standardized)</span></span>
-<span id="cb8-44"><a href="#cb8-44"></a>qual_bank_z <span class="ot">&lt;-</span> <span class="fu">plm</span>(</span>
-<span id="cb8-45"><a href="#cb8-45"></a>  z_quality <span class="sc">~</span> z_bank <span class="sc">+</span> z_ipp <span class="sc">+</span> z_bank_x_ipr <span class="sc">+</span></span>
-<span id="cb8-46"><a href="#cb8-46"></a>    ln_gdp_pc <span class="sc">+</span> ln_trade <span class="sc">+</span> ln_rd <span class="sc">+</span> ln_tertiary,</span>
-<span id="cb8-47"><a href="#cb8-47"></a>  <span class="at">data =</span> master_bank_market, </span>
-<span id="cb8-48"><a href="#cb8-48"></a>  <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, </span>
-<span id="cb8-49"><a href="#cb8-49"></a>  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span></span>
-<span id="cb8-50"><a href="#cb8-50"></a>)</span>
-<span id="cb8-51"><a href="#cb8-51"></a></span>
-<span id="cb8-52"><a href="#cb8-52"></a><span class="co"># Market-based FD (standardized)</span></span>
-<span id="cb8-53"><a href="#cb8-53"></a>qual_market_z <span class="ot">&lt;-</span> <span class="fu">plm</span>(</span>
-<span id="cb8-54"><a href="#cb8-54"></a>  z_quality <span class="sc">~</span> z_market <span class="sc">+</span> z_ipp <span class="sc">+</span> z_market_x_ipr <span class="sc">+</span></span>
-<span id="cb8-55"><a href="#cb8-55"></a>    ln_gdp_pc <span class="sc">+</span> ln_trade <span class="sc">+</span> ln_rd <span class="sc">+</span> ln_tertiary,</span>
-<span id="cb8-56"><a href="#cb8-56"></a>  <span class="at">data =</span> master_bank_market, </span>
-<span id="cb8-57"><a href="#cb8-57"></a>  <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, </span>
-<span id="cb8-58"><a href="#cb8-58"></a>  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span></span>
-<span id="cb8-59"><a href="#cb8-59"></a>)</span>
-<span id="cb8-60"><a href="#cb8-60"></a></span>
-<span id="cb8-61"><a href="#cb8-61"></a><span class="co"># VC-based FD (standardized)</span></span>
-<span id="cb8-62"><a href="#cb8-62"></a>qual_vc_z <span class="ot">&lt;-</span> <span class="fu">plm</span>(</span>
-<span id="cb8-63"><a href="#cb8-63"></a>  z_quality <span class="sc">~</span> z_vc <span class="sc">+</span> z_ipp <span class="sc">+</span> z_vc_x_ipr <span class="sc">+</span></span>
-<span id="cb8-64"><a href="#cb8-64"></a>    ln_gdp_pc <span class="sc">+</span> ln_trade <span class="sc">+</span> ln_rd <span class="sc">+</span> ln_tertiary,</span>
-<span id="cb8-65"><a href="#cb8-65"></a>  <span class="at">data =</span> master_vc, </span>
-<span id="cb8-66"><a href="#cb8-66"></a>  <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, </span>
-<span id="cb8-67"><a href="#cb8-67"></a>  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span></span>
-<span id="cb8-68"><a href="#cb8-68"></a>)</span>
-<span id="cb8-69"><a href="#cb8-69"></a></span>
-<span id="cb8-70"><a href="#cb8-70"></a><span class="co"># quantity regressions</span></span>
-<span id="cb8-71"><a href="#cb8-71"></a></span>
-<span id="cb8-72"><a href="#cb8-72"></a><span class="co"># Bank FD (standardized)</span></span>
-<span id="cb8-73"><a href="#cb8-73"></a>count_bank_z <span class="ot">&lt;-</span> <span class="fu">plm</span>(</span>
-<span id="cb8-74"><a href="#cb8-74"></a>  z_patents <span class="sc">~</span> z_bank <span class="sc">+</span> z_ipp <span class="sc">+</span> z_bank_x_ipr <span class="sc">+</span></span>
-<span id="cb8-75"><a href="#cb8-75"></a>    ln_gdp_pc <span class="sc">+</span> ln_trade <span class="sc">+</span> ln_rd <span class="sc">+</span> ln_tertiary,</span>
-<span id="cb8-76"><a href="#cb8-76"></a>  <span class="at">data =</span> master_bank_market, </span>
-<span id="cb8-77"><a href="#cb8-77"></a>  <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, </span>
-<span id="cb8-78"><a href="#cb8-78"></a>  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span></span>
-<span id="cb8-79"><a href="#cb8-79"></a>)</span>
-<span id="cb8-80"><a href="#cb8-80"></a></span>
-<span id="cb8-81"><a href="#cb8-81"></a><span class="co"># Market FD (standardized)</span></span>
-<span id="cb8-82"><a href="#cb8-82"></a>count_market_z <span class="ot">&lt;-</span> <span class="fu">plm</span>(</span>
-<span id="cb8-83"><a href="#cb8-83"></a>  z_patents <span class="sc">~</span> z_market <span class="sc">+</span> z_ipp <span class="sc">+</span> z_market_x_ipr <span class="sc">+</span></span>
-<span id="cb8-84"><a href="#cb8-84"></a>    ln_gdp_pc <span class="sc">+</span> ln_trade <span class="sc">+</span> ln_rd <span class="sc">+</span> ln_tertiary,</span>
-<span id="cb8-85"><a href="#cb8-85"></a>  <span class="at">data =</span> master_bank_market, </span>
-<span id="cb8-86"><a href="#cb8-86"></a>  <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, </span>
-<span id="cb8-87"><a href="#cb8-87"></a>  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span></span>
-<span id="cb8-88"><a href="#cb8-88"></a>)</span>
-<span id="cb8-89"><a href="#cb8-89"></a></span>
-<span id="cb8-90"><a href="#cb8-90"></a><span class="co"># VC FD (standardized)</span></span>
-<span id="cb8-91"><a href="#cb8-91"></a>count_vc_z <span class="ot">&lt;-</span> <span class="fu">plm</span>(</span>
-<span id="cb8-92"><a href="#cb8-92"></a>  z_patents <span class="sc">~</span> z_vc <span class="sc">+</span> z_ipp <span class="sc">+</span> z_vc_x_ipr <span class="sc">+</span></span>
-<span id="cb8-93"><a href="#cb8-93"></a>    ln_gdp_pc <span class="sc">+</span> ln_trade <span class="sc">+</span> ln_rd <span class="sc">+</span> ln_tertiary,</span>
-<span id="cb8-94"><a href="#cb8-94"></a>  <span class="at">data =</span> master_vc, </span>
-<span id="cb8-95"><a href="#cb8-95"></a>  <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, </span>
-<span id="cb8-96"><a href="#cb8-96"></a>  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span></span>
-<span id="cb8-97"><a href="#cb8-97"></a>)</span>
-<span id="cb8-98"><a href="#cb8-98"></a></span>
-<span id="cb8-99"><a href="#cb8-99"></a><span class="co">#clustered se</span></span>
-<span id="cb8-100"><a href="#cb8-100"></a></span>
-<span id="cb8-101"><a href="#cb8-101"></a>qual_bank_z_se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(<span class="fu">vcovHC</span>(qual_bank_z, <span class="at">type =</span> <span class="st">&quot;HC1&quot;</span>, <span class="at">cluster =</span> <span class="st">&quot;group&quot;</span>)))</span>
-<span id="cb8-102"><a href="#cb8-102"></a>qual_market_z_se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(<span class="fu">vcovHC</span>(qual_market_z, <span class="at">type =</span> <span class="st">&quot;HC1&quot;</span>, <span class="at">cluster =</span> <span class="st">&quot;group&quot;</span>)))</span>
-<span id="cb8-103"><a href="#cb8-103"></a>qual_vc_z_se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(<span class="fu">vcovHC</span>(qual_vc_z, <span class="at">type =</span> <span class="st">&quot;HC1&quot;</span>, <span class="at">cluster =</span> <span class="st">&quot;group&quot;</span>)))</span>
-<span id="cb8-104"><a href="#cb8-104"></a></span>
-<span id="cb8-105"><a href="#cb8-105"></a>count_bank_z_se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(<span class="fu">vcovHC</span>(count_bank_z, <span class="at">type =</span> <span class="st">&quot;HC1&quot;</span>, <span class="at">cluster =</span> <span class="st">&quot;group&quot;</span>)))</span>
-<span id="cb8-106"><a href="#cb8-106"></a>count_market_z_se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(<span class="fu">vcovHC</span>(count_market_z, <span class="at">type =</span> <span class="st">&quot;HC1&quot;</span>, <span class="at">cluster =</span> <span class="st">&quot;group&quot;</span>)))</span>
-<span id="cb8-107"><a href="#cb8-107"></a>count_vc_z_se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(<span class="fu">vcovHC</span>(count_vc_z, <span class="at">type =</span> <span class="st">&quot;HC1&quot;</span>, <span class="at">cluster =</span> <span class="st">&quot;group&quot;</span>)))</span>
-<span id="cb8-108"><a href="#cb8-108"></a></span>
-<span id="cb8-109"><a href="#cb8-109"></a><span class="co">#patent quality</span></span>
-<span id="cb8-110"><a href="#cb8-110"></a></span>
-<span id="cb8-111"><a href="#cb8-111"></a><span class="fu">stargazer</span>(</span>
-<span id="cb8-112"><a href="#cb8-112"></a>  qual_bank_z, qual_market_z, qual_vc_z,</span>
-<span id="cb8-113"><a href="#cb8-113"></a>  <span class="at">type =</span> <span class="st">&quot;text&quot;</span>,</span>
-<span id="cb8-114"><a href="#cb8-114"></a>  <span class="at">font.size =</span> <span class="st">&quot;tiny&quot;</span>,</span>
-<span id="cb8-115"><a href="#cb8-115"></a>  <span class="at">column.sep.width =</span> <span class="st">&quot;0pt&quot;</span>,</span>
-<span id="cb8-116"><a href="#cb8-116"></a>  <span class="at">single.row =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb8-117"><a href="#cb8-117"></a>  <span class="at">no.space =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb8-118"><a href="#cb8-118"></a>  <span class="at">float =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb8-119"><a href="#cb8-119"></a>  <span class="at">title =</span> <span class="st">&quot;Standardized Coefficients: Financial Development, IP Protection and Patent Quality&quot;</span>,</span>
-<span id="cb8-120"><a href="#cb8-120"></a>  <span class="at">dep.var.labels =</span> <span class="st">&quot;Patent Quality (z-score)&quot;</span>,</span>
-<span id="cb8-121"><a href="#cb8-121"></a>  <span class="at">dep.var.caption =</span> <span class="st">&quot;Dependant Variable: Standardized Patent Quality&quot;</span>,</span>
-<span id="cb8-122"><a href="#cb8-122"></a>  <span class="at">column.labels =</span> <span class="fu">c</span>(<span class="st">&quot;Bank-based&quot;</span>, <span class="st">&quot;Market-based&quot;</span>, <span class="st">&quot;VC-based&quot;</span>),</span>
-<span id="cb8-123"><a href="#cb8-123"></a>  <span class="at">covariate.labels =</span> <span class="fu">c</span>(</span>
-<span id="cb8-124"><a href="#cb8-124"></a>    <span class="st">&quot;Bank Credit/GDP (z)&quot;</span>,</span>
-<span id="cb8-125"><a href="#cb8-125"></a>    <span class="st">&quot;Market Capitalization/GDP (z)&quot;</span>, </span>
-<span id="cb8-126"><a href="#cb8-126"></a>    <span class="st">&quot;VC Investment/GDP (z)&quot;</span>,</span>
-<span id="cb8-127"><a href="#cb8-127"></a>    <span class="st">&quot;IP Protection Index (z)&quot;</span>, </span>
-<span id="cb8-128"><a href="#cb8-128"></a>    <span class="st">&quot;Bank FD × IP Protection (z)&quot;</span>, </span>
-<span id="cb8-129"><a href="#cb8-129"></a>    <span class="st">&quot;Market FD × IP Protection (z)&quot;</span>,</span>
-<span id="cb8-130"><a href="#cb8-130"></a>    <span class="st">&quot;VC FD × IP Protection (z)&quot;</span>,</span>
-<span id="cb8-131"><a href="#cb8-131"></a>    <span class="st">&quot;ln(GDP per Capita)&quot;</span>, </span>
-<span id="cb8-132"><a href="#cb8-132"></a>    <span class="st">&quot;ln(Trade/GDP)&quot;</span>, </span>
-<span id="cb8-133"><a href="#cb8-133"></a>    <span class="st">&quot;ln(R&amp;D Expenditure/GDP)&quot;</span>, </span>
-<span id="cb8-134"><a href="#cb8-134"></a>    <span class="st">&quot;ln(Tertiary Enrollment)&quot;</span></span>
-<span id="cb8-135"><a href="#cb8-135"></a>  ),</span>
-<span id="cb8-136"><a href="#cb8-136"></a>  <span class="at">se =</span> <span class="fu">list</span>(qual_bank_z_se, qual_market_z_se, qual_vc_z_se),</span>
-<span id="cb8-137"><a href="#cb8-137"></a>  <span class="at">omit.stat =</span> <span class="fu">c</span>(<span class="st">&quot;ser&quot;</span>, <span class="st">&quot;f&quot;</span>),</span>
-<span id="cb8-138"><a href="#cb8-138"></a>  <span class="at">add.lines =</span> <span class="fu">list</span>(</span>
-<span id="cb8-139"><a href="#cb8-139"></a>    <span class="fu">c</span>(<span class="st">&quot;Observations&quot;</span>, </span>
-<span id="cb8-140"><a href="#cb8-140"></a>      <span class="fu">nobs</span>(qual_bank_z), </span>
-<span id="cb8-141"><a href="#cb8-141"></a>      <span class="fu">nobs</span>(qual_market_z), </span>
-<span id="cb8-142"><a href="#cb8-142"></a>      <span class="fu">nobs</span>(qual_vc_z)),</span>
-<span id="cb8-143"><a href="#cb8-143"></a>    <span class="fu">c</span>(<span class="st">&quot;R-squared&quot;</span>, </span>
-<span id="cb8-144"><a href="#cb8-144"></a>      <span class="fu">round</span>(<span class="fu">summary</span>(qual_bank_z)<span class="sc">$</span>r.squared[<span class="st">&quot;rsq&quot;</span>], <span class="dv">3</span>),</span>
-<span id="cb8-145"><a href="#cb8-145"></a>      <span class="fu">round</span>(<span class="fu">summary</span>(qual_market_z)<span class="sc">$</span>r.squared[<span class="st">&quot;rsq&quot;</span>], <span class="dv">3</span>),</span>
-<span id="cb8-146"><a href="#cb8-146"></a>      <span class="fu">round</span>(<span class="fu">summary</span>(qual_vc_z)<span class="sc">$</span>r.squared[<span class="st">&quot;rsq&quot;</span>], <span class="dv">3</span>)),</span>
-<span id="cb8-147"><a href="#cb8-147"></a>    <span class="fu">c</span>(<span class="st">&quot;Adj. R-squared&quot;</span>, </span>
-<span id="cb8-148"><a href="#cb8-148"></a>      <span class="fu">round</span>(<span class="fu">summary</span>(qual_bank_z)<span class="sc">$</span>r.squared[<span class="st">&quot;adjrsq&quot;</span>], <span class="dv">3</span>),</span>
-<span id="cb8-149"><a href="#cb8-149"></a>      <span class="fu">round</span>(<span class="fu">summary</span>(qual_market_z)<span class="sc">$</span>r.squared[<span class="st">&quot;adjrsq&quot;</span>], <span class="dv">3</span>),</span>
-<span id="cb8-150"><a href="#cb8-150"></a>      <span class="fu">round</span>(<span class="fu">summary</span>(qual_vc_z)<span class="sc">$</span>r.squared[<span class="st">&quot;adjrsq&quot;</span>], <span class="dv">3</span>)),</span>
-<span id="cb8-151"><a href="#cb8-151"></a>    <span class="fu">c</span>(<span class="st">&quot;F Statistic&quot;</span>, </span>
-<span id="cb8-152"><a href="#cb8-152"></a>      <span class="fu">paste0</span>(<span class="fu">round</span>(<span class="fu">summary</span>(qual_bank_z)<span class="sc">$</span>fstatistic<span class="sc">$</span>statistic, <span class="dv">2</span>), <span class="st">&quot;***&quot;</span>),</span>
-<span id="cb8-153"><a href="#cb8-153"></a>      <span class="fu">paste0</span>(<span class="fu">round</span>(<span class="fu">summary</span>(qual_market_z)<span class="sc">$</span>fstatistic<span class="sc">$</span>statistic, <span class="dv">2</span>), <span class="st">&quot;***&quot;</span>),</span>
-<span id="cb8-154"><a href="#cb8-154"></a>      <span class="fu">paste0</span>(<span class="fu">round</span>(<span class="fu">summary</span>(qual_vc_z)<span class="sc">$</span>fstatistic<span class="sc">$</span>statistic, <span class="dv">2</span>), <span class="st">&quot;***&quot;</span>)),</span>
-<span id="cb8-155"><a href="#cb8-155"></a>    <span class="fu">c</span>(<span class="st">&quot;Sample Note&quot;</span>, </span>
-<span id="cb8-156"><a href="#cb8-156"></a>      <span class="st">&quot;Bank/Market: N=610&quot;</span>, </span>
-<span id="cb8-157"><a href="#cb8-157"></a>      <span class="st">&quot;Bank/Market: N=528&quot;</span>, </span>
-<span id="cb8-158"><a href="#cb8-158"></a>      <span class="st">&quot;VC Only: N=329&quot;</span>)</span>
-<span id="cb8-159"><a href="#cb8-159"></a>  ),</span>
-<span id="cb8-160"><a href="#cb8-160"></a>  <span class="at">notes =</span> <span class="fu">paste</span>(</span>
-<span id="cb8-161"><a href="#cb8-161"></a>    <span class="st">&quot;All specifications include country and year fixed effects.&quot;</span>,</span>
-<span id="cb8-162"><a href="#cb8-162"></a>    <span class="st">&quot;Financial development and IP protection variables standardized to z-scores (mean=0, SD=1).&quot;</span>,</span>
-<span id="cb8-163"><a href="#cb8-163"></a>    <span class="st">&quot;Control variables remain in natural logarithms.&quot;</span>,</span>
-<span id="cb8-164"><a href="#cb8-164"></a>    <span class="st">&quot;Standard errors clustered by country in parentheses.&quot;</span>,</span>
-<span id="cb8-165"><a href="#cb8-165"></a>    <span class="st">&quot;*p&lt;0.1; **p&lt;0.05; ***p&lt;0.01&quot;</span></span>
-<span id="cb8-166"><a href="#cb8-166"></a>  ),</span>
-<span id="cb8-167"><a href="#cb8-167"></a>  <span class="at">align =</span> <span class="cn">TRUE</span></span>
-<span id="cb8-168"><a href="#cb8-168"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-======================================================================================================================================================================================================================================================================================================================
-                                                                                                                                                  Dependant Variable: Standardized Patent Quality                                                                                                                     
-                              ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-                                                                                                                                                              Patent Quality (z-score)                                                                                                                                
-                                                                        Bank-based                                                                                    Market-based                                                                                   VC-based                                         
-                                                                           (1)                                                                                            (2)                                                                                          (3)                                            
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Bank Credit/GDP (z)                                                      0.712***                                                                                                                                                                                                                                     
-                                                                         (0.260)                                                                                                                                                                                                                                      
-Market Capitalization/GDP (z)                                                                                                                                           0.675***                                                                                                                                      
-                                                                                                                                                                        (0.152)                                                                                                                                       
-VC Investment/GDP (z)                                                                                                                                                                                                                                                0.591**                                          
-                                                                                                                                                                                                                                                                     (0.242)                                          
-IP Protection Index (z)                                                   0.114                                                                                         -0.378**                                                                                    -0.370***                                         
-                                                                         (0.237)                                                                                        (0.157)                                                                                      (0.129)                                          
-Bank FD × IP Protection (z)                                               -0.289                                                                                                                                                                                                                                      
-                                                                         (0.185)                                                                                                                                                                                                                                      
-Market FD × IP Protection (z)                                                                                                                                          -0.488***                                                                                                                                      
-                                                                                                                                                                        (0.121)                                                                                                                                       
-VC FD × IP Protection (z)                                                                                                                                                                                                                                            -0.266*                                          
-                                                                                                                                                                                                                                                                     (0.143)                                          
-ln(GDP per Capita)                                                       0.371***                                                                                       0.525***                                                                                     0.470***                                         
-                                                                         (0.124)                                                                                        (0.157)                                                                                      (0.096)                                          
-ln(Trade/GDP)                                                             -0.178                                                                                         -0.112                                                                                      -0.119**                                         
-                                                                         (0.168)                                                                                        (0.110)                                                                                      (0.058)                                          
-ln(R&amp;D Expenditure/GDP)                                                   -0.224                                                                                         -0.207                                                                                       -0.085                                          
-                                                                         (0.321)                                                                                        (0.288)                                                                                      (0.106)                                          
-ln(Tertiary Enrollment)                                                   0.254                                                                                         0.390**                                                                                      -0.254**                                         
-                                                                         (0.170)                                                                                        (0.198)                                                                                      (0.123)                                          
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Observations                                                               610                                                                                            528                                                                                          329                                            
-R-squared                                                                 0.242                                                                                          0.238                                                                                        0.318                                           
-Adj. R-squared                                                            0.117                                                                                          0.089                                                                                        0.112                                           
-F Statistic                                                              23.84***                                                                                       19.63***                                                                                     16.75***                                         
-Sample Note                                                         Bank/Market: N=610                                                                             Bank/Market: N=528                                                                             VC Only: N=329                                      
-Observations                                                               610                                                                                            528                                                                                          329                                            
-R2                                                                        0.242                                                                                          0.238                                                                                        0.318                                           
-Adjusted R2                                                               0.117                                                                                          0.089                                                                                        0.112                                           
-======================================================================================================================================================================================================================================================================================================================
-Note:                                                                                                                                                                                                                                                                                      *p&lt;0.1; **p&lt;0.05; ***p&lt;0.01
-                                All specifications include country and year fixed effects. Financial development and IP protection variables standardized to z-scores (mean=0, SD=1). Control variables remain in natural logarithms. Standard errors clustered by country in parentheses. *p&lt;0.1; **p&lt;0.05; ***p&lt;0.01</code></pre>
-</div>
-<details open class="code-fold">
-<summary>Show code</summary>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="co">#patent quantity table (z-score standardized)</span></span>
-<span id="cb10-2"><a href="#cb10-2"></a></span>
-<span id="cb10-3"><a href="#cb10-3"></a><span class="fu">stargazer</span>(</span>
-<span id="cb10-4"><a href="#cb10-4"></a>  count_bank_z, count_market_z, count_vc_z,</span>
-<span id="cb10-5"><a href="#cb10-5"></a>  <span class="at">type =</span> <span class="st">&quot;text&quot;</span>,</span>
-<span id="cb10-6"><a href="#cb10-6"></a>  <span class="at">font.size =</span> <span class="st">&quot;tiny&quot;</span>,</span>
-<span id="cb10-7"><a href="#cb10-7"></a>  <span class="at">column.sep.width =</span> <span class="st">&quot;0pt&quot;</span>,</span>
-<span id="cb10-8"><a href="#cb10-8"></a>  <span class="at">single.row =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb10-9"><a href="#cb10-9"></a>  <span class="at">no.space =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb10-10"><a href="#cb10-10"></a>  <span class="at">float =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb10-11"><a href="#cb10-11"></a>  <span class="at">title =</span> <span class="st">&quot;Standardized Coefficients: Financial Development, IP Protection and Patent Quantity&quot;</span>,</span>
-<span id="cb10-12"><a href="#cb10-12"></a>  <span class="at">dep.var.labels =</span> <span class="st">&quot;ln(Patents) (z-score)&quot;</span>,</span>
-<span id="cb10-13"><a href="#cb10-13"></a>  <span class="at">dep.var.caption =</span> <span class="st">&quot;Dependant Variable: Standardized ln(Patents per 1,000 Researchers)&quot;</span>,</span>
-<span id="cb10-14"><a href="#cb10-14"></a>  <span class="at">column.labels =</span> <span class="fu">c</span>(<span class="st">&quot;Bank-based&quot;</span>, <span class="st">&quot;Market-based&quot;</span>, <span class="st">&quot;VC-based&quot;</span>),</span>
-<span id="cb10-15"><a href="#cb10-15"></a>  <span class="at">covariate.labels =</span> <span class="fu">c</span>(</span>
-<span id="cb10-16"><a href="#cb10-16"></a>    <span class="st">&quot;Bank Credit/GDP (z)&quot;</span>,</span>
-<span id="cb10-17"><a href="#cb10-17"></a>    <span class="st">&quot;Market Capitalization/GDP (z)&quot;</span>, </span>
-<span id="cb10-18"><a href="#cb10-18"></a>    <span class="st">&quot;VC Investment/GDP (z)&quot;</span>,</span>
-<span id="cb10-19"><a href="#cb10-19"></a>    <span class="st">&quot;IP Protection Index (z)&quot;</span>, </span>
-<span id="cb10-20"><a href="#cb10-20"></a>    <span class="st">&quot;Bank FD × IP Protection (z)&quot;</span>, </span>
-<span id="cb10-21"><a href="#cb10-21"></a>    <span class="st">&quot;Market FD × IP Protection (z)&quot;</span>,</span>
-<span id="cb10-22"><a href="#cb10-22"></a>    <span class="st">&quot;VC FD × IP Protection (z)&quot;</span>,</span>
-<span id="cb10-23"><a href="#cb10-23"></a>    <span class="st">&quot;ln(GDP per Capita)&quot;</span>, </span>
-<span id="cb10-24"><a href="#cb10-24"></a>    <span class="st">&quot;ln(Trade/GDP)&quot;</span>, </span>
-<span id="cb10-25"><a href="#cb10-25"></a>    <span class="st">&quot;ln(R&amp;D Expenditure/GDP)&quot;</span>, </span>
-<span id="cb10-26"><a href="#cb10-26"></a>    <span class="st">&quot;ln(Tertiary Enrollment)&quot;</span></span>
-<span id="cb10-27"><a href="#cb10-27"></a>  ),</span>
-<span id="cb10-28"><a href="#cb10-28"></a>  <span class="at">se =</span> <span class="fu">list</span>(count_bank_z_se, count_market_z_se, count_vc_z_se),</span>
-<span id="cb10-29"><a href="#cb10-29"></a>  <span class="at">omit.stat =</span> <span class="fu">c</span>(<span class="st">&quot;ser&quot;</span>, <span class="st">&quot;f&quot;</span>),</span>
-<span id="cb10-30"><a href="#cb10-30"></a>  <span class="at">add.lines =</span> <span class="fu">list</span>(</span>
-<span id="cb10-31"><a href="#cb10-31"></a>    <span class="fu">c</span>(<span class="st">&quot;Observations&quot;</span>, </span>
-<span id="cb10-32"><a href="#cb10-32"></a>      <span class="fu">nobs</span>(count_bank_z), </span>
-<span id="cb10-33"><a href="#cb10-33"></a>      <span class="fu">nobs</span>(count_market_z), </span>
-<span id="cb10-34"><a href="#cb10-34"></a>      <span class="fu">nobs</span>(count_vc_z)),</span>
-<span id="cb10-35"><a href="#cb10-35"></a>    <span class="fu">c</span>(<span class="st">&quot;R-squared&quot;</span>, </span>
-<span id="cb10-36"><a href="#cb10-36"></a>      <span class="fu">round</span>(<span class="fu">summary</span>(count_bank_z)<span class="sc">$</span>r.squared[<span class="st">&quot;rsq&quot;</span>], <span class="dv">3</span>),</span>
-<span id="cb10-37"><a href="#cb10-37"></a>      <span class="fu">round</span>(<span class="fu">summary</span>(count_market_z)<span class="sc">$</span>r.squared[<span class="st">&quot;rsq&quot;</span>], <span class="dv">3</span>),</span>
-<span id="cb10-38"><a href="#cb10-38"></a>      <span class="fu">round</span>(<span class="fu">summary</span>(count_vc_z)<span class="sc">$</span>r.squared[<span class="st">&quot;rsq&quot;</span>], <span class="dv">3</span>)),</span>
-<span id="cb10-39"><a href="#cb10-39"></a>    <span class="fu">c</span>(<span class="st">&quot;Adj. R-squared&quot;</span>, </span>
-<span id="cb10-40"><a href="#cb10-40"></a>      <span class="fu">round</span>(<span class="fu">summary</span>(count_bank_z)<span class="sc">$</span>r.squared[<span class="st">&quot;adjrsq&quot;</span>], <span class="dv">3</span>),</span>
-<span id="cb10-41"><a href="#cb10-41"></a>      <span class="fu">round</span>(<span class="fu">summary</span>(count_market_z)<span class="sc">$</span>r.squared[<span class="st">&quot;adjrsq&quot;</span>], <span class="dv">3</span>),</span>
-<span id="cb10-42"><a href="#cb10-42"></a>      <span class="fu">round</span>(<span class="fu">summary</span>(count_vc_z)<span class="sc">$</span>r.squared[<span class="st">&quot;adjrsq&quot;</span>], <span class="dv">3</span>)),</span>
-<span id="cb10-43"><a href="#cb10-43"></a>    <span class="fu">c</span>(<span class="st">&quot;F Statistic&quot;</span>, </span>
-<span id="cb10-44"><a href="#cb10-44"></a>      <span class="fu">paste0</span>(<span class="fu">round</span>(<span class="fu">summary</span>(count_bank_z)<span class="sc">$</span>fstatistic<span class="sc">$</span>statistic, <span class="dv">2</span>), <span class="st">&quot;***&quot;</span>),</span>
-<span id="cb10-45"><a href="#cb10-45"></a>      <span class="fu">paste0</span>(<span class="fu">round</span>(<span class="fu">summary</span>(count_market_z)<span class="sc">$</span>fstatistic<span class="sc">$</span>statistic, <span class="dv">2</span>), <span class="st">&quot;***&quot;</span>),</span>
-<span id="cb10-46"><a href="#cb10-46"></a>      <span class="fu">paste0</span>(<span class="fu">round</span>(<span class="fu">summary</span>(count_vc_z)<span class="sc">$</span>fstatistic<span class="sc">$</span>statistic, <span class="dv">2</span>), <span class="st">&quot;***&quot;</span>)),</span>
-<span id="cb10-47"><a href="#cb10-47"></a>    <span class="fu">c</span>(<span class="st">&quot;Sample Note&quot;</span>, </span>
-<span id="cb10-48"><a href="#cb10-48"></a>      <span class="st">&quot;Bank/Market: N=610&quot;</span>, </span>
-<span id="cb10-49"><a href="#cb10-49"></a>      <span class="st">&quot;Bank/Market: N=528&quot;</span>, </span>
-<span id="cb10-50"><a href="#cb10-50"></a>      <span class="st">&quot;VC Only: N=329&quot;</span>)</span>
-<span id="cb10-51"><a href="#cb10-51"></a>  ),</span>
-<span id="cb10-52"><a href="#cb10-52"></a>  <span class="at">notes =</span> <span class="fu">paste</span>(</span>
-<span id="cb10-53"><a href="#cb10-53"></a>    <span class="st">&quot;All specifications include country and year fixed effects.&quot;</span>,</span>
-<span id="cb10-54"><a href="#cb10-54"></a>    <span class="st">&quot;Financial development, IP protection, and dependent variables standardized to z-scores (mean=0, SD=1).&quot;</span>,</span>
-<span id="cb10-55"><a href="#cb10-55"></a>    <span class="st">&quot;Control variables remain in natural logarithms.&quot;</span>,</span>
-<span id="cb10-56"><a href="#cb10-56"></a>    <span class="st">&quot;Standard errors clustered by country in parentheses.&quot;</span>,</span>
-<span id="cb10-57"><a href="#cb10-57"></a>    <span class="st">&quot;*p&lt;0.1; **p&lt;0.05; ***p&lt;0.01&quot;</span></span>
-<span id="cb10-58"><a href="#cb10-58"></a>  ),</span>
-<span id="cb10-59"><a href="#cb10-59"></a>  <span class="at">align =</span> <span class="cn">TRUE</span></span>
-<span id="cb10-60"><a href="#cb10-60"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-==================================================================================================================================================================================================================================================================================================================================
-                                                                                                                                               Dependant Variable: Standardized ln(Patents per 1,000 Researchers)                                                                                                                 
-                              ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-                                                                                                                                                                     ln(Patents) (z-score)                                                                                                                                        
-                                                                          Bank-based                                                                                         Market-based                                                                                      VC-based                                           
-                                                                              (1)                                                                                                (2)                                                                                              (3)                                             
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Bank Credit/GDP (z)                                                         -0.249                                                                                                                                                                                                                                                
-                                                                            (0.466)                                                                                                                                                                                                                                               
-Market Capitalization/GDP (z)                                                                                                                                                   -0.220                                                                                                                                            
-                                                                                                                                                                               (0.185)                                                                                                                                            
-VC Investment/GDP (z)                                                                                                                                                                                                                                                          -1.624***                                          
-                                                                                                                                                                                                                                                                                (0.403)                                           
-IP Protection Index (z)                                                      0.336                                                                                             0.423**                                                                                           0.011                                            
-                                                                            (0.267)                                                                                            (0.164)                                                                                          (0.315)                                           
-Bank FD × IP Protection (z)                                                  0.335                                                                                                                                                                                                                                                
-                                                                            (0.299)                                                                                                                                                                                                                                               
-Market FD × IP Protection (z)                                                                                                                                                   0.265*                                                                                                                                            
-                                                                                                                                                                               (0.140)                                                                                                                                            
-VC FD × IP Protection (z)                                                                                                                                                                                                                                                      0.907***                                           
-                                                                                                                                                                                                                                                                                (0.216)                                           
-ln(GDP per Capita)                                                         -0.546***                                                                                          -0.620***                                                                                        -0.510**                                           
-                                                                            (0.150)                                                                                            (0.214)                                                                                          (0.235)                                           
-ln(Trade/GDP)                                                              -0.493***                                                                                           -0.292*                                                                                         -0.656***                                          
-                                                                            (0.134)                                                                                            (0.165)                                                                                          (0.093)                                           
-ln(R&amp;D Expenditure/GDP)                                                    1.340***                                                                                            1.453***                                                                                        2.132***                                           
-                                                                            (0.358)                                                                                            (0.300)                                                                                          (0.508)                                           
-ln(Tertiary Enrollment)                                                      0.105                                                                                              0.141                                                                                          -0.667***                                          
-                                                                            (0.189)                                                                                            (0.203)                                                                                          (0.187)                                           
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Observations                                                                  610                                                                                                528                                                                                              329                                             
-R-squared                                                                    0.549                                                                                              0.472                                                                                            0.605                                            
-Adj. R-squared                                                               0.475                                                                                              0.369                                                                                            0.486                                            
-F Statistic                                                                90.94***                                                                                            56.23***                                                                                        55.15***                                           
-Sample Note                                                           Bank/Market: N=610                                                                                  Bank/Market: N=528                                                                                VC Only: N=329                                        
-Observations                                                                  610                                                                                                528                                                                                              329                                             
-R2                                                                           0.549                                                                                              0.472                                                                                            0.605                                            
-Adjusted R2                                                                  0.475                                                                                              0.369                                                                                            0.486                                            
-==================================================================================================================================================================================================================================================================================================================================
-Note:                                                                                                                                                                                                                                                                                                  *p&lt;0.1; **p&lt;0.05; ***p&lt;0.01
-                                All specifications include country and year fixed effects. Financial development, IP protection, and dependent variables standardized to z-scores (mean=0, SD=1). Control variables remain in natural logarithms. Standard errors clustered by country in parentheses. *p&lt;0.1; **p&lt;0.05; ***p&lt;0.01</code></pre>
-</div>
-</div>
+<section id="z-score-standardization" class="level4" data-number="0.4.3">
+<h4 data-number="0.4.3" class="anchored" data-anchor-id="z-score-standardization"><span class="header-section-number">0.4.3</span> z-score standardization</h4>
 </section>
 </section>
-<section id="variable-glossary" class="level3" data-number="0.4">
-<h3 data-number="0.4" class="anchored" data-anchor-id="variable-glossary"><span class="header-section-number">0.4</span> Variable Glossary</h3>
+<section id="variable-glossary" class="level3" data-number="0.5">
+<h3 data-number="0.5" class="anchored" data-anchor-id="variable-glossary"><span class="header-section-number">0.5</span> Variable Glossary</h3>
 <p>whatever transformations that end up in the final results will be explained further here:</p>
 <ul>
 <li><code>iso3c</code> - Every country’s unique iso3 code, used to standardize and merge all data</li>

@@ -1,7 +1,7 @@
 ---
 title: "Thesis Data Work"
 author: Aaron DiLorenzo
-date: "Jan 17, 2024"
+date: "Jan 19, 2024"
 format: 
   html:
     theme: cosmo
@@ -272,74 +272,407 @@ if __name__ == "__main__":
 ```
 
 ### Combining the Patent Quality Indicators with Additional Variables (Park Index, Financial Development Measures, & Controls)
+```{r echo= TRUE, eval= TRUE}
 
-This python script merges the transformed PQI data with the Park Index of intellectual property right protections (5-year fill interpolation), measures of financial development, and control variables.  
+library(tidyverse)
+library(data.table)
 
-```python
+options(dplyr.summarise.inform = FALSE)
 
-'''
-Master Panel Script - combines financial development data, ipr data, quality data, and controls
-'''
-import pandas as pd
-import os
+data_dir <- "data"
+out_file <- file.path(data_dir, "monarch_panel_raw.csv")
 
-# Set directory
-data_dir = "/Users/aarondilorenzo/Desktop/DATATHES/FINAL WORKING DATA"
+# load the datasets
+quality  <- fread(file.path(data_dir, "quality_final.csv"))
+vc       <- fread(file.path(data_dir, "VC_final.csv"))
+park     <- fread(file.path(data_dir, "Park_final.csv"))
+controls <- fread(file.path(data_dir, "Controls_final.csv"))
+finance  <- fread(file.path(data_dir, "FD_Final.csv"))
+counts   <- fread(file.path(data_dir, "counts_res_final.csv"))
 
-files = {
-    "quality": "quality_final.csv",
-    "vc": "VC_final.csv",
-    "park": "Park_final.csv",
-    "controls": "Controls_final.csv",
-    "finance": "FD_Final.csv",
-    "counts": "Counts_res_final.csv"
-}
 
-dfs = {}
-for key, fname in files.items():
-    path = os.path.join(data_dir, fname)
-    try:
-        df = pd.read_csv(path)
 
-        # Standardize column names
-        for col in df.columns:
-            if col.lower() in ["iso3", "iso3c", "country_code"]:
-                df = df.rename(columns={col: "iso3c"})
-            if col.lower() in ["country", "country name"]:
-                df = df.rename(columns={col: "country_name"})
-        cols = [c for c in df.columns if c != "country_name"]
-        df = df[["iso3c", "year", "country_name"] + [c for c in cols if c not in ["iso3c", "year"]]]
+stopifnot(!anyDuplicated(quality[, .(iso3c, year)]))
 
-        
-        if "year" in df.columns:
-            df["year"] = df["year"].astype(int)
+monarch <- quality
 
-        dfs[key] = df
+#drop dupe columns
 
-    except Exception as e:
+vc <- vc %>%
+  select(iso3c, year, VC_investment)
 
-# Merge
-master = None
-for name, df in dfs.items():
-    if master is None:
-        master = df
-    else:
-        if "country_name" in master.columns and "country_name" in df.columns:
-            df = df.drop(columns=["country_name"])
-        master = pd.merge(master, df, on=["iso3c", "year"], how="outer")
+stopifnot(!anyDuplicated(vc[, .(iso3c, year)]))
 
-# sort and organize
-master = master.sort_values(["iso3c", "year"]).reset_index(drop=True)
+monarch <- monarch %>%
+  left_join(vc, by = c("iso3c", "year"))
 
-# save
-out_path = os.path.join(data_dir, "Master_Panel.csv")
-master.to_csv(out_path, index=False)
+#drop dupe columns
+
+park <- park %>%
+  filter(!is.na(iso3c), iso3c != "") %>%
+  select(iso3c, year, ipp_index_IP_transformed)
+
+stopifnot(!anyDuplicated(park[, .(iso3c, year)]))
+
+monarch <- monarch %>%
+  left_join(park, by = c("iso3c", "year"))
+
+#clean the controls
+
+controls <- controls %>%
+  select(
+    iso3c, year,
+    gdp_pc_const2015usd,
+    trade_percent_gdp,
+    rd_expenditure_percent_gdp,
+    tertiary_enrollment_percent,
+    researchers_per_million,
+    population_total
+  ) %>%
+  mutate(across(
+    -c(iso3c, year),
+    ~ as.numeric(na_if(.x, ".."))
+  ))
+
+stopifnot(!anyDuplicated(controls[, .(iso3c, year)]))
+
+monarch <- monarch %>%
+  left_join(controls, by = c("iso3c", "year"))
+
+#clean fd variables
+
+finance <- finance %>%
+  select(
+    iso3c, year,
+    bank_credit_gdp,
+    market_cap_gdp
+  ) %>%
+  mutate(across(
+    -c(iso3c, year),
+    ~ as.numeric(na_if(.x, ".."))
+  ))
+
+stopifnot(!anyDuplicated(finance[, .(iso3c, year)]))
+
+monarch <- monarch %>%
+  left_join(finance, by = c("iso3c", "year"))
+
+#ensure counts are good
+
+counts <- counts %>%
+  select(
+    iso3c, year,
+    patent_applications_residents
+  ) %>%
+  mutate(across(
+    -c(iso3c, year),
+    ~ as.numeric(na_if(.x, ".."))
+  ))
+
+stopifnot(!anyDuplicated(counts[, .(iso3c, year)]))
+
+monarch <- monarch %>%
+  left_join(counts, by = c("iso3c", "year"))
+
+#double make sure no duplicates
+
+# One row per country-year
+stopifnot(!anyDuplicated(monarch[, .(iso3c, year)]))
+
+# No missing keys (iso3c and years)
+stopifnot(!any(is.na(monarch$iso3c)))
+stopifnot(!any(is.na(monarch$year)))
+
+#save the clean data
+
+fwrite(monarch, out_file)
+```
+```{r eval= TRUE, echo= FALSE}
+cat("rows:", nrow(monarch), "\n")
+cat("countries:", n_distinct(monarch$iso3c), "\n")
+cat("years:", length(unique(monarch$year)), "\n")
+
+```
+#### apply transformations
+```{r eval= TRUE, echo= TRUE}
+
+rm(list = ls())
+
+library(tidyverse)
+library(data.table)
+
+options(dplyr.summarise.inform = FALSE)
+
+
+
+monarch <- fread("data/monarch_panel_raw.csv")
+
+
+
+monarch_t <- monarch %>%
+  
+  # normalise counts based on researchers
+  mutate(
+    researchers_total = researchers_per_million * (population_total / 1e6),
+    patents_per_1000_researchers =
+      (patent_applications_residents / researchers_total) * 1000,
+    patents_per_1000_researchers =
+      ifelse(
+        is.infinite(patents_per_1000_researchers) |
+          patents_per_1000_researchers < 0,
+        NA,
+        patents_per_1000_researchers
+      )
+  ) %>%
+  
+  #scale quality for interpretability
+  mutate(
+    quality_index_100 = avg_quality_index_4 * 100
+  ) %>%
+  
+  #log variables
+  
+  mutate(
+    ln_patents = log(patents_per_1000_researchers + 1),
+    ln_gdp_pc  = log(gdp_pc_const2015usd + 1),
+    ln_bank    = log(bank_credit_gdp + 1),
+    ln_market = log(market_cap_gdp + 1),
+    ln_vc     = log(VC_investment + 1),
+    ln_trade  = log(trade_percent_gdp + 1),
+    ln_rd     = log(rd_expenditure_percent_gdp + 1),
+    ln_tertiary = log(tertiary_enrollment_percent + 1)
+  ) %>%
+  
+  #mean center the park index
+  
+  mutate(
+    ipr_c = ipp_index_IP_transformed -
+      mean(ipp_index_IP_transformed, na.rm = TRUE)
+  ) %>%
+  
+  #interactions
+  
+  mutate(
+    ln_bank_x_ipr   = ln_bank   * ipr_c,
+    ln_market_x_ipr = ln_market * ipr_c,
+    ln_vc_x_ipr     = ln_vc     * ipr_c
+  )
+
+#save
+fwrite(monarch_t, "data/monarch_panel_transformed.csv")
+```
+
+```{r eval= TRUE, echo= FALSE}
+cat("rows:", nrow(monarch_t), "\n")
+cat("countries:", n_distinct(monarch_t$iso3c), "\n")
+
 ```
 
 ### Executing the Analysis 
+```{r eval= TRUE, echo= TRUE}
+
+rm(list = ls())
+
+library(tidyverse)
+library(data.table)
+library(plm)
+library(stargazer)
+library(lmtest)
+library(sandwich)
+
+options(dplyr.summarise.inform = FALSE)
+
+#load data
+
+df <- fread("data/monarch_panel_transformed.csv")
+
+#filter nas
+
+base_df <- df %>%
+  filter(
+    !is.na(quality_index_100),
+    !is.na(ln_patents),
+    !is.na(ipr_c),
+    !is.na(ln_gdp_pc)
+  )
+
+#split the samples so vc coverage doesnt obliterate everything
+
+bank_market <- pdata.frame(
+  base_df %>% filter(!is.na(ln_bank) | !is.na(ln_market)),
+  index = c("iso3c", "year")
+)
+
+vc_sample <- pdata.frame(
+  base_df %>% filter(!is.na(ln_vc)),
+  index = c("iso3c", "year")
+)
+
+#quality models
+
+qual_bank <- plm(
+  quality_index_100 ~ ln_bank + ipr_c + ln_bank_x_ipr +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary,
+  data = bank_market,
+  model = "within",
+  effect = "twoways"
+)
+
+qual_market <- plm(
+  quality_index_100 ~ ln_market + ipr_c + ln_market_x_ipr +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary,
+  data = bank_market,
+  model = "within",
+  effect = "twoways"
+)
+
+qual_vc <- plm(
+  quality_index_100 ~ ln_vc + ipr_c + ln_vc_x_ipr +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary,
+  data = vc_sample,
+  model = "within",
+  effect = "twoways"
+)
+
+#patent quantity models
+
+count_bank <- plm(
+  ln_patents ~ ln_bank + ipr_c + ln_bank_x_ipr +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary,
+  data = bank_market,
+  model = "within",
+  effect = "twoways"
+)
+
+count_market <- plm(
+  ln_patents ~ ln_market + ipr_c + ln_market_x_ipr +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary,
+  data = bank_market,
+  model = "within",
+  effect = "twoways"
+)
+
+count_vc <- plm(
+  ln_patents ~ ln_vc + ipr_c + ln_vc_x_ipr +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary,
+  data = vc_sample,
+  model = "within",
+  effect = "twoways"
+)
+
+#function that makes the clustered se
+se <- function(model) {
+  sqrt(diag(vcovHC(model, type = "HC1", cluster = "group")))
+}
+
+#patent quality table-
+
+stargazer(
+  qual_bank, qual_market, qual_vc,
+  type = "text",
+  title = "Financial Development, IP Protection, and Patent Quality",
+  dep.var.caption = "Dependent Variable: Patent Quality (0–100)",
+  column.labels = c("Bank-Based", "Market-Based", "VC-Based"),
+  se = list(se(qual_bank), se(qual_market), se(qual_vc)),
+  omit.stat = c("ser", "f"),
+  notes = c(
+    "All models include country and year fixed effects.",
+    "Standard errors clustered by country.",
+    "* p<0.1, ** p<0.05, *** p<0.01"
+  )
+)
+
+#quantity table
+
+stargazer(
+  count_bank, count_market, count_vc,
+  type = "text",
+  title = "Financial Development, IP Protection, and Patent Quantity",
+  dep.var.caption = "Dependent Variable: ln(Patents per 1,000 Researchers)",
+  column.labels = c("Bank-Based", "Market-Based", "VC-Based"),
+  se = list(se(count_bank), se(count_market), se(count_vc)),
+  omit.stat = c("ser", "f"),
+  notes = c(
+    "All models include country and year fixed effects.",
+    "Standard errors clustered by country.",
+    "* p<0.1, ** p<0.05, *** p<0.01"
+  )
+)
+
+```
+
+#### closer look at the samples
+```{r echo= TRUE, eval= TRUE}
+
+rm(list = ls())
+
+library(tidyverse)
+library(data.table)
+library(plm)
+
+df <- fread("data/monarch_panel_transformed.csv")
+
+#base sample, same as regressions
+base_df <- df %>%
+  filter(
+    !is.na(quality_index_100),
+    !is.na(ln_patents),
+    !is.na(ipr_c),
+    !is.na(ln_gdp_pc)
+  )
+
+#bank/market sample
+
+bank_market_df <- base_df %>%
+  filter(!is.na(ln_bank) | !is.na(ln_market))
+```
+
+```{r eval= TRUE, echo= FALSE}
+cat("BANK / MARKET SAMPLE COVERAGE\n")
+
+cat("observations:\n")
+cat(nrow(bank_market_df), "\n\n")
+
+cat("countries:\n")
+cat(length(unique(bank_market_df$iso3c)), "\n\n")
+
+cat("years covered:\n")
+print(range(bank_market_df$year, na.rm = TRUE))
+
+cat("\ncountries included:\n")
+print(sort(unique(bank_market_df$iso3c)))
+
+cat("\nyear counts (obs per year):\n")
+print(table(bank_market_df$year))
+```
+
+```{r eval= TRUE, echo= FALSE}
+#vc sample
+
+vc_df <- base_df %>%
+  filter(!is.na(ln_vc))
 
 
-```{r echo=FALSE, eval=FALSE}
+cat("VC SAMPLE COVERAGE\n")
+
+cat("observations:\n")
+cat(nrow(vc_df), "\n\n")
+
+cat("countries:\n")
+cat(length(unique(vc_df$iso3c)), "\n\n")
+
+cat("years covered:\n")
+print(range(vc_df$year, na.rm = TRUE))
+
+cat("\ncountries included:\n")
+print(sort(unique(vc_df$iso3c)))
+
+cat("\nyear counts (obs per year):\n")
+print(table(vc_df$year))
+
+```
+### ignore everything below this
+```{r echo= FALSE, eval= FALSE}
 rm(list = ls())
 library(reticulate)
 library(tidyverse)
@@ -546,7 +879,7 @@ stargazer(qual_bank, qual_market, qual_vc,
 ```
 the preliminary results are currently hidden for neatness, as i'd imagine the final R script will more closely resemble the ones below. I can make them reappear at any time
 
-```{r echo = FALSE, eval = FALSE}
+```{r echo= FALSE, eval= FALSE}
 #regression tables script
 library(tidyverse)
 library(data.table)
@@ -772,7 +1105,7 @@ This R script runs panel data regressions to investigate how bank-based, market-
 
 #### log transformations
 
-```{r echo=TRUE, eval=TRUE}
+```{r echo= FALSE, eval= FALSE}
 # squeezing the data, applying log transformations
 
 rm(list = ls())
@@ -1101,7 +1434,7 @@ stargazer(
 
 ```
 #### z-score standardization
-```{r}
+```{r eval= FALSE, echo= FALSE}
 # z score standardization
 # Same models but with standardized variables for effect size comparison, controls are just logged
 
@@ -1334,7 +1667,29 @@ stargazer(
 
 ```
 
-```{r echo=FALSE , eval= FALSE}
+```{r eval=FALSE, echo= FALSE}
+
+library(car)
+vif_count_vc_z <- vif(count_vc_z)
+vif_count_vc_z
+
+vif_count_market_z <- vif(count_market_z)
+vif_count_market_z
+
+vif_count_bank_z <- vif(count_bank_z)
+vif_count_bank_z
+
+vif_qual_vc_z <- vif(qual_vc_z)
+vif_qual_vc_z
+
+vif_qual_market_z <- vif(qual_market_z)
+vif_qual_market_z
+
+vif_qual_bank_z <- vif(qual_bank_z)
+vif_qual_bank_z
+```
+
+```{r echo=FALSE, eval= FALSE}
 # Select key variables for correlation
 cor_vars <- master_clean %>%
   select(
