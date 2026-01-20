@@ -2532,7 +2532,6 @@ cat("============================================\n")
 
 ```
 # Monarch's regression tables
-
 ```{r eval= TRUE, echo= TRUE}
 # ============================================================
 # REGRESSIONS: FINANCE, IP, AND INNOVATION
@@ -2568,13 +2567,17 @@ base_sample <- panel %>%
     !is.na(ipr_c),
     !is.na(ln_gdp_pc)
   )
+#base_sample <- pdata.frame(base_sample, index = c("iso3c", "year"))
 
 bank_market_sample <- base_sample %>%
   filter(!is.na(ln_bank) | !is.na(ln_market))
 
+#bank_market_sample <- pdata.frame(bank_market_sample, index = c("iso3c", "year"))
+
 vc_sample <- base_sample %>%
   filter(!is.na(ln_vc))
 
+#vc_sample <- pdata.frame(vc_sample, index = c("iso3c", "year"))
 # ------------------------------------------------------------
 # PATENT QUALITY MODELS
 # ------------------------------------------------------------

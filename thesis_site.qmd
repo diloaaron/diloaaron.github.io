@@ -671,7 +671,163 @@ cat("\nyear counts (obs per year):\n")
 print(table(vc_df$year))
 
 ```
+#### lags
+```{r eval= TRUE, echo= TRUE}
+
+rm(list = ls())
+
+library(tidyverse)
+library(data.table)
+library(plm)
+library(stargazer)
+library(lmtest)
+library(sandwich)
+
+options(dplyr.summarise.inform = FALSE)
+
+
+df <- fread("data/monarch_panel_transformed.csv")
+
+
+base_df <- df %>%
+  filter(
+    !is.na(quality_index_100),
+    !is.na(ln_patents),
+    !is.na(ipr_c),
+    !is.na(ln_gdp_pc)
+  )
+
+
+bank_market <- pdata.frame(
+  base_df %>% filter(!is.na(ln_bank) | !is.na(ln_market)),
+  index = c("iso3c", "year")
+)
+
+vc_sample <- pdata.frame(
+  base_df %>% filter(!is.na(ln_vc)),
+  index = c("iso3c", "year")
+)
+
+
+qual_bank_lag <- plm(
+  quality_index_100 ~
+    lag(ln_bank, 1) +
+    lag(ipr_c, 1) +
+    lag(ln_bank_x_ipr, 1) +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary,
+  data   = bank_market,
+  model  = "within",
+  effect = "twoways"
+)
+
+qual_market_lag <- plm(
+  quality_index_100 ~
+    lag(ln_market, 1) +
+    lag(ipr_c, 1) +
+    lag(ln_market_x_ipr, 1) +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary,
+  data   = bank_market,
+  model  = "within",
+  effect = "twoways"
+)
+
+qual_vc_lag <- plm(
+  quality_index_100 ~
+    lag(ln_vc, 1) +
+    lag(ipr_c, 1) +
+    lag(ln_vc_x_ipr, 1) +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary,
+  data   = vc_sample,
+  model  = "within",
+  effect = "twoways"
+)
+
+
+count_bank_lag <- plm(
+  ln_patents ~
+    lag(ln_bank, 1) +
+    lag(ipr_c, 1) +
+    lag(ln_bank_x_ipr, 1) +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary,
+  data   = bank_market,
+  model  = "within",
+  effect = "twoways"
+)
+
+count_market_lag <- plm(
+  ln_patents ~
+    lag(ln_market, 1) +
+    lag(ipr_c, 1) +
+    lag(ln_market_x_ipr, 1) +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary,
+  data   = bank_market,
+  model  = "within",
+  effect = "twoways"
+)
+
+count_vc_lag <- plm(
+  ln_patents ~
+    lag(ln_vc, 1) +
+    lag(ipr_c, 1) +
+    lag(ln_vc_x_ipr, 1) +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary,
+  data   = vc_sample,
+  model  = "within",
+  effect = "twoways"
+)
+
+
+se <- function(model) {
+  sqrt(diag(vcovHC(model, type = "HC1", cluster = "group")))
+}
+
+
+stargazer(
+  qual_bank_lag, qual_market_lag, qual_vc_lag,
+  type = "text",
+  title = "Financial Development, IP Protection, and Patent Quality (Lagged)",
+  dep.var.caption = "Dependent Variable: Patent Quality (0–100)",
+  column.labels = c("Bank-Based", "Market-Based", "VC-Based"),
+  se = list(
+    se(qual_bank_lag),
+    se(qual_market_lag),
+    se(qual_vc_lag)
+  ),
+  omit.stat = c("ser", "f"),
+  notes = c(
+    "Financial development, IP protection, and interaction terms are lagged one year.",
+    "All models include country and year fixed effects.",
+    "Standard errors clustered by country.",
+    "* p<0.1, ** p<0.05, *** p<0.01"
+  )
+)
+
+
+stargazer(
+  count_bank_lag, count_market_lag, count_vc_lag,
+  type = "text",
+  title = "Financial Development, IP Protection, and Patent Quantity (Lagged)",
+  dep.var.caption = "Dependent Variable: ln(Patents per 1,000 Researchers)",
+  column.labels = c("Bank-Based", "Market-Based", "VC-Based"),
+  se = list(
+    se(count_bank_lag),
+    se(count_market_lag),
+    se(count_vc_lag)
+  ),
+  omit.stat = c("ser", "f"),
+  notes = c(
+    "Financial development, IP protection, and interaction terms are lagged one year.",
+    "All models include country and year fixed effects.",
+    "Standard errors clustered by country.",
+    "* p<0.1, ** p<0.05, *** p<0.01"
+  )
+)
+
+```
+
+
 ### ignore everything below this
+
 ```{r echo= FALSE, eval= FALSE}
 rm(list = ls())
 library(reticulate)
