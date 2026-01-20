@@ -675,6 +675,79 @@ cat("\nyear counts (obs per year):\n")
 print(table(vc_df$year))
 
 ```
+#### tests
+```{r eval = TRUE, echo = FALSE}
+
+
+rm(list = ls())
+
+library(tidyverse)
+library(data.table)
+library(car)
+
+options(dplyr.summarise.inform = FALSE)
+
+
+df <- fread("data/monarch_panel_transformed.csv")
+
+
+core_vars <- c(
+  "ln_bank", "ln_market", "ln_vc",
+  "ipr_c",
+  "ln_bank_x_ipr", "ln_market_x_ipr", "ln_vc_x_ipr",
+  "ln_gdp_pc", "ln_trade", "ln_rd", "ln_tertiary"
+)
+
+
+corr <- cor(
+  df %>% select(any_of(core_vars)),
+  use = "pairwise.complete.obs"
+)
+
+print(round(corr, 3))
+
+cat("\nHigh concern threshold: |r| > 0.8\n\n")
+
+
+
+lm_bank <- lm(
+  quality_index_100 ~ ln_bank + ipr_c + ln_bank_x_ipr +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary +
+    factor(iso3c) + factor(year),
+  data = df
+)
+
+cat("Bank-based VIFs:\n")
+print(vif(lm_bank))
+
+
+lm_market <- lm(
+  quality_index_100 ~ ln_market + ipr_c + ln_market_x_ipr +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary +
+    factor(iso3c) + factor(year),
+  data = df
+)
+
+cat("\nMarket-based VIFs:\n")
+print(vif(lm_market))
+
+
+lm_vc <- lm(
+  quality_index_100 ~ ln_vc + ipr_c + ln_vc_x_ipr +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary +
+    factor(iso3c) + factor(year),
+  data = df %>% filter(!is.na(ln_vc))
+)
+
+cat("\nVC-based VIFs:\n")
+print(vif(lm_vc))
+
+
+cat("- VIF < 5  : very safe\n")
+cat("- VIF 5–10 : acceptable with interactions\n")
+cat("- VIF > 10 : investigate further\n")
+
+```
 #### lags
 ```{r eval= TRUE, echo= TRUE}
 
