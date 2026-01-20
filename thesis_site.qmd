@@ -386,12 +386,14 @@ stopifnot(!any(is.na(monarch$year)))
 #save the clean data
 
 fwrite(monarch, out_file)
+
 ```
 ```{r eval= TRUE, echo= FALSE}
 cat("rows:", nrow(monarch), "\n")
 cat("countries:", n_distinct(monarch$iso3c), "\n")
 cat("years:", length(unique(monarch$year)), "\n")
 
+summary(monarch)
 ```
 #### apply transformations
 ```{r eval= TRUE, echo= TRUE}
@@ -460,12 +462,14 @@ monarch_t <- monarch %>%
 
 #save
 fwrite(monarch_t, "data/monarch_panel_transformed.csv")
+
 ```
 
 ```{r eval= TRUE, echo= FALSE}
 cat("rows:", nrow(monarch_t), "\n")
 cat("countries:", n_distinct(monarch_t$iso3c), "\n")
-
+cat("years:", length(unique(monarch_t$year)), "\n")
+summary(monarch_t)
 ```
 
 ### Executing the Analysis 
