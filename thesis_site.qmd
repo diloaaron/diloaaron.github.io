@@ -1,7 +1,7 @@
 ---
 title: "Thesis Data Work"
 author: Aaron DiLorenzo
-date: "Jan 19, 2024"
+date: "Jan 20, 2024"
 format: 
   html:
     theme: cosmo
@@ -1665,7 +1665,98 @@ stargazer(
 # cat("Countries (Bank/Market):", length(unique(master_bank_market$iso3c)), "\n")
 # cat("Countries (VC):", length(unique(master_vc$iso3c)), "\n")
 
+# ============================================================
+# DIAGNOSTICS — INTENTIONALLY USING EXISTING OBJECTS
+# (to assess pdata.frame + dplyr damage)
+# ============================================================
+
+library(car)
+
+cat("\n==============================\n")
+cat("DIAGNOSTICS: CORRELATION CHECK\n")
+cat("==============================\n\n")
+
+# pull raw data backing the models *as-is*
+df_diag <- as.data.frame(master_levels)
+
+core_vars <- c(
+  "ln_bank", "ln_market", "ln_vc",
+  "ipp_index_IP_transformed",
+  "ln_bank_x_ipr", "ln_market_x_ipr", "ln_vc_x_ipr",
+  "ln_gdp_pc", "ln_trade", "ln_rd", "ln_tertiary"
+)
+
+corr_mat <- cor(
+  df_diag %>% select(any_of(core_vars)),
+  use = "pairwise.complete.obs"
+)
+
+print(round(corr_mat, 3))
+
+cat("\nHigh concern threshold: |r| > 0.80\n")
+cat("If interactions are extremely correlated with levels,\n")
+cat("demeaning errors can massively inflate coefficients.\n\n")
+
+
+cat("\n==============================\n")
+cat("DIAGNOSTICS: VIF TESTS\n")
+cat("==============================\n")
+cat("NOTE: lm() with FE dummies approximates plm within\n\n")
+
+# -------------------------------
+# BANK-BASED QUALITY MODEL
+# -------------------------------
+lm_bank_diag <- lm(
+  quality_index_100 ~ ln_bank + ipp_index_IP_transformed + ln_bank_x_ipr +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary +
+    factor(iso3c) + factor(year),
+  data = df_diag
+)
+
+cat("\nBank-based QUALITY VIFs:\n")
+print(vif(lm_bank_diag))
+
+
+# -------------------------------
+# MARKET-BASED QUALITY MODEL
+# -------------------------------
+lm_market_diag <- lm(
+  quality_index_100 ~ ln_market + ipp_index_IP_transformed + ln_market_x_ipr +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary +
+    factor(iso3c) + factor(year),
+  data = df_diag
+)
+
+cat("\nMarket-based QUALITY VIFs:\n")
+print(vif(lm_market_diag))
+
+
+# -------------------------------
+# VC-BASED QUALITY MODEL
+# -------------------------------
+lm_vc_diag <- lm(
+  quality_index_100 ~ ln_vc + ipp_index_IP_transformed + ln_vc_x_ipr +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary +
+    factor(iso3c) + factor(year),
+  data = df_diag %>% filter(!is.na(ln_vc))
+)
+
+cat("\nVC-based QUALITY VIFs:\n")
+print(vif(lm_vc_diag))
+
+
+cat("\n==============================\n")
+cat("VIF INTERPRETATION GUIDE\n")
+cat("==============================\n")
+cat("VIF < 5    : Safe\n")
+cat("VIF 5–10   : Expected with interactions\n")
+cat("VIF > 10   : Multicollinearity or broken demeaning\n")
+cat("\nIf VIFs are extreme (>20–50),\n")
+cat("this is consistent with corrupted panel indices.\n")
+
 ```
+
+
 #### z-score standardization
 ```{r eval= FALSE, echo= FALSE}
 # z score standardization

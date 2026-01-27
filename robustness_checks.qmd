@@ -3138,6 +3138,8 @@ options(dplyr.summarise.inform = FALSE)
 # ------------------------------------------------------------
 
 df <- fread("data/monarch_panel_transformed.csv")
+df %>% 
+  filter(!is.na())
 
 # ------------------------------------------------------------
 # BASE SAMPLE (PLAIN DATA FRAME)
@@ -3297,10 +3299,8 @@ stargazer(
 
 ```
 
-```{r eval = TRUE, echo = TRUE}
-# ============================================================
-# COLLINEARITY & VALIDITY DIAGNOSTICS
-# ============================================================
+```{r eval = TRUE, echo = FALSE}
+
 
 rm(list = ls())
 
@@ -3310,15 +3310,9 @@ library(car)
 
 options(dplyr.summarise.inform = FALSE)
 
-# ------------------------------------------------------------
-# LOAD DATA
-# ------------------------------------------------------------
 
 df <- fread("data/monarch_panel_transformed.csv")
 
-# ------------------------------------------------------------
-# VARIABLES USED IN MODELS
-# ------------------------------------------------------------
 
 core_vars <- c(
   "ln_bank", "ln_market", "ln_vc",
@@ -3327,13 +3321,6 @@ core_vars <- c(
   "ln_gdp_pc", "ln_trade", "ln_rd", "ln_tertiary"
 )
 
-# ------------------------------------------------------------
-# 1. CORRELATION MATRICES (KEY CHECK)
-# ------------------------------------------------------------
-
-cat("============================================\n")
-cat("PAIRWISE CORRELATIONS (LEVELS)\n")
-cat("============================================\n\n")
 
 corr <- cor(
   df %>% select(any_of(core_vars)),
@@ -3344,16 +3331,8 @@ print(round(corr, 3))
 
 cat("\nHigh concern threshold: |r| > 0.8\n\n")
 
-# ------------------------------------------------------------
-# 2. VIFs — POOLED ANALOGUE MODELS
-# (Diagnostic only; FE VIFs not well-defined)
-# ------------------------------------------------------------
 
-cat("============================================\n")
-cat("VIF DIAGNOSTICS (POOLED MODELS)\n")
-cat("============================================\n\n")
 
-# Bank-based analogue
 lm_bank <- lm(
   quality_index_100 ~ ln_bank + ipr_c + ln_bank_x_ipr +
     ln_gdp_pc + ln_trade + ln_rd + ln_tertiary +
@@ -3364,7 +3343,7 @@ lm_bank <- lm(
 cat("Bank-based VIFs:\n")
 print(vif(lm_bank))
 
-# Market-based analogue
+
 lm_market <- lm(
   quality_index_100 ~ ln_market + ipr_c + ln_market_x_ipr +
     ln_gdp_pc + ln_trade + ln_rd + ln_tertiary +
@@ -3375,7 +3354,7 @@ lm_market <- lm(
 cat("\nMarket-based VIFs:\n")
 print(vif(lm_market))
 
-# VC-based analogue (restricted sample)
+
 lm_vc <- lm(
   quality_index_100 ~ ln_vc + ipr_c + ln_vc_x_ipr +
     ln_gdp_pc + ln_trade + ln_rd + ln_tertiary +
@@ -3386,7 +3365,7 @@ lm_vc <- lm(
 cat("\nVC-based VIFs:\n")
 print(vif(lm_vc))
 
-cat("\nInterpretation guide:\n")
+
 cat("- VIF < 5  : very safe\n")
 cat("- VIF 5–10 : acceptable with interactions\n")
 cat("- VIF > 10 : investigate further\n")
@@ -3394,4 +3373,66 @@ cat("- VIF > 10 : investigate further\n")
 ```
 
 
+Patent Quality (Dependent variable: 0–100 index)
 
+ln_bank → quality
+A 1% increase in bank credit to GDP is associated with a ~0.01 point decrease in patent quality; this effect is not statistically significant, indicating that bank depth alone does not meaningfully affect patent quality.
+
+ln_market → quality
+A 1% increase in market capitalization to GDP is associated with a ~0.006 point increase in patent quality at average IP protection, but the effect is not statistically significant, suggesting that equity market depth alone does not mechanically raise quality.
+
+ln_vc → quality
+The point estimate is large but very imprecise; macro-level VC data do not allow for reliable inference about patent quality effects.
+
+**ipr_c → quality
+At average financial development, stronger IP protection is associated with higher patent quality, most clearly in market-based systems. In the market-based specification, a 1-point increase in the Park index above the sample mean (a large institutional change on a 0–5 scale) is associated with a 4.6-point increase in patent quality on a 0–100 scale.
+
+ln_bank × ipr_c → quality
+The interaction between bank finance and IP protection is negative but not statistically significant, indicating no robust evidence that bank depth conditions the effect of IP protection on patent quality.
+
+**ln_market × ipr_c → quality
+The negative and significant interaction implies that as equity markets deepen, the marginal quality-enhancing effect of IP protection declines. This suggests that IP protection and market-based finance act as substitutes at high levels of financial development.
+
+ln_gdp_pc → quality
+Within countries, a 1% increase in GDP per capita is associated with a small decline in average patent quality; this reflects within-country dynamics (e.g., innovation system maturity) rather than cross-country income differences.
+
+ln_trade → quality
+Trade openness does not exhibit a robust within-country relationship with patent quality once fixed effects are included.
+
+ln_rd → quality
+R&D intensity has a positive but imprecise association with patent quality, suggesting that higher R&D spending may improve quality, though estimates are noisy.
+
+ln_tertiary → quality
+Tertiary education does not have a robust within-country effect on average patent quality after accounting for fixed effects.
+
+Patent Quantity (Dependent variable: log patents per 1,000 researchers)
+
+ln_bank → quantity
+A 1% increase in bank credit is associated with a ~0.2% increase in patents per researcher at average IP protection, but the effect is not statistically significant.
+
+ln_market → quantity
+Equity market depth does not have a statistically meaningful effect on patent counts per researcher at average IP protection.
+
+ln_vc → quantity
+Venture capital depth does not show a robust macro-level relationship with patent quantity.
+
+**ipr_c → quantity
+Stronger IP protection is associated with lower patenting rates per researcher. A 1-point increase in the Park index is associated with a sizable decline in patent counts, consistent with reduced low-value or strategic patenting rather than reduced innovative effort.
+
+**ln_bank × ipr_c → quantity
+The positive and significant interaction indicates that stronger IP protection makes bank finance more effective at generating patenting activity, partially offsetting the negative main effect of IP on patent counts.
+
+ln_market × ipr_c → quantity
+The interaction between market-based finance and IP protection is positive but not statistically significant, suggesting that equity markets primarily affect innovation quality rather than patenting volume.
+
+ln_gdp_pc → quantity
+Within countries, higher GDP per capita is strongly associated with higher patenting intensity, reflecting scale and capability effects.
+
+ln_trade → quantity
+Trade openness does not have a robust within-country relationship with patent counts per researcher.
+
+ln_rd → quantity
+Higher R&D intensity is associated with fewer patents per researcher, consistent with diminishing returns or a shift toward fewer, more complex, or longer-horizon projects.
+
+ln_tertiary → quantity
+Greater tertiary education is strongly associated with higher patenting intensity, highlighting the role of human capital in scaling innovation.
