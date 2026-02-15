@@ -734,6 +734,161 @@ plot_predictions(
   ) +
   theme_minimal()
 ```
+## more graphs
+```{r eval= TRUE, echo= TRUE, message= FALSE, warning= FALSE}
+# distibution of patent quality
+library(tidyverse)
+library(data.table)
+
+df <- fread("data/monarch_panel_transformed.csv")
+
+# Create bins
+df_plot <- df %>%
+  filter(!is.na(ln_market), !is.na(ipr_c), !is.na(quality_index_100)) %>%
+  mutate(
+    market_bin = ntile(ln_market, 3),
+    ipr_regime = ifelse(ipr_c <= median(ipr_c, na.rm = TRUE),
+                        "Weak IPR", "Strong IPR"),
+    group = paste0("Market Q", market_bin, " | ", ipr_regime)
+  )
+
+ggplot(df_plot, aes(x = quality_index_100, fill = ipr_regime)) +
+  geom_density(alpha = 0.4) +
+  facet_wrap(~ market_bin, nrow = 1,
+             labeller = labeller(market_bin = function(x) paste("Market Q", x))) +
+  labs(
+    title = "Innovation Quality Distributions by Market Finance and IPR",
+    subtitle = "",
+    x = "Patent Quality Index",
+    y = "Density",
+    fill = "IPR Regime"
+  ) +
+  theme_minimal()
+# quality and quantity relationship
+ggplot(df, aes(x = ln_patents, y = quality_index_100)) +
+  geom_point(alpha = 0.3) +
+  geom_smooth(method = "loess", se = FALSE, color= 'deeppink2') +
+  labs(
+    title = "Average Patent Quality and Patent Quantity",
+    subtitle = "",
+    x = "Patent Quantity (log)",
+    y = "Average Patent Quality"
+  ) +
+  theme_minimal()
+
+```
+```{r eval= TRUE, echo= TRUE, message= FALSE, warning= FALSE, fig.width= 10, fig.height= 5}
+library(tidyverse)
+# scatterplots
+plot_df <- df %>%
+  select(
+    iso3c, year,
+    quality_index_100,
+    ln_patents,
+    ipr_c,
+    ln_bank, ln_market, ln_vc
+  ) %>%
+  pivot_longer(
+    cols = c(ln_bank, ln_market, ln_vc),
+    names_to = "finance_type",
+    values_to = "finance_depth"
+  ) %>%
+  mutate(
+    finance_type = case_match(
+      finance_type,
+      "ln_bank"   ~ "Bank Finance",
+      "ln_market" ~ "Market Finance",
+      "ln_vc"     ~ "Venture Capital",
+      .default = finance_type
+    )
+  )
+
+
+
+# fd x quality
+p1 <- ggplot(plot_df, aes(x = finance_depth, y = quality_index_100)) +
+  geom_point(alpha = 0.25) +
+  geom_smooth(method = "loess", se = FALSE, linewidth = 1, color = 'deeppink2') +
+  facet_wrap(~ finance_type, scales = "free_x") +
+  labs(
+    title = "Financial Development and Patent Quality",
+    subtitle = "",
+    x = "Financial Depth (log)",
+    y = "Patent Quality Index (0-100)"
+  ) +
+  theme_minimal()
+
+# fd x quantity
+p2 <- ggplot(plot_df, aes(x = finance_depth, y = ln_patents)) +
+  geom_point(alpha = 0.25) +
+  geom_smooth(method = "loess", se = FALSE, linewidth = 1, color = 'deeppink2') +
+  facet_wrap(~ finance_type, scales = "free_x") +
+  labs(
+    title = "Financial Development and Patent Quantity",
+    subtitle = "",
+    x = "Financial Depth (log)",
+    y = "Log Patents per 1,000 Researchers"
+  ) +
+  theme_minimal()
+
+# ipr x quality
+p3 <- ggplot(df, aes(x = ipr_c, y = quality_index_100)) +
+  geom_point(alpha = 0.25) +
+  geom_smooth(method = "loess", se = FALSE, linewidth = 1, color = 'deeppink2') +
+  labs(
+    title = "IPR Strength and Patent Quality",
+    subtitle = "Stronger IPR regimes show a weak relationship with quality",
+    x = "IPR Strength (Centered Park Index)",
+    y = "Patent Quality Index (0-100)"
+  ) +
+  theme_minimal()
+
+# ipr x quantity
+p4 <- ggplot(df, aes(x = ipr_c, y = ln_patents)) +
+  geom_point(alpha = 0.25) +
+  geom_smooth(method = "loess", se = FALSE, linewidth = 1, color = 'deeppink2') +
+  labs(
+    title = "IPR Strength and Patent Quantity",
+    subtitle = "Stronger IPR regimes file more patents on average",
+    x = "IPR Strength (Centered Park Index)",
+    y = "Log Patents per 1,000 Researchers"
+  ) +
+  theme_minimal()
+
+print(p1)
+print(p2)
+print(p3)
+print(p4)
+```
+
+
+```{r eval= TRUE, echo= TRUE, message= FALSE, warning= FALSE}
+quality_market_df <- df %>%
+  filter(
+    !is.na(quality_index_100),
+    !is.na(ln_market),
+    !is.na(ipr_c)
+  )
+
+quality_market_ipr_df <- quality_market_df %>%
+  mutate(
+    ipr_regime = ifelse(ipr_c >= 0, "Above-Average IPR", "Below-Average IPR")
+  )
+
+ggplot(quality_market_ipr_df,
+       aes(x = ln_market, y = quality_index_100, color = ipr_regime)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    title = "Patent Quality, Market Finance, and IPR",
+    x = "Log Market Capitalization / GDP",
+    y = "Patent Quality Index (0-100)",
+    color = "IP Regime"
+  ) +
+  theme_minimal()
+
+```
+
 
 # robustness checks
 - quadratic models
