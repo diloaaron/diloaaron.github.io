@@ -18,3 +18,7 @@ reticulate
 corrplot
 carData
 car
+pscl
+modelsummary
+knitr
+marginaleffects

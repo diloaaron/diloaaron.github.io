@@ -1,0 +1,43 @@
+\begin{table}
+\centering
+\begin{talltblr}[         %% tabularray outer open
+caption={ZINB: Market Finance and Breakthrough Innovation},
+note{}={+ p \num{< 0.1}, * p \num{< 0.05}, ** p \num{< 0.01}, *** p \num{< 0.001}},
+note{ }={Zero-Inflated Negative Binomial model.},
+note{  }={Count equation models breakthrough intensity conditional on entry.},
+note{   }={Selection equation models structural non-entry.},
+note{    }={Selection equation includes ln\_gdp\_pc only.},
+note{     }={Offset = log(total patents).},
+note{      }={Standard errors in parentheses.},
+]                     %% tabularray outer close
+{                     %% tabularray inner open
+colspec={Q[]Q[]Q[]Q[]Q[]},
+hline{2}={1-5}{solid, black, 0.05em},
+hline{18}={1-5}{solid, black, 0.05em},
+hline{1}={1-5}{solid, black, 0.1em},
+hline{21}={1-5}{solid, black, 0.1em},
+column{2-5}={}{halign=c},
+column{1}={}{halign=l},
+}                     %% tabularray inner close
+& (1) & (2) & (3) & (4) \\
+count\_ln\_market\_c & \num{-0.064} & \num{-0.014} & \num{0.206} & \num{0.085} \\
+& (\num{0.051}) & (\num{0.052}) & (\num{0.166}) & (\num{0.201}) \\
+count\_ipr\_c & \num{-0.457}*** & \num{-0.523}*** & \num{-0.539}*** & \num{-0.611}*** \\
+& (\num{0.062}) & (\num{0.062}) & (\num{0.148}) & (\num{0.182}) \\
+count\_ln\_market\_x\_ipr\_c & \num{0.215}*** & \num{0.160}* & \num{-0.024} & \num{0.098} \\
+& (\num{0.061}) & (\num{0.062}) & (\num{0.176}) & (\num{0.218}) \\
+count\_ln\_gdp\_pc & \num{0.372}*** & \num{0.485}*** & \num{0.399}*** & \num{0.196}+ \\
+& (\num{0.074}) & (\num{0.074}) & (\num{0.090}) & (\num{0.106}) \\
+zero\_ln\_gdp\_pc & \num{-1.820}* & \num{-1.819}+ & \num{-2.334} & \num{-2.307} \\
+& (\num{0.709}) & (\num{0.972}) & (\num{2.734}) & (\num{1.993}) \\
+count\_ln\_trade &  & \num{-0.310}*** & \num{-0.178}* & \num{0.051} \\
+&  & (\num{0.051}) & (\num{0.077}) & (\num{0.111}) \\
+count\_ln\_rd &  &  & \num{0.756}*** & \num{0.836}*** \\
+&  &  & (\num{0.160}) & (\num{0.180}) \\
+count\_ln\_tertiary &  &  &  & \num{0.175} \\
+&  &  &  & (\num{0.161}) \\
+Num.Obs. & \num{1450} & \num{1450} & \num{890} & \num{641} \\
+R2 & \num{0.997} & \num{0.997} & \num{0.998} & \num{0.995} \\
+RMSE & \num{13.72} & \num{10.60} & \num{14.46} & \num{12.47} \\
+\end{talltblr}
+\end{table}

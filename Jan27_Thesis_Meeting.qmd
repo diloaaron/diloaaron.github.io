@@ -1,0 +1,246 @@
+---
+title: "Jan27_Thesis_meeting"
+format: html
+---
+```{r}
+# ============================================================
+# 1. SETUP & LOAD
+# ============================================================
+library(tidyverse)
+library(data.table)
+library(countrycode)
+
+# Load the Master Panel (Financial/Institutional Data)
+monarch <- fread("data/monarch_panel_transformed.csv")
+
+# Load the New Breakthrough Data (The one with the bad ISOs)
+oecd_raw <- fread("data/OECD_country_year_final.csv")
+
+# ============================================================
+# 2. FIX THE "FALSE ISO" PROBLEM
+# ============================================================
+
+cat("Cleaning OECD ISO codes...\n")
+
+oecd_clean <- oecd_raw %>%
+  # 1. Rename the misleading column so we don't get confused
+  rename(iso2c_original = iso3c) %>%
+  
+  # 2. Create a REAL iso3c column using the countrycode package
+  mutate(
+    iso3c = countrycode(
+      sourcevar = iso2c_original, 
+      origin = "iso2c", 
+      destination = "iso3c"
+    )
+  ) %>%
+  
+  # 3. Filter out any rows where conversion failed (optional but safe)
+  filter(!is.na(iso3c))
+
+# VERIFICATION:
+# Check if we actually have 3-letter codes now
+cat("Example converted codes:", head(oecd_clean$iso3c, 3), "\n")
+
+# ============================================================
+# 3. THE MERGE
+# ============================================================
+
+# We Left Join: Keep all MONARCH structure, attach OECD data where it matches
+df_merged <- monarch %>%
+  left_join(
+    oecd_clean %>% dplyr::select(iso3c, year, breakthrough_count, patent_count, pct_breakthrough),
+    by = c("iso3c", "year")
+  )
+
+# ============================================================
+# 4. FINAL CLEANING & OFFSET CREATION
+# ============================================================
+
+# Create the final modeling dataset
+df_final <- df_merged %>%
+  # Create the log offset (Opportunity) 
+  mutate(
+    log_patent_count = log(patent_count)
+  ) %>%
+  # Filter to rows that actually have the new data + core controls
+  filter(
+    !is.na(breakthrough_count),
+    !is.na(ln_market),
+    !is.na(ipr_c)
+  )
+
+# ============================================================
+# 5. DIAGNOSTICS (DID IT WORK?)
+# ============================================================
+
+cat("========================================\n")
+cat("MERGE DIAGNOSTICS\n")
+cat("========================================\n")
+cat("Monarch Original Rows:  ", nrow(monarch), "\n")
+cat("Merged/Final Rows:      ", nrow(df_final), "\n")
+cat("Unique Countries:       ", n_distinct(df_final$iso3c), "\n")
+cat("Years Covered:          ", min(df_final$year), "to", max(df_final$year), "\n")
+
+# Check for the specific error you had before
+cat("Any NAs in breakthrough_count? ", any(is.na(df_final$breakthrough_count)), "\n")
+cat("Any NAs in log_patent_count?   ", any(is.na(df_final$log_patent_count)), "\n")
+
+# Preview the data to ensure columns align
+print(head(df_final %>% dplyr::select(iso3c, year, breakthrough_count, ln_market, ipr_c)))
+summary(df_final)
+nrow(df_final)
+nrow(monarch)
+```
+
+# Negative Binomial
+```{r eval= TRUE, echo= FALSE}
+library(fixest)
+library(marginaleffects)
+library(ggplot2)
+
+# ============================================================
+# 1. OUTLIER SAFETY CHECK
+# ============================================================
+# We verify if there's a "monster" outlier (e.g., a data error)
+# If the max value is > 5x the 99th percentile, we cap it or drop it.
+threshold <- quantile(df_final$breakthrough_count, 0.99)
+max_val <- max(df_final$breakthrough_count)
+
+if (max_val > 5 * threshold) {
+  cat("⚠️ EXTREME OUTLIER DETECTED. Removing top 0.1% to stabilize model.\n")
+  df_model <- df_final %>% filter(breakthrough_count <= quantile(breakthrough_count, 0.999))
+} else {
+  cat("✅ Data distribution looks distinct but stable. Using full set.\n")
+  df_model <- df_final
+}
+
+# ============================================================
+# 2. THE MODEL: Negative Binomial
+# ============================================================
+# We use NegBin to handle the high variance (dispersion) in patent data.
+# Note: We include offset(log_patent_count) to model "Success Rate"
+
+nb_model <- fenegbin(
+  breakthrough_count ~ ln_market * ipr_c + ln_gdp_pc + ln_trade + offset(log_patent_count) | 
+  iso3c + year,
+  data = df_model,
+  cluster = "iso3c"
+)
+
+print(nb_model)
+
+# ============================================================
+# 3. THE "STORY" PLOT (Interaction)
+# ============================================================
+# This plots the marginal effect of Finance (Y-axis) as IPR gets stricter (X-axis).
+
+plot_slopes(
+  nb_model,
+  variables = "ln_market",
+  condition = "ipr_c",
+  vcov = FALSE,      # Focus on the shape of the line first
+  newdata = df_model # Explicitly forces the clean data
+) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(
+    title = "Interaction: Does Strict IPR Choke Finance?",
+    subtitle = "Downward slope = IPR reduces the benefits of financial deepening",
+    y = "Marginal Effect of Finance on Breakthroughs",
+    x = "IPR Strictness (Park Index)"
+  ) +
+  theme_minimal()
+```
+
+# Logit FE
+```{r eval= TRUE, echo= FALSE}
+# entry
+###############
+library(fixest)
+library(marginaleffects)
+library(ggplot2)
+
+# 1. Create the Binary Event (The "Zero-to-One" Jump)
+df_prob <- df_model %>%
+  mutate(
+    breakthrough_event = ifelse(breakthrough_count > 0, 1, 0)
+  )
+
+cat("Breakthrough Events:", sum(df_prob$breakthrough_event), 
+    "out of", nrow(df_prob), "observations.\n")
+
+# 2. The Model: Logit (Fixed Effects)
+# We test if Finance * IPR changes the PROBABILITY of an event
+logit_model <- feglm(
+  breakthrough_event ~ ln_market * ipr_c + ln_gdp_pc + ln_trade | year, 
+  family = binomial("logit"),
+  data = df_prob,
+  cluster = "iso3c"
+)
+
+print(logit_model)
+
+# 3. The Visualization: "Probability of a Breakthrough"
+# We want to see if the probability curve flattens out when IPR is high.
+
+plot_predictions(
+  logit_model,
+  condition = list("ln_market", "ipr_c"), # X-axis = Finance, Lines = IPR
+  type = "response", # This forces the Y-axis to be PROBABILITY (0 to 100%)
+  vcov = FALSE,
+  newdata = df_prob
+) +
+  labs(
+    title = "The Probability of Innovation",
+    subtitle = "Does Strict IPR (High) flatten the curve?",
+    y = "Probability of Any Breakthrough",
+    x = "Financial Market Depth"
+  ) +
+  theme_minimal()
+```
+
+# Logit above the median
+```{r echo= FALSE, eval= TRUE}
+#########################
+library(fixest)
+library(marginaleffects)
+
+# 1. Redefine the Target: "The Elite Club"
+# We define "Elite" as having more breakthroughs than the median of INNOVATING countries.
+# (i.e., we ignore the zeros and find the cutoff for "serious" players)
+nonzero_median <- median(df_model$breakthrough_count[df_model$breakthrough_count > 0])
+cat("The threshold for 'Elite' status is:", nonzero_median, "breakthroughs.\n")
+
+df_elite <- df_model %>%
+  mutate(
+    is_elite = ifelse(breakthrough_count > nonzero_median, 1, 0)
+  )
+
+# 2. Run the Logit on "Becoming Elite"
+# HYPOTHESIS: Finance helps you become elite, but Strict IPR BLOCKS you (Negative Interaction).
+logit_elite <- feglm(
+  is_elite ~ ln_market * ipr_c + ln_gdp_pc + ln_trade | year, 
+  family = binomial("logit"),
+  data = df_elite,
+  cluster = "iso3c"
+)
+
+print(logit_elite)
+
+# 3. The "Recovery" Plot
+# If this works, the High IPR line should slope DOWN or act flat compared to Low IPR.
+plot_predictions(
+  logit_elite,
+  condition = list("ln_market", "ipr_c"),
+  type = "response",
+  vcov = FALSE,
+  newdata = df_elite
+) +
+  labs(
+    title = "The Barrier to Excellence",
+    subtitle = "Does Strict IPR prevent Market Finance from creating 'Elite' Innovators?",
+    y = "Probability of being an Elite Innovator",
+    x = "Financial Market Depth"
+  ) +
+  theme_minimal()
+```

@@ -123,7 +123,7 @@ monarch_t <- monarch %>%
 # ------------------------------------------------------------
 
 fwrite(monarch_t, "data/monarch_panel_transformed.csv")
-
+summary(monarch_t)
 ```
 
 ```{r eval= FALSE, echo= FALSE}
@@ -634,7 +634,8 @@ run_incremental(
   fd_x_ipr = "ln_vc_x_ipr",
   title = "Incremental Controls: VC Finance and Patent Quantity"
 )
-
+summary(df)
+nrow(df)
 ```
 # lags
 ```{r eval= TRUE, echo= TRUE}
@@ -796,7 +797,7 @@ stargazer(
 ```
 # scatterplots
 
-```{r eval= TRUE, echo= FALSE}
+```{r eval= TRUE, echo= TRUE}
 library(ggplot2)
 library(ggrepel)
 
@@ -877,6 +878,12 @@ ggplot(quantity_ipr_df,
 # 4. Market Finance × IP Regimes and Patent Quality
 # Story: Is the finance–quality relationship conditional on IP strength?
 # ------------------------------------------------------------
+quality_market_df <- df %>%
+  filter(
+    !is.na(quality_index_100),
+    !is.na(ln_market),
+    !is.na(ipr_c)
+  )
 
 quality_market_ipr_df <- quality_market_df %>%
   mutate(
@@ -940,7 +947,7 @@ ggplot(quantity_bank_df,
 
 ```
 # more scatterplots
-```{r eval= TRUE, echo= FALSE}
+```{r eval= TRUE, echo= TRUE}
 # ============================================================
 # VISUAL DIAGNOSTICS & THEORY-ALIGNED PLOTS
 # Validates data and visualizes key mechanisms
@@ -1134,7 +1141,7 @@ ggplot(
 
 ```
 # interactions
-```{r eval= TRUE, echo= FALSE}
+```{r eval= TRUE, echo= TRUE}
 # ============================================================
 # INTERACTION PLOT: Market Finance × IPR → Patent Quality
 # ============================================================
@@ -1199,7 +1206,7 @@ ggplot(pred_grid, aes(x = ln_market, y = quality_hat, color = ipr_label)) +
   theme_minimal(base_size = 13)
 ```
 # seperate graphs
-```{r echo= FALSE, EVAL= TRUE}
+```{r echo= TRUE, EVAL= TRUE}
 ggplot(df, aes(ln_bank, quality_index_100)) +
   geom_point(alpha = 0.3) +
   geom_smooth(method = "lm", se = FALSE, linewidth = 1) +
@@ -1254,13 +1261,13 @@ ggplot(df, aes(ipp_index_IP_transformed, ln_patents)) +
 ```
 # the final abstract:
 
-```{r eval= FALSE, echo= FALSE}
+```{r eval= FALSE, echo= TRUE}
 # This thesis examines how financial development and IPR regimes jointly shape the composition of innovation across countries. Despite the central role of innovation in Schumpeterian growth models, the global expansion of patenting has not produced commensurate productivity gains, giving rise to the “patent puzzle.” Using OECD Patent Quality Indicators and cross-country panel data, I estimate fixed-effects models linking patent quantity and quality to distinct financing channels, IPR strength, and their interaction. The results show that patent quality is most strongly associated with equity market development, while the marginal returns to stronger IPR diminish as markets deepen. In contrast, bank-based finance is primarily associated with patent quantity rather than quality. These findings suggest that financial structure and IPR jointly determine whether innovation is productivity-enhancing or reflects lower-value patent proliferation, helping to explain the patent–productivity disconnect.
 # 
 # Patent quality index 4 – 4 components: number of forward citations (up to 5 years after publication); patent family size; number of claims; and the patent generality index. Only granted patents are covered by the index.
 ```
 # core relationships
-```{r fig.width=12, fig.height=5, echo= FALSE, eval= TRUE}
+```{r fig.width=12, fig.height=5, echo= TRUE, eval= TRUE}
 # ============================================================
 # COMPREHENSIVE SCATTERPLOTS FOR THESIS VALIDATION & INSIGHT
 # ============================================================
@@ -1318,9 +1325,9 @@ ggplot(plot_df, aes(finance_depth, quality_index_100)) +
   facet_wrap(~ finance_type, scales = "free_x") +
   labs(
     title = "Financial Development and Patent Quality",
-    subtitle = "Equity markets show the strongest positive association with quality",
+    subtitle = "",
     x = "Financial Depth (log)",
-    y = "Patent Quality Index (0–100)"
+    y = "Patent Quality Index (0-100)"
   ) +
   theme_minimal()
 
@@ -1334,7 +1341,7 @@ ggplot(plot_df, aes(finance_depth, ln_patents)) +
   facet_wrap(~ finance_type, scales = "free_x") +
   labs(
     title = "Financial Development and Patent Quantity",
-    subtitle = "Bank finance is more strongly associated with patent volume",
+    subtitle = "",
     x = "Financial Depth (log)",
     y = "Log Patents per 1,000 Researchers"
   ) +
@@ -1349,9 +1356,9 @@ ggplot(df, aes(ipr_c, quality_index_100)) +
   geom_smooth(method = "loess", se = FALSE, linewidth = 1) +
   labs(
     title = "IPR Strength and Patent Quality",
-    subtitle = "Stronger IPR regimes are associated with higher average patent quality",
+    subtitle = "Stronger IPR regimes show a weak relationship with quality",
     x = "IPR Strength (Centered Park Index)",
-    y = "Patent Quality Index (0–100)"
+    y = "Patent Quality Index (0-100)"
   ) +
   theme_minimal()
 
@@ -1364,7 +1371,7 @@ ggplot(df, aes(ipr_c, ln_patents)) +
   geom_smooth(method = "loess", se = FALSE, linewidth = 1) +
   labs(
     title = "IPR Strength and Patent Quantity",
-    subtitle = "Stronger IPR regimes file fewer patents on average",
+    subtitle = "Stronger IPR regimes file more patents on average",
     x = "IPR Strength (Centered Park Index)",
     y = "Log Patents per 1,000 Researchers"
   ) +
@@ -1382,7 +1389,7 @@ ggplot(plot_df, aes(interaction_value, quality_index_100)) +
     title = "Financial Development × IPR Interactions and Patent Quality",
     subtitle = "Marginal returns to IPR decline in market-based systems",
     x = "Interaction Term (FD × IPR)",
-    y = "Patent Quality Index (0–100)"
+    y = "Patent Quality Index (0-100)"
   ) +
   theme_minimal()
 
@@ -1561,7 +1568,7 @@ run_between(
 
 ```
 # distribution diagnostics
-```{r eval= TRUE, echo= FALSE}
+```{r eval= TRUE, echo= TRUE}
 # ============================================================
 # DISTRIBUTIONAL DIAGNOSTICS: INNOVATION QUALITY & QUANTITY
 # ============================================================
@@ -1722,7 +1729,7 @@ df %>%
 
 ```
 #extrsa
-```{r eval=TRUE, echo=FALSE}
+```{r eval=TRUE, echo=TRUE}
 # ============================================================
 # FRONTIER INNOVATION DIAGNOSTICS
 # Redefine frontier (Top 20–25%), binary indicator,
@@ -1946,7 +1953,7 @@ ggplot(country_frontier,
 
 ```
 # heatmaps
-```{r eval= TRUE, echo=FALSE}
+```{r eval= TRUE, echo=TRUE}
 # ============================================================
 # BINNED HEAT MAPS: Finance × IPR × Innovation Outcomes
 # Descriptive diagnostics consistent with baseline regressions
@@ -2062,7 +2069,7 @@ plot_heatmap(
 
 ```
 # pooled ols
-```{r eval= TRUE, echo= FALSE}
+```{r eval= TRUE, echo= TRUE}
 # ============================================================
 # POOLED OLS REGRESSIONS
 # Descriptive validation with maximum observations
@@ -2201,7 +2208,7 @@ run_pooled_incremental(
 )
 ```
 # probability
-```{r eval= TRUE, echo= FALSE}
+```{r eval= TRUE, echo= TRUE}
 rm(list = ls())
 
 library(tidyverse)
@@ -2411,6 +2418,607 @@ ggplot(df_year, aes(year, mean_rate)) +
     y = "Mean Breakthrough Rate"
   ) +
   theme_minimal()
+```
+# starting over
+```{r}
+# ============================================================
+# 1. SETUP & LOAD
+# ============================================================
+library(tidyverse)
+library(data.table)
+library(countrycode)
+
+# Load the Master Panel (Financial/Institutional Data)
+monarch <- fread("data/monarch_panel_transformed.csv")
+
+# Load the New Breakthrough Data (The one with the bad ISOs)
+oecd_raw <- fread("data/OECD_country_year_final.csv")
+
+# ============================================================
+# 2. FIX THE "FALSE ISO" PROBLEM
+# ============================================================
+
+cat("Cleaning OECD ISO codes...\n")
+
+oecd_clean <- oecd_raw %>%
+  # 1. Rename the misleading column so we don't get confused
+  rename(iso2c_original = iso3c) %>%
+  
+  # 2. Create a REAL iso3c column using the countrycode package
+  mutate(
+    iso3c = countrycode(
+      sourcevar = iso2c_original, 
+      origin = "iso2c", 
+      destination = "iso3c"
+    )
+  ) %>%
+  
+  # 3. Filter out any rows where conversion failed (optional but safe)
+  filter(!is.na(iso3c))
+
+# VERIFICATION:
+# Check if we actually have 3-letter codes now
+cat("Example converted codes:", head(oecd_clean$iso3c, 3), "\n")
+
+# ============================================================
+# 3. THE MERGE
+# ============================================================
+
+# We Left Join: Keep all MONARCH structure, attach OECD data where it matches
+df_merged <- monarch %>%
+  left_join(
+    oecd_clean %>% dplyr::select(iso3c, year, breakthrough_count, patent_count, pct_breakthrough),
+    by = c("iso3c", "year")
+  )
+
+# ============================================================
+# 4. FINAL CLEANING & OFFSET CREATION
+# ============================================================
+
+# Create the final modeling dataset
+df_final <- df_merged %>%
+  # Create the log offset (Opportunity) 
+  mutate(
+    log_patent_count = log(patent_count)
+  ) %>%
+  # Filter to rows that actually have the new data + core controls
+  filter(
+    !is.na(breakthrough_count),
+    !is.na(ln_market),
+    !is.na(ipr_c)
+  )
+
+# ============================================================
+# 5. DIAGNOSTICS (DID IT WORK?)
+# ============================================================
+
+cat("========================================\n")
+cat("MERGE DIAGNOSTICS\n")
+cat("========================================\n")
+cat("Monarch Original Rows:  ", nrow(monarch), "\n")
+cat("Merged/Final Rows:      ", nrow(df_final), "\n")
+cat("Unique Countries:       ", n_distinct(df_final$iso3c), "\n")
+cat("Years Covered:          ", min(df_final$year), "to", max(df_final$year), "\n")
+
+# Check for the specific error you had before
+cat("Any NAs in breakthrough_count? ", any(is.na(df_final$breakthrough_count)), "\n")
+cat("Any NAs in log_patent_count?   ", any(is.na(df_final$log_patent_count)), "\n")
+
+# Preview the data to ensure columns align
+print(head(df_final %>% dplyr::select(iso3c, year, breakthrough_count, ln_market, ipr_c)))
+```
+```{r}
+library(fixest)
+library(marginaleffects)
+library(ggplot2)
+
+# ============================================================
+# 1. OUTLIER SAFETY CHECK
+# ============================================================
+# We verify if there's a "monster" outlier (e.g., a data error)
+# If the max value is > 5x the 99th percentile, we cap it or drop it.
+threshold <- quantile(df_final$breakthrough_count, 0.99)
+max_val <- max(df_final$breakthrough_count)
+
+if (max_val > 5 * threshold) {
+  cat("⚠️ EXTREME OUTLIER DETECTED. Removing top 0.1% to stabilize model.\n")
+  df_model <- df_final %>% filter(breakthrough_count <= quantile(breakthrough_count, 0.999))
+} else {
+  cat("✅ Data distribution looks distinct but stable. Using full set.\n")
+  df_model <- df_final
+}
+
+# ============================================================
+# 2. THE MODEL: Negative Binomial
+# ============================================================
+# We use NegBin to handle the high variance (dispersion) in patent data.
+# Note: We include offset(log_patent_count) to model "Success Rate"
+
+nb_model <- fenegbin(
+  breakthrough_count ~ ln_market * ipr_c + ln_gdp_pc + ln_trade + offset(log_patent_count) | 
+  iso3c + year,
+  data = df_model,
+  cluster = "iso3c"
+)
+
+print(nb_model)
+
+# ============================================================
+# 3. THE "STORY" PLOT (Interaction)
+# ============================================================
+# This plots the marginal effect of Finance (Y-axis) as IPR gets stricter (X-axis).
+
+plot_slopes(
+  nb_model,
+  variables = "ln_market",
+  condition = "ipr_c",
+  vcov = FALSE,      # Focus on the shape of the line first
+  newdata = df_model # Explicitly forces the clean data
+) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(
+    title = "Interaction: Does Strict IPR Choke Finance?",
+    subtitle = "Downward slope = IPR reduces the benefits of financial deepening",
+    y = "Marginal Effect of Finance on Breakthroughs",
+    x = "IPR Strictness (Park Index)"
+  ) +
+  theme_minimal()
+###############
+library(fixest)
+library(marginaleffects)
+library(ggplot2)
+
+# 1. Create the Binary Event (The "Zero-to-One" Jump)
+df_prob <- df_model %>%
+  mutate(
+    breakthrough_event = ifelse(breakthrough_count > 0, 1, 0)
+  )
+
+cat("Breakthrough Events:", sum(df_prob$breakthrough_event), 
+    "out of", nrow(df_prob), "observations.\n")
+
+# 2. The Model: Logit (Fixed Effects)
+# We test if Finance * IPR changes the PROBABILITY of an event
+logit_model <- feglm(
+  breakthrough_event ~ ln_market * ipr_c + ln_gdp_pc + ln_trade | year, 
+  family = binomial("logit"),
+  data = df_prob,
+  cluster = "iso3c"
+)
+
+print(logit_model)
+
+# 3. The Visualization: "Probability of a Breakthrough"
+# We want to see if the probability curve flattens out when IPR is high.
+
+plot_predictions(
+  logit_model,
+  condition = list("ln_market", "ipr_c"), # X-axis = Finance, Lines = IPR
+  type = "response", # This forces the Y-axis to be PROBABILITY (0 to 100%)
+  vcov = FALSE,
+  newdata = df_prob
+) +
+  labs(
+    title = "The Probability of Innovation",
+    subtitle = "Does Strict IPR (High) flatten the curve?",
+    y = "Probability of Any Breakthrough",
+    x = "Financial Market Depth"
+  ) +
+  theme_minimal()
+#########################
+library(fixest)
+library(marginaleffects)
+
+# 1. Redefine the Target: "The Elite Club"
+# We define "Elite" as having more breakthroughs than the median of INNOVATING countries.
+# (i.e., we ignore the zeros and find the cutoff for "serious" players)
+nonzero_median <- median(df_model$breakthrough_count[df_model$breakthrough_count > 0])
+cat("The threshold for 'Elite' status is:", nonzero_median, "breakthroughs.\n")
+
+df_elite <- df_model %>%
+  mutate(
+    is_elite = ifelse(breakthrough_count > nonzero_median, 1, 0)
+  )
+
+# 2. Run the Logit on "Becoming Elite"
+# HYPOTHESIS: Finance helps you become elite, but Strict IPR BLOCKS you (Negative Interaction).
+logit_elite <- feglm(
+  is_elite ~ ln_market * ipr_c + ln_gdp_pc + ln_trade | year, 
+  family = binomial("logit"),
+  data = df_elite,
+  cluster = "iso3c"
+)
+
+print(logit_elite)
+
+# 3. The "Recovery" Plot
+# If this works, the High IPR line should slope DOWN or act flat compared to Low IPR.
+plot_predictions(
+  logit_elite,
+  condition = list("ln_market", "ipr_c"),
+  type = "response",
+  vcov = FALSE,
+  newdata = df_elite
+) +
+  labs(
+    title = "The Barrier to Excellence",
+    subtitle = "Does Strict IPR prevent Market Finance from creating 'Elite' Innovators?",
+    y = "Probability of being an Elite Innovator",
+    x = "Financial Market Depth"
+  ) +
+  theme_minimal()
+```
+
+
+
+
+
+
+# IGNORE
+
+# poisson
+```{r}
+library(dplyr)
+
+# 1. DEFINE YOUR CORE VARIABLES
+# Adjust names if yours are slightly different
+dv       <- "breakthrough_count"  # The Outcome (Event)
+offset   <- "patent_count"        # The Exposure (Opportunity)
+main_ivs <- c("ln_market", "ipr_c") # The Predictors
+
+# 2. SUBSET TO COMPLETE CASES (The "Real" Sample)
+# Models drop rows with ANY missing value. We must check the size of what remains.
+df_ready <- df %>% 
+  filter(!is.na(.data[[dv]]), 
+         !is.na(.data[[offset]]), 
+         if_all(all_of(main_ivs), ~!is.na(.)))
+
+cat("================================================\n")
+cat("DATA READINESS REPORT\n")
+cat("================================================\n")
+
+# CHECK 1: SAMPLE SIZE
+cat("Total Rows in Panel:    ", nrow(df), "\n")
+cat("Rows ready for Model:   ", nrow(df_ready), "\n")
+cat("Dropout Rate:           ", round((1 - nrow(df_ready)/nrow(df))*100, 1), "%\n")
+if(nrow(df_ready) < 500) warning("⚠️ WARNING: Sample size is very low for country-level panels.")
+
+# CHECK 2: THE OUTCOME (Sparsity)
+zeros <- sum(df_ready[[dv]] == 0)
+prop_zeros <- zeros / nrow(df_ready)
+cat("\n--- OUTCOME VARIABLE ---\n")
+cat("Total Breakthroughs:    ", sum(df_ready[[dv]]), "\n")
+cat("Rows with ZERO events:  ", zeros, "(", round(prop_zeros*100, 1), "% )\n")
+if(prop_zeros > 0.90) warning("⚠️ CRITICAL: Data is >90% Zeros. Poisson/Logit will struggle significantly.")
+
+# CHECK 3: THE OFFSET (Opportunity)
+# The offset must be correlated with the outcome. If they are totally unrelated, 
+# 'breakthroughs' aren't just a subset of 'patents', suggesting a data mismatch.
+cor_off <- cor(df_ready[[dv]], df_ready[[offset]], method = "spearman")
+cat("\n--- OFFSET VALIDITY ---\n")
+cat("Correlation (Outcome vs Offset): ", round(cor_off, 3), "\n")
+if(cor_off < 0.3) warning("⚠️ CRITICAL: Breakthroughs and Total Patents are weakly correlated. Are they from the same data source?")
+
+# CHECK 4: VARIANCE (Overdispersion)
+mean_y <- mean(df_ready[[dv]])
+var_y  <- var(df_ready[[dv]])
+cat("\n--- DISTRIBUTION ---\n")
+cat("Mean:", round(mean_y, 2), " | Variance:", round(var_y, 2), "\n")
+cat("Dispersion Ratio (Var/Mean):", round(var_y/mean_y, 2), "\n")
+if((var_y/mean_y) > 5) cat("👉 Suggestion: Use Negative Binomial (MASS::glm.nb or fixest::fenegbin)\n")
+
+# 1. Identify the outlier
+outlier_row <- df_est %>% arrange(desc(breakthrough_count)) %>% slice(1)
+print(outlier_row)
+
+# 2. Create a "Sanitized" dataset (No NAs, No Outlier)
+# We remove the top 1% of extreme values just to be safe, or just the single max.
+threshold <- quantile(df_est$breakthrough_count, 0.999) # Top 0.1% cut
+
+df_clean <- df_est %>%
+  filter(breakthrough_count < threshold) %>% # Drop the monster outlier
+  filter(!is.na(ln_market), !is.na(ipr_c))   # Ensure data exists (Fixes "0 obs" error)
+
+cat("Old Max:", max(df_est$breakthrough_count), "\n")
+cat("New Max:", max(df_clean$breakthrough_count), "\n")
+```
+
+```{r eval= FALSE, echo= TRUE}
+# ============================================================
+# BREAKTHROUGH INNOVATION MODELS
+# ISO CODE FIX + MERGE + ESTIMATION
+# ============================================================
+
+rm(list = ls())
+
+library(tidyverse)
+library(data.table)
+library(countrycode)
+library(fixest)
+
+# ------------------------------------------------------------
+# LOAD DATA
+# ------------------------------------------------------------
+
+# OECD PQI country-year data (ISO-2 codes)
+oecd <- fread("data/OECD_country_year_final.csv")
+
+# Monarch panel (true ISO-3 codes + finance/IPR)
+monarch <- fread("data/monarch_panel_transformed.csv")
+
+# ------------------------------------------------------------
+# FIX COUNTRY CODES (ISO-2 -> ISO-3)
+# ------------------------------------------------------------
+
+# IMPORTANT: OECD iso3c is actually ISO-2
+oecd <- oecd %>%
+  mutate(
+    iso2c = iso3c,
+    iso3c = countrycode(
+      sourcevar = iso2c,
+      origin = "iso2c",
+      destination = "iso3c"
+    )
+  )
+
+# Drop rows that fail conversion
+oecd <- oecd %>% filter(!is.na(iso3c))
+
+# ------------------------------------------------------------
+# BASIC VALIDATION
+# ------------------------------------------------------------
+
+cat("OECD rows after ISO conversion:", nrow(oecd), "\n")
+cat("Unique OECD countries:", n_distinct(oecd$iso3c), "\n")
+
+# ------------------------------------------------------------
+# MERGE WITH MONARCH PANEL
+# ------------------------------------------------------------
+
+df <- monarch %>%
+  left_join(
+    oecd %>%
+      dplyr::select(
+        iso3c, year,
+        breakthrough_count,
+        patent_count,
+        pct_breakthrough
+      ),
+    by = c("iso3c", "year")
+  )
+
+# ------------------------------------------------------------
+# SAMPLE CHECKS (CRITICAL)
+# ------------------------------------------------------------
+
+cat("Merged rows:", nrow(df), "\n")
+
+df_model <- df %>%
+  filter(
+    !is.na(breakthrough_count),
+    !is.na(patent_count),
+    patent_count > 0,
+    !is.na(ln_market),
+    !is.na(ipr_c)
+  )
+
+cat("Usable observations:", nrow(df_model), "\n")
+cat("Countries:", n_distinct(df_model$iso3c), "\n")
+cat("Years:", n_distinct(df_model$year), "\n")
+
+# Fail loudly if something is still wrong
+stopifnot(nrow(df_model) > 300)
+
+# ------------------------------------------------------------
+# CREATE BINARY BREAKTHROUGH EVENT
+# ------------------------------------------------------------
+
+df_model <- df_model %>%
+  mutate(
+    breakthrough_any = as.integer(breakthrough_count > 0)
+  )
+
+table(df_model$breakthrough_any)
+df_model <- df_model %>% 
+  mutate(
+    log_patent_count = log(patent_count)
+  )
+# ============================================================
+# MODEL 1: POISSON (INTENSITY, WITH EXPOSURE)
+# ============================================================
+nrow(df_model)
+pois_market <- feglm(
+  breakthrough_count ~ ln_market * ipr_c +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary |
+    iso3c + year,
+  offset = ~log_patent_count,
+  family = poisson(),
+  data = df_model,
+  cluster = "iso3c"
+)
+
+summary(pois_market)
+install.packages('marginaleffects')
+library(marginaleffects)
+library(ggplot2)
+plot_predictions(
+  pois_market, 
+  condition = list("ln_market", "ipr_c"),
+  newdata = df_model,
+  vcov = FALSE# X-axis = Market, Lines = IPR levels
+) +
+  labs(
+    title = "The Choking Effect of IPR",
+    subtitle = "Financial Deepening increases breakthroughs ONLY when IPR is flexible",
+    y = "Predicted Breakthrough Count",
+    x = "Financial Market Depth (Log)"
+  ) +
+  theme_minimal()
+
+# ============================================================
+# MODEL 2: LOGIT (PROBABILITY OF ANY BREAKTHROUGH)
+# ============================================================
+
+logit_market <- feglm(
+  breakthrough_any ~ ln_market * ipr_c +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary |
+    year,
+  family = binomial("logit"),
+  data = df_model,
+  cluster = "iso3c"
+)
+
+summary(logit_market)
+
+# ============================================================
+# OPTIONAL: BANK & VC VARIANTS
+# ============================================================
+
+logit_bank <- feglm(
+  breakthrough_any ~ ln_bank * ipr_c +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary |
+    year,
+  family = binomial("logit"),
+  data = df_model,
+  cluster = "iso3c"
+)
+
+logit_vc <- feglm(
+  breakthrough_any ~ ln_vc * ipr_c +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary |
+    year,
+  family = binomial("logit"),
+  data = df_model,
+  cluster = "iso3c"
+)
+
+summary(logit_bank)
+summary(logit_vc)
+```
+
+
+```{r eval= FALSE, echo= TRUE}
+# ============================================================
+# BREAKTHROUGH INNOVATION RATE MODEL
+# Negative Binomial / Poisson-ready framework
+# ============================================================
+
+rm(list = ls())
+
+library(tidyverse)
+library(data.table)
+library(fixest)
+
+# ------------------------------------------------------------
+# LOAD DATA
+# ------------------------------------------------------------
+
+# OECD PQI country-year data (counts)
+pqi <- fread("data/OECD_country_year_final.csv")
+
+# Monarch panel (finance, IPR, controls)
+monarch <- fread("data/monarch_panel_transformed.csv")
+
+# ------------------------------------------------------------
+# CLEAN & ALIGN KEYS
+# ------------------------------------------------------------
+
+pqi <- pqi %>%
+  rename(
+    iso3c = iso3c,
+    year  = year
+  )
+
+# ------------------------------------------------------------
+# MERGE DATASETS
+# ------------------------------------------------------------
+
+df <- pqi %>%
+  left_join(
+    monarch %>%
+      dplyr::select(
+        iso3c, year,
+        ln_bank, ln_market, ln_vc,
+        ipr_c,
+        ln_gdp_pc, ln_trade, ln_rd, ln_tertiary
+      ),
+    by = c("iso3c", "year")
+  )
+
+# ------------------------------------------------------------
+# DEFINE ESTIMATION SAMPLE
+# ------------------------------------------------------------
+# REQUIRED:
+# - patent_count > 0 (offset must be finite)
+# - breakthrough_count observed
+# - no missing regressors
+
+df_est <- df %>%
+  filter(
+    patent_count > 0,
+    !is.na(breakthrough_count),
+    !is.na(ln_market),
+    !is.na(ipr_c),
+    !is.na(ln_gdp_pc),
+    !is.na(ln_trade),
+    !is.na(ln_rd),
+    !is.na(ln_tertiary)
+  )
+
+# Sanity check
+cat("Observations used:", nrow(df_est), "\n")
+
+# ------------------------------------------------------------
+# POISSON FIXED EFFECTS MODEL (MARKET FINANCE)
+# ------------------------------------------------------------
+
+pois_market <- feglm(
+  breakthrough_count ~ ln_market * ipr_c +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary |
+    iso3c + year,
+  offset = log(patent_count),
+  family = poisson(),
+  data = df_est
+)
+
+summary(pois_market)
+
+# ------------------------------------------------------------
+# OPTIONAL: BANK & VC CHANNELS
+# ------------------------------------------------------------
+
+pois_bank <- feglm(
+  breakthrough_count ~ ln_bank * ipr_c +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary |
+    iso3c + year,
+  offset = log(patent_count),
+  family = poisson(),
+  data = df_est %>% filter(!is.na(ln_bank))
+)
+
+summary(pois_bank)
+
+
+pois_vc <- feglm(
+  breakthrough_count ~ ln_vc * ipr_c +
+    ln_gdp_pc + ln_trade + ln_rd + ln_tertiary |
+    iso3c + year,
+  offset = log(patent_count),
+  family = poisson(),
+  data = df_est %>% filter(!is.na(ln_vc))
+)
+
+summary(pois_vc)
+
+# ------------------------------------------------------------
+# OVERDISPERSION CHECK (IMPORTANT)
+# ------------------------------------------------------------
+
+cat("\nOverdispersion diagnostic:\n")
+cat("Mean breakthroughs:", mean(df_est$breakthrough_count), "\n")
+cat("Variance breakthroughs:", var(df_est$breakthrough_count), "\n")
+
+# If variance >> mean → move to Negative Binomial
 ```
 
 
