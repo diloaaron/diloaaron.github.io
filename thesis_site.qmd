@@ -674,65 +674,61 @@ corrplot(corr_matrix, method = "color", type = "upper",
 ## interaction plots (marginal effects)
 ```{r echo= TRUE, eval= TRUE, message= FALSE, warning= FALSE}
 library(plm)
-
-twfe_quality <- plm(
-  quality_index_100 ~ ln_market * ipr_c +
-    ln_bank + ln_vc,
-  data = df,
-  index = c("iso3c", "year"),
-  model = "within",
-  effect = "twoways"
-)
-
-twfe_quantity <- plm(
-  ln_patents ~ ln_market * ipr_c +
-    ln_bank + ln_vc,
-  data = df,
-  index = c("iso3c", "year"),
-  model = "within",
-  effect = "twoways"
-)
 library(marginaleffects)
+library(ggplot2)
+library(dplyr)
 
-ipr_sd <- sd(df$ipr_c, na.rm = TRUE)
+# Column 4 specification
+twfe_quality <- plm(
+  quality_index_100 ~ 
+    ln_market * ipr_c +
+    ln_gdp_pc +
+    ln_trade +
+    ln_rd,
+  data = df,
+  index = c("iso3c", "year"),
+  model = "within",
+  effect = "twoways"
+)
 
+# Sequence over observed ln_market range
 ln_market_seq <- seq(
   min(df$ln_market, na.rm = TRUE),
   max(df$ln_market, na.rm = TRUE),
   length.out = 100
 )
 
-ipr_values <- c(-ipr_sd, 0, ipr_sd)
-
-# Quality
-plot_predictions(
+# Compute marginal effect of IPR across ln_market
+mfx <- slopes(
   twfe_quality,
-  condition = list(
-    ln_market = ln_market_seq,
-    ipr_c = ipr_values
-  )
-) +
+  variables = "ipr_c",
+  newdata = datagrid(ln_market = ln_market_seq),
+  vcov = "HC1"   # match your robust SE specification
+)
+
+# Extract coefficients to compute turning point
+coefs <- coef(twfe_quality)
+
+beta2 <- coefs["ipr_c"]
+beta3 <- coefs["ln_market:ipr_c"]
+
+turning_point <- -beta2 / beta3
+
+# Plot
+p_me_quality <- ggplot(mfx, aes(x = ln_market, y = estimate)) +
+  geom_line(size = 1.1) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_vline(xintercept = turning_point, linetype = "dotted") +
   labs(
-    title = "Market Finance × IPR Interaction (TWFE)",
-    x = "Market Finance (log)",
-    y = "Predicted Patent Quality"
+    title = "Marginal Effect of IPR on Patent Quality",
+    subtitle = paste0("Turning point ≈ ", round(turning_point, 2)),
+    x = "Market Capitalization (log of Market Cap / GDP)",
+    y = "Marginal Effect of IPR on Quality"
   ) +
   theme_minimal()
 
-# Quantity
-plot_predictions(
-  twfe_quantity,
-  condition = list(
-    ln_market = ln_market_seq,
-    ipr_c = ipr_values
-  )
-) +
-  labs(
-    title = "Market Finance × IPR Interaction (TWFE)",
-    x = "Market Finance (log)",
-    y = "Predicted Log Patents"
-  ) +
-  theme_minimal()
+ggsave("figures/interaction_quality.pdf", plot = p_me_quality, width = 7, height = 5)
 ```
 
 ## more graphs
@@ -776,7 +772,22 @@ ggplot(df, aes(x = ln_patents, y = quality_index_100)) +
     y = "Average Patent Quality"
   ) +
   theme_minimal()
+p_quality_quantity <- ggplot(df, aes(x = ln_patents, y = quality_index_100)) +
+  geom_point(alpha = 0.3) +
+  geom_smooth(method = "loess", se = FALSE, color = "deeppink2") +
+  labs(
+    title = NULL,
+    x = "Patent Quantity (log)",
+    y = "Average Patent Quality"
+  ) +
+  theme_minimal()
 
+ggsave(
+  filename = "figures/quality_vs_quantity.pdf",
+  plot = p_quality_quantity,
+  width = 6,
+  height = 4
+)
 ```
 ```{r eval= TRUE, echo= TRUE, message= FALSE, warning= FALSE, fig.width= 10, fig.height= 5}
 library(tidyverse)

@@ -713,7 +713,7 @@ plot_predictions(
   )
 ) +
   labs(
-    title = "Market Finance × IPR Interaction (TWFE)",
+    title = "Market Finance * IPR Interaction (TWFE)",
     x = "Market Finance (log)",
     y = "Predicted Patent Quality"
   ) +
@@ -728,7 +728,7 @@ plot_predictions(
   )
 ) +
   labs(
-    title = "Market Finance × IPR Interaction (TWFE)",
+    title = "Market Finance * IPR Interaction (TWFE)",
     x = "Market Finance (log)",
     y = "Predicted Log Patents"
   ) +
@@ -1073,5 +1073,715 @@ All controls are log-transformed (+1 shift where necessary).
 **Model-Specific Parameters**
 
 - `Log(theta)` - Log of dispersion parameter in negative binomial models. Captures overdispersion relative to Poisson.
+
+```{r}
+# --- SETUP & DIRECTORY CHECK ---
+# Ensure the 'figures' folder exists to save PDFs
+if (!dir.exists("figures")) {
+  dir.create("figures")
+}
+
+library(ggplot2)
+library(dplyr)
+library(data.table)
+library(tidyverse)
+library(corrplot)
+library(plm)
+library(marginaleffects)
+
+# Load Data Once
+df <- fread("data/monarch_panel_transformed.csv")
+
+# ==========================================
+# 1. Breakthrough Counts Histogram
+# ==========================================
+p_breakthrough <- ggplot(df, aes(x = breakthrough_count)) +
+  geom_histogram(binwidth = 1, fill = "steelblue1", color = "white") +
+  coord_cartesian(xlim = c(0, 30)) +
+  labs(
+    title = "Distribution of Breakthrough Counts",
+    x = "Breakthrough Count (Top 1% Patents)",
+    y = "Frequency"
+  ) +
+  theme_minimal()
+
+ggsave("figures/breakthrough_distribution.pdf", plot = p_breakthrough, width = 6, height = 4)
+
+
+# ==========================================
+# 2. Patent Quality Density
+# ==========================================
+p_quality_dens <- ggplot(df, aes(x = quality_index_100)) +
+  geom_density(fill = "deeppink1", alpha = 0.4) +
+  labs(
+    title = "Distribution of Patent Quality Index",
+    x = "Patent Quality (0-100)",
+    y = "Density"
+  ) +
+  theme_minimal()
+
+ggsave("figures/quality_density.pdf", plot = p_quality_dens, width = 6, height = 4)
+
+
+# ==========================================
+# 3. Financial Development Distributions
+# ==========================================
+vars <- c("ln_market", "ln_bank", "ln_vc")
+
+df_long <- df %>%
+  select(all_of(vars)) %>%
+  pivot_longer(everything())
+
+p_fd_dist <- ggplot(df_long, aes(x = value)) +
+  geom_density(fill = "deeppink1", alpha = 0.4) +
+  facet_wrap(~name, scales = "free") +
+  theme_minimal() +
+  labs(title = "Distribution of Financial Development Measures")
+
+ggsave("figures/fd_distributions.pdf", plot = p_fd_dist, width = 10, height = 5)
+
+
+# ==========================================
+# 4. Correlation Plot
+# ==========================================
+# Note: corrplot is base graphics, not ggplot, so we use pdf() device driver
+corr_vars <- df %>%
+  select(quality_index_100, ln_patents,
+         ln_market, ln_bank, ln_vc,
+         ipr_c, ln_gdp_pc, ln_trade,
+         ln_rd, ln_tertiary) %>%
+  na.omit()
+
+corr_matrix <- cor(corr_vars)
+
+pdf(file = "figures/correlation_matrix.pdf", width = 8, height = 8)
+corrplot(corr_matrix, method = "color", type = "upper",
+         tl.cex = 0.8, number.cex = 0.7)
+dev.off() # Close the PDF device
+
+
+# ==========================================
+# 5. Marginal Effects (Interaction Plots)
+# ==========================================
+twfe_quality <- plm(
+  quality_index_100 ~ ln_market * ipr_c + ln_bank + ln_vc,
+  data = df, index = c("iso3c", "year"), model = "within", effect = "twoways"
+)
+
+twfe_quantity <- plm(
+  ln_patents ~ ln_market * ipr_c + ln_bank + ln_vc,
+  data = df, index = c("iso3c", "year"), model = "within", effect = "twoways"
+)
+
+ipr_sd <- sd(df$ipr_c, na.rm = TRUE)
+ln_market_seq <- seq(min(df$ln_market, na.rm=TRUE), max(df$ln_market, na.rm=TRUE), length.out = 100)
+ipr_values <- c(-ipr_sd, 0, ipr_sd)
+
+# Interaction: Quality
+p_me_quality <- plot_predictions(
+  twfe_quality,
+  condition = list(ln_market = ln_market_seq, ipr_c = ipr_values)
+) +
+  labs(
+    title = "Market Finance × IPR Interaction (TWFE)",
+    x = "Market Finance (log)",
+    y = "Predicted Patent Quality"
+  ) +
+  theme_minimal()
+
+ggsave("figures/interaction_quality.pdf", plot = p_me_quality, width = 7, height = 5)
+
+# Interaction: Quantity
+p_me_quantity <- plot_predictions(
+  twfe_quantity,
+  condition = list(ln_market = ln_market_seq, ipr_c = ipr_values)
+) +
+  labs(
+    title = "Market Finance × IPR Interaction (TWFE)",
+    x = "Market Finance (log)",
+    y = "Predicted Log Patents"
+  ) +
+  theme_minimal()
+
+ggsave("figures/interaction_quantity.pdf", plot = p_me_quantity, width = 7, height = 5)
+
+
+# ==========================================
+# 6. Quality Distribution by Regime (Facet)
+# ==========================================
+df_plot <- df %>%
+  filter(!is.na(ln_market), !is.na(ipr_c), !is.na(quality_index_100)) %>%
+  mutate(
+    market_bin = ntile(ln_market, 3),
+    ipr_regime = ifelse(ipr_c <= median(ipr_c, na.rm = TRUE), "Weak IPR", "Strong IPR"),
+    group = paste0("Market Q", market_bin, " | ", ipr_regime)
+  )
+
+p_regime_dist <- ggplot(df_plot, aes(x = quality_index_100, fill = ipr_regime)) +
+  geom_density(alpha = 0.4) +
+  facet_wrap(~ market_bin, nrow = 1,
+             labeller = labeller(market_bin = function(x) paste("Market Q", x))) +
+  labs(
+    title = "Innovation Quality Distributions by Market Finance and IPR",
+    x = "Patent Quality Index",
+    y = "Density",
+    fill = "IPR Regime"
+  ) +
+  theme_minimal()
+
+ggsave("figures/quality_by_regime.pdf", plot = p_regime_dist, width = 8, height = 5)
+
+
+# ==========================================
+# 7. Quality vs Quantity Scatter
+# ==========================================
+p_qual_vs_quant <- ggplot(df, aes(x = ln_patents, y = quality_index_100)) +
+  geom_point(alpha = 0.3) +
+  geom_smooth(method = "loess", se = FALSE, color = "deeppink2") +
+  labs(
+    title = NULL,
+    x = "Patent Quantity (log)",
+    y = "Average Patent Quality"
+  ) +
+  theme_minimal()
+
+ggsave("figures/quality_vs_quantity.pdf", plot = p_qual_vs_quant, width = 6, height = 4)
+
+
+# ==========================================
+# 8. Main Scatterplots (FD & IPR vs Outcomes)
+# ==========================================
+plot_df <- df %>%
+  select(iso3c, year, quality_index_100, ln_patents, ipr_c, ln_bank, ln_market, ln_vc) %>%
+  pivot_longer(cols = c(ln_bank, ln_market, ln_vc), names_to = "finance_type", values_to = "finance_depth") %>%
+  mutate(finance_type = case_match(finance_type,
+                                   "ln_bank"   ~ "Bank Finance",
+                                   "ln_market" ~ "Market Finance",
+                                   "ln_vc"     ~ "Venture Capital",
+                                   .default = finance_type))
+
+# FD x Quality
+p_fd_quality <- ggplot(plot_df, aes(x = finance_depth, y = quality_index_100)) +
+  geom_point(alpha = 0.25) +
+  geom_smooth(method = "loess", se = FALSE, linewidth = 1, color = 'deeppink2') +
+  facet_wrap(~ finance_type, scales = "free_x") +
+  labs(
+    title = "Financial Development and Patent Quality",
+    x = "Financial Depth (log)",
+    y = "Patent Quality Index (0-100)"
+  ) +
+  theme_minimal()
+
+ggsave("figures/scatter_fd_quality.pdf", plot = p_fd_quality, width = 10, height = 5)
+
+# FD x Quantity
+p_fd_quantity <- ggplot(plot_df, aes(x = finance_depth, y = ln_patents)) +
+  geom_point(alpha = 0.25) +
+  geom_smooth(method = "loess", se = FALSE, linewidth = 1, color = 'deeppink2') +
+  facet_wrap(~ finance_type, scales = "free_x") +
+  labs(
+    title = "Financial Development and Patent Quantity",
+    x = "Financial Depth (log)",
+    y = "Log Patents per 1,000 Researchers"
+  ) +
+  theme_minimal()
+
+ggsave("figures/scatter_fd_quantity.pdf", plot = p_fd_quantity, width = 10, height = 5)
+
+# IPR x Quality
+p_ipr_quality <- ggplot(df, aes(x = ipr_c, y = quality_index_100)) +
+  geom_point(alpha = 0.25) +
+  geom_smooth(method = "loess", se = FALSE, linewidth = 1, color = 'deeppink2') +
+  labs(
+    title = "IPR Strength and Patent Quality",
+    subtitle = "Stronger IPR regimes show a weak relationship with quality",
+    x = "IPR Strength (Centered Park Index)",
+    y = "Patent Quality Index (0-100)"
+  ) +
+  theme_minimal()
+
+ggsave("figures/scatter_ipr_quality.pdf", plot = p_ipr_quality, width = 6, height = 5)
+
+# IPR x Quantity
+p_ipr_quantity <- ggplot(df, aes(x = ipr_c, y = ln_patents)) +
+  geom_point(alpha = 0.25) +
+  geom_smooth(method = "loess", se = FALSE, linewidth = 1, color = 'deeppink2') +
+  labs(
+    title = "IPR Strength and Patent Quantity",
+    subtitle = "Stronger IPR regimes file more patents on average",
+    x = "IPR Strength (Centered Park Index)",
+    y = "Log Patents per 1,000 Researchers"
+  ) +
+  theme_minimal()
+
+ggsave("figures/scatter_ipr_quantity.pdf", plot = p_ipr_quantity, width = 6, height = 5)
+
+
+# ==========================================
+# 9. Simple Interaction Scatter (Linear)
+# ==========================================
+quality_market_df <- df %>%
+  filter(!is.na(quality_index_100), !is.na(ln_market), !is.na(ipr_c)) %>%
+  mutate(ipr_regime = ifelse(ipr_c >= 0, "Above-Average IPR", "Below-Average IPR"))
+
+p_simple_int <- ggplot(quality_market_df, aes(x = ln_market, y = quality_index_100, color = ipr_regime)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    title = "Patent Quality, Market Finance, and IPR",
+    x = "Log Market Capitalization / GDP",
+    y = "Patent Quality Index (0-100)",
+    color = "IP Regime"
+  ) +
+  theme_minimal()
+
+ggsave("figures/simple_interaction_scatter.pdf", plot = p_simple_int, width = 7, height = 5)
+
+cat("All plots successfully saved to 'figures/' directory.\n")
+```
+```{LaTeX}
+
+2. Empirical Strategy: Motivation and Overview
+
+This chapter investigates how financial structure and intellectual property institutions jointly shape innovative outcomes, with a particular focus on the distinction between innovation quality, scale, and breakthrough activity. While a large literature documents that financial development is associated with higher levels of innovation, far less is known about how different forms of finance interact with institutional design to influence what kind of innovation economies produce.
+
+Innovation is multi-dimensional. Aggregate patent counts conflate incremental and frontier innovation, while average quality measures, as aggregated in this analysis, can obscure the highly skewed distribution of technological importance. A small number of breakthroughs account for a disproportionate share of long-run growth, yet most country-year observations record none at all. 
+
+First, I estimate a series of two-way fixed effects (TWFE) panel regressions that relate financial development, intellectual property protection, and their interaction to measures of average patent quality and innovation quantity. This isolates within-country variation over time while controlling for unobserved country-specific characteristics and global shocks common to all countries. These models establish the baseline patterns and reveal systematic differences between bank-based and market-based financial systems.
+
+Second, recognizing that frontier innovation is rare and highly concentrated, I move beyond linear models to study breakthrough innovation explicitly. Breakthroughs are defined at the patent level as those in the top 10% [oecd paper] of citations within their technology class and year, then aggregated to the country-year level. Because most country–year observations record zero breakthroughs, standard linear models are ill-suited to this outcome. Accordingly, I employ a stochastic approach. Zero-inflated negative binomial (ZINB) models decompose breakthrough innovation into two distinct processes: a selection equation governing whether a country is structurally unlikely to innovate at the frontier, and an intensity equation governing how many breakthroughs are produced conditional on being active. This structure aligns closely with theoretical models of innovation that distinguish between participation and scaling margins.
+
+Together, these approaches allow the analysis to speak to a central question of this thesis: Do financial structure and patent institutions shape not only the volume of innovation, but the likelihood and nature of frontier technological breakthroughs? By integrating TWFE models with probabilistic and count-based frameworks, the empirical strategy provides a more complete picture of how finance and institutions interact to shape long-run technological progress.
+
+Roadmap of the Empirical Results
+
+The remainder of this chapter is organized as follows. Section 3.1 presents TWFE estimates of market-based finance, intellectual property protection, and patent quality. Section 3.2 contrasts these results with evidence on bank finance and innovation quantity. Section 3.3 then examines breakthrough innovation using zero-inflated negative binomial models, distinguishing between entry into frontier innovation and breakthrough intensity. The final section discusses robustness, interpretation, and implications for theories of finance-led growth.
+
+## Baseline Two-Way Fixed Effects Model
+
+The baseline specification estimates the relationship between financial development,
+intellectual property rights, and innovation outcomes using a two-way fixed effects model:
+
+$$
+Y_{it} =
+\beta_0
++ \beta_1 FD_{it}
++ \beta_2 IPR_{it}
++ \beta_3 (FD_{it} \times IPR_{it})
++ \mathbf{X}_{it}'\beta
++ \alpha_i
++ \lambda_t
++ \varepsilon_{it}
+\tag{1}
+$$
+where $Y_{it}$ denotes either (i) average patent quality or (ii) patent output per researcher
+in country $i$ and year $t$. $FD_{it}$ captures financial development (bank credit, market
+capitalization, or venture capital), $IPR_{it}$ is the Park index of patent protection,
+and $\mathbf{X}_{it}$ includes controls for income, trade openness, R\&D intensity,
+and human capital. Country fixed effects $\alpha_i$ control for time-invariant
+heterogeneity, while year fixed effects $\lambda_t$ capture global shocks.
+
+## Zero-Inflated Negative Binomial Model
+
+To account for excess zeros and overdispersion in breakthrough innovations, the analysis
+employs a zero-inflated negative binomial (ZINB) model. The zero-inflation (selection)
+equation is specified as:
+
+$$
+\log\left(
+\frac{\pi_{it}}{1 - \pi_{it}}
+\right)
+=
+\gamma_0
++ \gamma_1 FD_{it}
++ \gamma_2 IPR_{it}
++ \gamma_3 Z_{it}
+\tag{2}
+$$
+
+where $\pi_{it}$ denotes the probability that country $i$ in year $t$ is a structural
+non-innovator (i.e., always produces zero breakthrough patents). $Z_{it}$ includes
+baseline controls such as income per capita. Negative coefficients in this equation
+indicate a lower likelihood of being structurally incapable of producing breakthroughs.
+Conditional on being capable of producing breakthrough innovations, the intensity of
+breakthrough activity is modeled as:
+
+$$
+\log(\mu_{it}) =
+\beta_0
++ \beta_1 FD_{it}
++ \beta_2 IPR_{it}
++ \beta_3 (FD_{it} \times IPR_{it})
++ \mathbf{X}_{it}'\beta
++ \log(\text{Patents}_{it})
+\tag{3}
+$$
+
+where $\mu_{it}$ denotes the expected number of breakthrough patents in country $i$
+and year $t$. The inclusion of $\log(\text{Patents}_{it})$ as an offset ensures that the
+model estimates breakthrough intensity per patent rather than raw counts.
+
+3. Empirical Results
+3.1 Market Finance, Intellectual Property Rights, and Patent Quality
+
+I begin by examining the relationship between financial structure, intellectual property protection, and the average quality of innovation, measured using a composite patent quality index. Table \ref{tab:twfe_market_quality} presents two-way fixed effects (TWFE) estimates of patent quality on market-based finance, intellectual property rights (IPR), and their interaction.
+
+::: {.content-visible when-format="pdf"}
+\input{tables/twfe_market_quality.tex}
+:::
+
+The results in Table \ref{tab:twfe_market_quality} reveal a consistent and economically meaningful pattern. Across all specifications, market finance is positively associated with patent quality, indicating that deeper equity markets are correlated with higher-quality innovation outcomes within countries over time. This finding is consistent with literature [should probabbly substantiate this with some kind of citation] emphasizing the role of stock markets in financing risky, exploratory, and technologically novel projects.
+
+Crucially, however, this positive relationship is systematically moderated by the strength of intellectual property rights. The interaction between market finance and IPR protection is negative and highly statistically significant across all specifications, remaining robust to the inclusion of income, trade openness, R&D intensity, and human capital controls. This implies that as patent rights become stronger, the quality-enhancing effect of equity market deepening is progressively weakened and eventually reversed.
+
+Because all explanatory variables are mean-centered, the coefficient on market finance captures its effect at the average level of IPR protection. The interaction term indicates that deviations toward stronger patent regimes reduce the marginal contribution of market finance to innovation quality. In substantive terms, these results suggest that strong exclusion rights interact with market-based finance to tilt innovation incentives away from exploratory, high-quality innovation and toward more appropriable, incremental outcomes.
+
+Importantly, a joint Wald test strongly rejects the null hypothesis that market finance and its interaction with IPR protection are jointly insignificant, with a p-value below 0.003. This provides strong evidence that the observed interaction is not driven by spurious correlation or overfitting, but reflects a systematic relationship between financial structure, institutional design, and innovation quality.
+
+3.2 Bank Finance and Innovation Scale
+
+To contrast the role of market-based finance with that of relationship-based finance, Table \ref{tab:twfe_bank_quantity} examines the association between bank credit, IPR protection, and the quantity of innovation, measured as patents per 1,000 researchers.
+
+::: {.content-visible when-format="pdf"}
+\input{tables/twfe_bank_quantity.tex}
+:::
+
+In contrast to the quality results above, Table \ref{tab:twfe_bank_quantity} shows that bank finance is primarily associated with the scale rather than the sophistication of innovative activity. While the direct effect of bank credit on patent quantity is modest, the interaction between bank finance and IPR protection is positive and statistically significant in the fully specified model.
+
+This pattern indicates that stronger patent rights enhance the ability of bank-based financial systems to support greater volumes of innovation, even if those innovations are not necessarily of higher quality. This result aligns closely with theories of bank finance emphasizing advantages in funding incremental, standardized, and lower-risk projects, articularly when strong legal protections improve collateralization and reduce enforcement risk.
+
+Taken together, the contrast between Tables \ref{tab:twfe_market_quality} and \ref{tab:twfe_bank_quantity} highlights a central theme of this thesis: financial structure and institutional design jointly shape not only how much innovation occurs, but what kind of innovation economies produce. Market-based finance appears most conducive to high-quality innovation under relatively weaker patent regimes, whereas bank-based finance supports innovation scale more effectively under stronger intellectual property protection.
+
+3.3 Breakthrough Innovation: Selection and Intensity
+
+Financial systems and intellectual property regimes are jointly endogenous and slow-moving, varying both across countries and within countries over time. Simple cross-sectional comparisons are insufficient to identify the within-country relationships relevant for innovation dynamics. Moreover, different financial intermediaries are theorized to finance fundamentally different innovation processes, implying that their interaction with IPR regimes should not be uniform.
+
+This pattern is consistent with theoretical accounts emphasizing that while equity markets excel at funding experimentation, strong patent protection can raise barriers to cumulative innovation, increase strategic patenting, and amplify short-term market pressures. Under such conditions, equity-financed firms may rationally favor innovations that are easier to protect and commercialize, even if they are less technologically significant.
+
+
+While the preceding TWFE results establish how financial structure and intellectual property institutions shape average innovation quality and scale, they do not directly address frontier innovation, which is rare, highly skewed, and discontinuous. In most country–year observations, no breakthrough innovations occur at all, while a small number of countries produce many. Linear models are ill-suited to capture this structure.
+
+To study breakthrough innovation explicitly, I estimate zero-inflated negative binomial (ZINB) models using country–year counts of breakthrough patents. This framework decomposes breakthrough innovation into two distinct processes:
+(i) a selection process governing whether a country is structurally unlikely to produce any breakthroughs in a given year, and
+(ii) an intensity process governing the number of breakthroughs produced conditional on being active.
+
+Formally, the ZINB model assumes that with probability 
+𝜋
+𝑖
+𝑡
+π
+it
+	​
+
+, country 
+𝑖
+i in year 
+𝑡
+t belongs to a latent “always-zero” state, while with probability 
+1
+−
+𝜋
+𝑖
+𝑡
+1−π
+it
+	​
+
+, breakthrough counts follow a negative binomial process. This structure aligns closely with theoretical models of innovation that distinguish between entry into frontier innovation and scaling once entry occurs.
+
+3.3.1 Market Finance, IPR, and Breakthrough Innovation
+
+Table \ref{tab:zinb_market} reports ZINB estimates for market-based finance. The upper panel presents results from the selection (zero-inflation) equation, while the lower panel presents results from the count (intensity) equation.
+
+::: {.content-visible when-format="pdf"}
+\input{tables/zinb_market.tex}
+:::
+
+Selection Equation: Entry into Frontier Innovation
+
+In the selection equation, the dependent variable captures the log-odds that a country–year observation is structurally unlikely to produce any breakthroughs. The coefficient on market finance is positive and marginally significant, indicating that deeper equity markets are weakly associated with a lower probability of being trapped in a non-innovative state. In contrast, the coefficient on intellectual property protection is large, negative, and highly statistically significant.
+
+Because the selection equation models the probability of being an “excess zero,” a negative coefficient implies a greater likelihood of entry into frontier innovation. Thus, stronger patent protection is associated with a higher probability that a country produces at least one breakthrough innovation in a given year. This result is consistent with standard theories emphasizing the role of patent rights in encouraging participation in innovative activity by improving appropriability and reducing imitation risk.
+
+Intensity Equation: Scaling of Breakthrough Innovation
+
+The lower panel of Table \ref{tab:zinb_market} reports estimates from the count equation, which governs the expected number of breakthrough innovations conditional on entry. Here, three results stand out.
+
+First, the direct effect of market finance on breakthrough intensity is small and statistically insignificant. This suggests that equity market deepening alone does not mechanically increase the number of frontier innovations once a country is active.
+
+Second, the coefficient on intellectual property protection is negative and highly significant, indicating that stronger patent regimes are associated with fewer breakthroughs conditional on entry. This result points to a potential tension between appropriability and cumulative innovation: while strong patent rights may encourage entry, they may simultaneously constrain the recombination and diffusion processes necessary for repeated frontier breakthroughs.
+
+Third, and most importantly for the thesis, the interaction between market finance and intellectual property protection is positive and statistically significant. This implies that market finance and strong patent protection act as substitutes in the breakthrough intensity margin. In countries with deeper equity markets, the negative effect of strong patent rights on breakthrough intensity is attenuated.
+
+This interaction mirrors the logic of the baseline TWFE results, but at a different margin. While strong patent protection dampens the quality-enhancing effects of market finance in the average innovation outcome, equity markets partially offset the intensity-reducing effects of strong patent regimes among frontier innovators.
+
+3.3.2 Bank Finance and Breakthrough Innovation
+
+Table \ref{tab:zinb_bank} reports corresponding results for bank-based finance.
+
+::: {.content-visible when-format="pdf"}
+\input{tables/zinb_bank.tex}
+:::
+
+In the selection equation, bank finance is negatively and significantly associated with the probability of structural non-entry, suggesting that bank credit facilitates entry into frontier innovation, particularly in environments with stronger patent protection. This finding is consistent with theories emphasizing banks’ comparative advantage in screening and funding projects with clearer collateral and enforcement mechanisms.
+
+In the intensity equation, however, bank finance has no statistically significant effect on the number of breakthroughs produced conditional on entry. The interaction between bank finance and intellectual property protection is positive but only marginally significant, indicating weaker evidence that bank-based systems support the scaling of frontier innovation. Together, these results reinforce the interpretation that banks primarily operate on the entry margin rather than the scaling margin of breakthrough innovation.
+
+3.3.3 Venture Capital and Breakthrough Innovation
+
+Finally, Table \ref{tab:zinb_vc} presents ZINB estimates for venture capital finance.
+
+::: {.content-visible when-format="pdf"}
+\input{tables/zinb_vc.tex}
+:::
+
+The venture capital results are more muted. While the interaction between venture capital and intellectual property protection is positive and statistically significant in the intensity equation, the direct effect of venture capital on breakthrough counts is imprecisely estimated. This likely reflects limited cross-country coverage and measurement noise in aggregate venture capital data, rather than an absence of an underlying relationship.
+
+3.3.4 Synthesis with the Baseline Results
+
+Taken together, the ZINB results refine and complement the baseline TWFE findings. The TWFE models show that market-based finance is associated with higher average innovation quality, but that this effect is systematically weakened by strong patent protection. The ZINB models demonstrate that this interaction operates differently across margins: strong patent rights encourage entry into frontier innovation but reduce breakthrough intensity, while market finance mitigates this reduction.
+
+Thus, the evidence suggests that financial structure and intellectual property institutions jointly shape not only whether countries innovate at the frontier, but how persistently and intensively they do so. Strong patent regimes appear to favor participation, while market-based finance supports sustained frontier innovation in environments where appropriability would otherwise constrain cumulative progress.
+
+```
+
+# sum table
+```{r}
+library(modelsummary)
+library(dplyr)
+library(data.table)
+
+# 1. Load Data
+if (!exists("df")) {
+  df <- fread("data/monarch_panel_transformed.csv")
+}
+
+# 2. Select Variables
+datasummary_df <- df %>%
+  select(
+    `Breakthrough Count` = breakthrough_count,
+    `Patent Quality Index` = quality_index_100,
+    `Patent Quantity (log)` = ln_patents,
+    `Market Finance (log)` = ln_market,
+    `Bank Finance (log)` = ln_bank,
+    `Venture Capital (log)` = ln_vc,
+    `IPR Strength (Centered)` = ipr_c,
+    `GDP per Capita (log)` = ln_gdp_pc,
+    `Trade Openness (log)` = ln_trade,
+    `R&D Expenditure (log)` = ln_rd,
+    `Tertiary Enrollment (log)` = ln_tertiary
+  )
+
+# 3. Save to File with Title and Label included
+datasummary_skim(
+  datasummary_df,
+  fmt = 2,
+  histogram = FALSE,
+  title = "Summary Statistics \\label{tbl-summary}", # <--- ADDED CAPTION & LABEL HERE
+  output = "figures/summary_table.tex"
+)
+```
+# proper tables
+```{r}
+# ==============================================================================
+# SETUP
+# ==============================================================================
+rm(list = ls())
+
+library(data.table)
+library(dplyr)
+library(plm)
+library(lmtest)
+library(sandwich)
+library(stargazer)
+library(modelsummary) 
+config_modelsummary(factory_latex = "kableExtra")
+# For ZINB models
+
+options(dplyr.summarise.inform = FALSE)
+
+# Load data
+df <- fread("data/monarch_panel_transformed.csv")
+
+# Ensure output directory exists
+if (!dir.exists("tables")) {
+  dir.create("tables")
+}
+
+# Clustered SE function
+cluster_se <- function(model) {
+  sqrt(diag(vcovHC(model, type = "HC1", cluster = "group")))
+}
+
+# ==============================================================================
+# 1. TWFE MODELS (Stargazer)
+# ==============================================================================
+
+run_twfe_incremental <- function(depvar, fd, fd_x_ipr, outfile, title, label_id, fd_label) {
+  
+  # Filter Data
+  base <- df %>%
+    filter(!is.na(.data[[depvar]]), !is.na(.data[[fd]]), !is.na(ipr_c))
+  
+  panel <- pdata.frame(base, index = c("iso3c", "year"))
+  
+  # Formulas
+  f1 <- as.formula(paste(depvar, "~", fd, "+ ipr_c +", fd_x_ipr))
+  f2 <- update(f1, . ~ . + ln_gdp_pc)
+  f3 <- update(f2, . ~ . + ln_trade)
+  f4 <- update(f3, . ~ . + ln_rd)
+  f5 <- update(f4, . ~ . + ln_tertiary)
+  
+  # Models
+  m1 <- plm(f1, data = panel, model = "within", effect = "twoways")
+  m2 <- plm(f2, data = panel, model = "within", effect = "twoways")
+  m3 <- plm(f3, data = panel, model = "within", effect = "twoways")
+  m4 <- plm(f4, data = panel, model = "within", effect = "twoways")
+  m5 <- plm(f5, data = panel, model = "within", effect = "twoways")
+  
+  # Dynamic Covariate Labels (To make them look pretty)
+  cov_labels <- c(
+    fd_label,
+    "IPR Strength",
+    paste0(fd_label, " $\\times$ IPR"),
+    "GDP per Capita (log)",
+    "Trade Openness",
+    "R\\&D Expenditure",
+    "Tertiary Education"
+  )
+  
+  # LATEX OUTPUT
+  stargazer(
+    m1, m2, m3, m4, m5,
+    type = "latex",
+    out  = outfile,
+    title = title,
+    label = label_id, # <--- THIS ENABLES CROSS REFERENCING
+    
+    # Prettify Variables
+    covariate.labels = cov_labels,
+    dep.var.labels = ifelse(depvar == "quality_index_100", "Patent Quality", "Log Patents"),
+    
+    # Standard Errors
+    se = list(cluster_se(m1), cluster_se(m2), cluster_se(m3), cluster_se(m4), cluster_se(m5)),
+    
+    # Cleanup
+    omit.stat = c("ser", "f"),
+    notes = c("Country \\& Year FE included. Clustered SE in parentheses."),
+    notes.align = "l",
+    no.space = TRUE,
+    header = FALSE # Removes the ugly "Table created by stargazer" comment
+  )
+}
+
+# --- RUN MARKET QUALITY ---
+run_twfe_incremental(
+  depvar   = "quality_index_100",
+  fd       = "ln_market",
+  fd_x_ipr = "ln_market_x_ipr",
+  outfile  = "tables/twfe_market_quality.tex",
+  title    = "Market Finance and Patent Quality",
+  label_id = "tbl-market-quality",
+  fd_label = "Market Cap"
+)
+
+# --- RUN BANK QUALITY ---
+run_twfe_incremental(
+  depvar   = "quality_index_100",
+  fd       = "ln_bank",
+  fd_x_ipr = "ln_bank_x_ipr",
+  outfile  = "tables/twfe_bank_quality.tex",
+  title    = "Bank Finance and Patent Quality",
+  label_id = "tbl-bank-quality",
+  fd_label = "Bank Credit"
+)
+
+# --- RUN MARKET QUANTITY ---
+run_twfe_incremental(
+  depvar   = "ln_patents",
+  fd       = "ln_market",
+  fd_x_ipr = "ln_market_x_ipr",
+  outfile  = "tables/twfe_market_quantity.tex",
+  title    = "Market Finance and Patent Quantity",
+  label_id = "tbl-market-quantity",
+  fd_label = "Market Cap"
+)
+
+
+# ==============================================================================
+# 2. ZINB MODELS (Modelsummary)
+# ==============================================================================
+
+# Data Prep for ZINB (Variables must be in global env for zeroinfl sometimes)
+df[, ln_market_c := ln_market - mean(ln_market, na.rm=TRUE)]
+df[, ln_bank_c   := ln_bank   - mean(ln_bank, na.rm=TRUE)]
+df[, ln_vc_c     := ln_vc     - mean(ln_vc, na.rm=TRUE)]
+df[, ln_internal_patents := log(patent_count)]
+
+run_zinb_incremental <- function(finance_var, latex_name, title_name, label_id, finance_label) {
+  
+  require(pscl)
+  
+  # Construct variable names
+  fd_c <- paste0(finance_var, "_c")
+  fd_x <- paste0(finance_var, "_x_ipr_c") # Assuming you created this interaction in data prep
+  
+  # If interaction isn't in DF, create it on the fly (safer to do outside, but this works)
+  if(!fd_x %in% names(df)) {
+    df[[fd_x]] <- df[[fd_c]] * df$ipr_c
+  }
+  
+  controls <- c("ln_gdp_pc", "ln_trade", "ln_rd", "ln_tertiary")
+  models <- list()
+  
+  # Run 4 incremental models
+  for (i in 1:4) {
+    intensity_controls <- paste(controls[1:i], collapse = " + ")
+    formula_str <- paste0(
+      "breakthrough_count ~ ", fd_c, " + ipr_c + ", fd_x,
+      " + ", intensity_controls,
+      " + offset(ln_internal_patents) | ln_gdp_pc"
+    )
+    models[[paste("Model", i)]] <- zeroinfl(as.formula(formula_str), data = df, dist = "negbin")
+  }
+  
+  # Map raw names to clean names
+  coef_map <- c(
+    "count_(Intercept)" = "Intercept (Count)",
+    "zero_(Intercept)"  = "Intercept (Zero)",
+    setNames(paste0("count_", fd_c), finance_label),
+    "count_ipr_c" = "IPR Strength",
+    setNames(paste0("count_", fd_x), paste0(finance_label, " $\\times$ IPR")),
+    "count_ln_gdp_pc" = "GDP per Capita",
+    "count_ln_trade" = "Trade Openness",
+    "count_ln_rd" = "R\\&D Expenditure",
+    "count_ln_tertiary" = "Tertiary Education",
+    "zero_ln_gdp_pc" = "GDP per Capita (Selection)"
+  )
+  
+  # Save LaTeX Table
+  modelsummary(
+    models,
+    output = latex_name,
+    stars = TRUE,
+    coef_map = coef_map,
+    gof_omit = "IC|Log|Adj|Pseudo",
+    title = paste0(title_name, " \\label{", label_id, "}"), # <--- Embed label in title
+    notes = c("Standard errors in parentheses."),
+    escape = FALSE # Allows math symbols in labels
+  )
+}
+
+# --- RUN ZINB MARKET ---
+run_zinb_incremental(
+  finance_var = "ln_market",
+  latex_name  = "tables/zinb_market.tex",
+  title_name  = "ZINB: Market Finance and Breakthroughs",
+  label_id    = "tbl-zinb-market",
+  finance_label = "Market Cap"
+)
+
+cat("All tables generated successfully in 'tables/' folder.\n")
+```
 
 

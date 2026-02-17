@@ -1,43 +1,28 @@
-\begin{table}
-\centering
-\begin{talltblr}[         %% tabularray outer open
-caption={ZINB: Venture Capital and Breakthrough Innovation},
-note{}={+ p \num{< 0.1}, * p \num{< 0.05}, ** p \num{< 0.01}, *** p \num{< 0.001}},
-note{ }={Zero-Inflated Negative Binomial model.},
-note{  }={Count equation models breakthrough intensity conditional on entry.},
-note{   }={Selection equation models structural non-entry.},
-note{    }={Selection equation includes ln\_gdp\_pc only.},
-note{     }={Offset = log(total patents).},
-note{      }={Standard errors in parentheses.},
-]                     %% tabularray outer close
-{                     %% tabularray inner open
-colspec={Q[]Q[]Q[]Q[]Q[]},
-hline{2}={1-5}{solid, black, 0.05em},
-hline{18}={1-5}{solid, black, 0.05em},
-hline{1}={1-5}{solid, black, 0.1em},
-hline{21}={1-5}{solid, black, 0.1em},
-column{2-5}={}{halign=c},
-column{1}={}{halign=l},
-}                     %% tabularray inner close
-& (1) & (2) & (3) & (4) \\
-count\_ln\_vc\_c & \num{-0.049} & \num{-0.042} & \num{-0.154} & \num{-0.024} \\
-& (\num{0.145}) & (\num{0.145}) & (\num{0.164}) & (\num{0.178}) \\
-count\_ipr\_c & \num{-0.887}*** & \num{-0.932}*** & \num{-0.901}*** & \num{-0.636}* \\
-& (\num{0.192}) & (\num{0.198}) & (\num{0.228}) & (\num{0.256}) \\
-count\_ln\_vc\_x\_ipr\_c & \num{0.434}** & \num{0.405}** & \num{0.469}** & \num{0.358}+ \\
-& (\num{0.146}) & (\num{0.150}) & (\num{0.162}) & (\num{0.186}) \\
-count\_ln\_gdp\_pc & \num{0.283}+ & \num{0.342}* & \num{0.428}* & \num{0.202} \\
-& (\num{0.148}) & (\num{0.162}) & (\num{0.190}) & (\num{0.233}) \\
-zero\_ln\_gdp\_pc & \num{-4.166}*** & \num{-4.093}*** & \num{-3.914}*** & \num{-5.502}** \\
-& (\num{0.940}) & (\num{0.944}) & (\num{1.160}) & (\num{1.936}) \\
-count\_ln\_trade &  & \num{-0.087} & \num{-0.040} & \num{0.083} \\
-&  & (\num{0.100}) & (\num{0.106}) & (\num{0.128}) \\
-count\_ln\_rd &  &  & \num{0.507}* & \num{0.483}+ \\
-&  &  & (\num{0.230}) & (\num{0.253}) \\
-count\_ln\_tertiary &  &  &  & \num{0.056} \\
-&  &  &  & (\num{0.262}) \\
-Num.Obs. & \num{428} & \num{428} & \num{408} & \num{358} \\
-R2 & \num{0.999} & \num{0.999} & \num{0.999} & \num{0.999} \\
-RMSE & \num{14.95} & \num{14.80} & \num{15.76} & \num{11.14} \\
-\end{talltblr}
-\end{table}
+\begin{tabular}[t]{lcccc}
+\toprule
+  & Model 1 & Model 2 & Model 3 & Model 4\\
+\midrule
+Intercept (Count) & \num{-8.201}*** & \num{-8.403}*** & \num{-10.171}*** & \num{-8.844}**\\
+ & (\num{1.618}) & (\num{1.631}) & (\num{1.986}) & (\num{2.939})\\
+IPR Strength & \num{-0.887}*** & \num{-0.932}*** & \num{-0.901}*** & \num{-0.636}*\\
+ & (\num{0.192}) & (\num{0.198}) & (\num{0.228}) & (\num{0.256})\\
+GDP per Capita & \num{0.283}+ & \num{0.342}* & \num{0.428}* & \num{0.202}\\
+ & (\num{0.148}) & (\num{0.162}) & (\num{0.190}) & (\num{0.233})\\
+Trade Openness &  & \num{-0.087} & \num{-0.040} & \num{0.083}\\
+ &  & (\num{0.100}) & (\num{0.106}) & (\num{0.128})\\
+R\&D Expenditure &  &  & \num{0.507}* & \num{0.483}+\\
+ &  &  & (\num{0.230}) & (\num{0.253})\\
+Tertiary Education &  &  &  & \num{0.056}\\
+ &  &  &  & (\num{0.262})\\
+Intercept (Zero) & \num{39.580}*** & \num{38.812}*** & \num{36.476}** & \num{52.394}**\\
+ & (\num{9.254}) & (\num{9.304}) & (\num{11.430}) & (\num{18.440})\\
+GDP per Capita (Selection) & \num{-4.166}*** & \num{-4.093}*** & \num{-3.914}*** & \num{-5.502}**\\
+ & (\num{0.940}) & (\num{0.944}) & (\num{1.160}) & (\num{1.936})\\
+Venture Capital & \num{-0.049} & \num{-0.042} & \num{-0.154} & \num{-0.024}\\
+ & (\num{0.145}) & (\num{0.145}) & (\num{0.164}) & (\num{0.178})\\
+Venture Capital $\times$ IPR & \num{0.434}** & \num{0.405}** & \num{0.469}** & \num{0.358}+\\
+ & (\num{0.146}) & (\num{0.150}) & (\num{0.162}) & (\num{0.186})\\
+\midrule
+Num.Obs. & \num{428} & \num{428} & \num{408} & \num{358}\\
+\bottomrule
+\end{tabular}
