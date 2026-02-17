@@ -731,6 +731,8 @@ p_me_quality <- ggplot(mfx, aes(x = ln_market, y = estimate)) +
 
 
 ggsave("figures/interaction_quality.pdf", plot = p_me_quality, width = 7, height = 5)
+
+p_me_quality
 ```
 
 ## more graphs
