@@ -726,7 +726,9 @@ p_me_quality <- ggplot(mfx, aes(x = ln_market, y = estimate)) +
     x = "Market Capitalization (log of Market Cap / GDP)",
     y = "Marginal Effect of IPR on Quality"
   ) +
-  theme_minimal()
+  theme_minimal(base_family = "serif")
+
+
 
 ggsave("figures/interaction_quality.pdf", plot = p_me_quality, width = 7, height = 5)
 ```
