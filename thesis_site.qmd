@@ -165,9 +165,7 @@ counts   <- fread("data/counts_res_final.csv")
 controls <- fread("data/Controls_final.csv")
 park     <- fread("data/Park_final.csv")
 
-# ------------------------------------------------------------
-# CLEAN MISSING VALUES
-# ------------------------------------------------------------
+# clean up/standardize NAs
 
 clean_missing <- function(df) {
   df[df == ".."] <- NA
@@ -183,17 +181,11 @@ counts   <- clean_missing(counts)
 controls <- clean_missing(controls)
 park     <- clean_missing(park)
 
-# ------------------------------------------------------------
-# REMOVE DUPLICATE RESEARCHER COLUMN FROM COUNTS
-# ------------------------------------------------------------
-
+# fix duplicate researchers col
 counts <- counts %>%
   select(-researchers_per_million)
 
-# ------------------------------------------------------------
-# MERGE DATASETS STEP BY STEP
-# ------------------------------------------------------------
-
+# merge datasets
 df <- pqi %>%
   left_join(park %>% select(iso3c, year, ipp_index_IP_transformed),
             by = c("iso3c", "year")) %>%
@@ -202,10 +194,7 @@ df <- pqi %>%
   left_join(counts,   by = c("iso3c", "year")) %>%
   left_join(controls, by = c("iso3c", "year"))
 
-# ------------------------------------------------------------
-# FORCE NUMERIC VARIABLES
-# ------------------------------------------------------------
-
+# ensure numeric
 numeric_vars <- c(
   "researchers_per_million",
   "population_total",
@@ -228,13 +217,10 @@ for (v in numeric_vars) {
   }
 }
 
-# ------------------------------------------------------------
-# DERIVED VARIABLES
-# ------------------------------------------------------------
-
+# variable construction
 df <- df %>%
   mutate(
-    # Researchers total
+    # researchers total
     researchers_total =
       researchers_per_million * (population_total / 1e6),
     
@@ -250,10 +236,10 @@ df <- df %>%
         patents_per_1000_researchers
       ),
     
-    # Scale quality index
+    # scale quality index 4
     quality_index_100 = avg_quality_index_4 * 100,
     
-    # VC scaling
+    # VC scaling so it matches
     VC_investment_pct = VC_investment * 100,
     
     # Log transforms
@@ -266,21 +252,18 @@ df <- df %>%
     ln_rd        = log(rd_expenditure_percent_gdp + 1),
     ln_tertiary  = log(tertiary_enrollment_percent + 1),
     
-    # Mean-center IPR
+    # mean-center IPR
     ipr_c =
       ipp_index_IP_transformed -
       mean(ipp_index_IP_transformed, na.rm = TRUE),
     
-    # Interaction terms
+    # interaction terms
     ln_bank_x_ipr   = ln_bank   * ipr_c,
     ln_market_x_ipr = ln_market * ipr_c,
     ln_vc_x_ipr     = ln_vc     * ipr_c
   )
 
-# ------------------------------------------------------------
-# SAVE FINAL PANEL
-# ------------------------------------------------------------
-
+# save final panel
 fwrite(df, "data/monarch_panel_transformed.csv")
 
 summary(df)
