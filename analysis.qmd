@@ -239,7 +239,7 @@ The key implication is that financial structure and patent protection affect dif
 
 @fig-qual-quant illustrates the weak relationship between patent quantity and average quality across country-years, reinforcing the importance of distinguishing between these two margins.
 
-## Frontier Innovation: Breakthrough Patents
+## Frontier Innovation: Breakthrough Patents (Supplementary)
 
 While average quality captures shifts in the distribution of innovation, breakthrough patents represent the upper tail of technological significance. Breakthrough counts exhibit substantial overdispersion and excess zeros, motivating the ZINB framework described in Section 3.
 

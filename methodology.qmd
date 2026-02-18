@@ -1181,9 +1181,7 @@ cat("VC Quantity:   ", summary(m_vc_quant)$r.squared[1], "\n")
 ```
 # please for fucks sake
 ```{r}
-############################################################
-# TWFE ADVISOR EXTENSIONS: SYSTEMATIC ANALYSIS
-############################################################
+# robustness and model analysis
 
 library(dplyr)
 library(plm)
@@ -1191,7 +1189,7 @@ library(lmtest)
 library(sandwich)
 library(car)
 
-# --- 1. PREP EXTENDED DATA ---
+# center fd variables
 df <- fread("data/monarch_panel_transformed.csv")
 
 df_ext <- df %>%
@@ -1211,18 +1209,15 @@ df_ext <- df %>%
 
 panel_ext <- pdata.frame(df_ext, index = c("iso3c", "year"))
 
-# Helper for Clustered SEs
+# clustered se
 vcov_clust <- function(x) vcovHC(x, method = "arellano", cluster = "group")
 
-############################################################
-# STEP 1: THE QUADRATIC SEARCH (Proving which models need curves)
-############################################################
-# We run all 6 models with squared terms to justify our final choices.
+# run models, see where squared terms are justified
 
-cat("\n--- STEP 1: TESTING FOR NON-LINEARITY (Quadratic Significance) ---\n")
+cat("\n testing for nonlinearity \n")
 
-# A quick list of formulas to check squared term p-values
-# USE PASTE0 TO PREVENT SPACES IN VARIABLE NAMES
+#  formulas to check squared term p-values
+
 check_quad <- function(dv, base_var) {
   f <- as.formula(paste0(dv, " ~ ", base_var, "_c + ", base_var, "_c2 + ipr_c + ", 
                         base_var, "_x_ipr + ln_gdp_pc + ln_trade + ln_rd"))
@@ -1230,26 +1225,22 @@ check_quad <- function(dv, base_var) {
   m <- plm(f, data = panel_ext, model = "within", effect = "twoways")
   
   cat("\nChecking Quadratic for:", dv, "vs", base_var, "\n")
-  # Note: row 2 is the squared term (base_var_c2) because of the order in the formula
+  # square term included
   print(coeftest(m, vcov = vcov_clust(m))[2, ]) 
 }
 
 check_quad("quality_index_100", "ln_market")
-check_quad("quality_index_100", "ln_bank")    # EXPECTED: Significant
+check_quad("quality_index_100", "ln_bank")    # EXPECTED: significant
 check_quad("quality_index_100", "ln_vc")
 check_quad("ln_patents",        "ln_market")
 check_quad("ln_patents",        "ln_bank")
-check_quad("ln_patents",        "ln_vc")        # EXPECTED: Significant
+check_quad("ln_patents",        "ln_vc")        # EXPECTED: significant
 
-############################################################
-# STEP 2: FINAL PARSIMONIOUS MODELS & JOINT TESTS
-############################################################
-# Now we run the clean versions and do the heavy lifting for the report.
-
-cat("\n--- STEP 2: FINAL PARSIMONIOUS MODELS & JOINT SIGNIFICANCE ---\n")
+# final models and joint tests
+cat("\n joint significance tests \n")
 
 run_final <- function(dv, base_var, use_quad = FALSE) {
-  # Build formula using paste0 for clean variable names
+  
   main_vars <- if(use_quad) {
     paste0(base_var, "_c + ", base_var, "_c2")
   } else {
@@ -1262,7 +1253,7 @@ run_final <- function(dv, base_var, use_quad = FALSE) {
   cat("\n", paste(rep("-", 40), collapse = ""), "\n")
   cat("FINAL MODEL:", dv, "by", base_var, "(Quadratic =", use_quad, ")\n")
   
-  # A. Joint Significance
+  # joint signif
   hyp <- if(use_quad) {
     c(paste0(base_var, "_c = 0"), paste0(base_var, "_c2 = 0"), paste0(base_var, "_x_ipr = 0"))
   } else {
@@ -1272,16 +1263,16 @@ run_final <- function(dv, base_var, use_quad = FALSE) {
   cat("\n[Joint Significance Test]\n")
   print(linearHypothesis(m, hyp, vcov = vcov_clust))
   
-  # B. Fit
+  # within fit
   cat("\n[Within R-squared]:", summary(m)$r.squared[1], "\n")
 }
 
-# --- QUALITY FINAL SPECS ---
+# quality final
 run_final("quality_index_100", "ln_market", use_quad = FALSE)
 run_final("quality_index_100", "ln_bank",   use_quad = TRUE)
 run_final("quality_index_100", "ln_vc",     use_quad = FALSE)
 
-# --- QUANTITY FINAL SPECS ---
+# quantity final
 run_final("ln_patents",        "ln_market", use_quad = FALSE)
 run_final("ln_patents",        "ln_bank",   use_quad = FALSE)
 run_final("ln_patents",        "ln_vc",     use_quad = TRUE)
@@ -1794,16 +1785,9 @@ vc_zinb <- run_zinb_stargazer(
 ```
 
 # graphs I like
-```{r echo= TRUE, eval= FALSE, fig.width= 10, fig.height= 3}
-# ============================================================
-# COMPREHENSIVE SCATTERPLOTS FOR THESIS VALIDATION & INSIGHT
-# ============================================================
-
+```{r echo= TRUE, eval= FALSE, fig.width= 10, fig.height= 3, warning= FALSE, echo= FALSE}
+# scatterplots
 library(tidyverse)
-
-# ------------------------------------------------------------
-# RESHAPE DATA FOR FACETED PLOTTING
-# ------------------------------------------------------------
 
 plot_df <- df %>%
   select(
@@ -1828,13 +1812,13 @@ plot_df <- df %>%
 # clean labels
 plot_df <- plot_df %>%
   mutate(
-    finance_type = recode(
+    finance_type = dplyr::recode(
       finance_type,
       "ln_bank" = "Bank Finance",
       "ln_market" = "Market Finance",
       "ln_vc" = "Venture Capital"
     ),
-    interaction_type = recode(
+    interaction_type = dplyr::recode(
       interaction_type,
       "ln_bank_x_ipr" = "Bank × IPR",
       "ln_market_x_ipr" = "Market × IPR",
@@ -1842,13 +1826,10 @@ plot_df <- plot_df %>%
     )
   )
 
-# ============================================================
-# 1. FINANCIAL DEVELOPMENT × PATENT QUALITY
-# ============================================================
-
+# fd x patent quality
 ggplot(plot_df, aes(finance_depth, quality_index_100)) +
   geom_point(alpha = 0.25) +
-  geom_smooth(method = "loess", se = FALSE, linewidth = 1) +
+  geom_smooth(method = "loess", se = FALSE, linewidth = 1, color= 'deeppink2') +
   facet_wrap(~ finance_type, scales = "free_x") +
   labs(
     title = "Financial Development and Patent Quality",
@@ -1858,13 +1839,10 @@ ggplot(plot_df, aes(finance_depth, quality_index_100)) +
   ) +
   theme_minimal()
 
-# ============================================================
-# 2. FINANCIAL DEVELOPMENT × PATENT QUANTITY
-# ============================================================
-
+# fd x patent quantity
 ggplot(plot_df, aes(finance_depth, ln_patents)) +
   geom_point(alpha = 0.25) +
-  geom_smooth(method = "loess", se = FALSE, linewidth = 1) +
+  geom_smooth(method = "loess", se = FALSE, linewidth = 1, color= 'deeppink2') +
   facet_wrap(~ finance_type, scales = "free_x") +
   labs(
     title = "Financial Development and Patent Quantity",
@@ -1874,13 +1852,10 @@ ggplot(plot_df, aes(finance_depth, ln_patents)) +
   ) +
   theme_minimal()
 
-# ============================================================
-# 3. IPR × PATENT QUALITY
-# ============================================================
-
+# ipr x quality
 ggplot(df, aes(ipr_c, quality_index_100)) +
   geom_point(alpha = 0.25) +
-  geom_smooth(method = "loess", se = FALSE, linewidth = 1) +
+  geom_smooth(method = "loess", se = FALSE, linewidth = 1, color= 'deeppink2') +
   labs(
     title = "IPR Strength and Patent Quality",
     subtitle = "Stronger IPR regimes show a weak relationship with quality",
@@ -1889,13 +1864,10 @@ ggplot(df, aes(ipr_c, quality_index_100)) +
   ) +
   theme_minimal()
 
-# ============================================================
-# 4. IPR × PATENT QUANTITY
-# ============================================================
-
+# ipr x quantity
 ggplot(df, aes(ipr_c, ln_patents)) +
   geom_point(alpha = 0.25) +
-  geom_smooth(method = "loess", se = FALSE, linewidth = 1) +
+  geom_smooth(method = "loess", se = FALSE, linewidth = 1, color= 'deeppink2') +
   labs(
     title = "IPR Strength and Patent Quantity",
     subtitle = "Stronger IPR regimes file more patents on average",
@@ -1904,13 +1876,10 @@ ggplot(df, aes(ipr_c, ln_patents)) +
   ) +
   theme_minimal()
 
-# ============================================================
-# 5. INTERACTION TERMS × PATENT QUALITY
-# ============================================================
-
+# interaction terms x quality
 ggplot(plot_df, aes(interaction_value, quality_index_100)) +
   geom_point(alpha = 0.25) +
-  geom_smooth(method = "loess", se = FALSE, linewidth = 1) +
+  geom_smooth(method = "loess", se = FALSE, linewidth = 1, color= 'deeppink2') +
   facet_wrap(~ interaction_type, scales = "free_x") +
   labs(
     title = "Financial Development × IPR Interactions and Patent Quality",
@@ -1920,17 +1889,14 @@ ggplot(plot_df, aes(interaction_value, quality_index_100)) +
   ) +
   theme_minimal()
 
-# ============================================================
-# 6. INTERACTION TERMS × PATENT QUANTITY
-# ============================================================
-
+# interaction terms x quality
 ggplot(plot_df, aes(interaction_value, ln_patents)) +
   geom_point(alpha = 0.25) +
-  geom_smooth(method = "loess", se = FALSE, linewidth = 1) +
+  geom_smooth(method = "loess", se = FALSE, linewidth = 1, color= 'deeppink2') +
   facet_wrap(~ interaction_type, scales = "free_x") +
   labs(
     title = "Financial Development × IPR Interactions and Patent Quantity",
-    subtitle = "IPR enables bank finance to expand patenting, but not quality",
+    subtitle = "",
     x = "Interaction Term (FD × IPR)",
     y = "Log Patents per 1,000 Researchers"
   ) +
@@ -1970,124 +1936,10 @@ ggplot(df_plot, aes(x = quality_index_100, fill = ipr_regime)) +
     fill = "IPR Regime"
   ) +
   theme_minimal()
-# 
-# # ============================================================
-# # FIGURE 2: PROBABILITY OF BREAKTHROUGH ENTRY
-# # ============================================================
-# # ============================================================
-# # FIGURE 2: PROBABILITY OF BREAKTHROUGH ENTRY
-# # ============================================================
-# 
-# library(data.table)
-# library(tidyverse)
-# library(fixest)
-# library(marginaleffects)
-# 
-# # ------------------------------------------------------------
-# # LOAD DATA
-# # ------------------------------------------------------------
-# 
-# df <- fread("data/monarch_panel_transformed.csv")
-# 
-# # ------------------------------------------------------------
-# # DEFINE BREAKTHROUGH EVENT (ENTRY)
-# # ------------------------------------------------------------
-# # A country-year has a breakthrough if at least one occurs
-# 
-# df <- df %>%
-#   mutate(
-#     breakthrough_any = ifelse(breakthrough_count > 0, 1, 0)
-#   )
-# 
-# # Sanity check
-# table(df$breakthrough_any, useNA = "ifany")
-# 
-# # ------------------------------------------------------------
-# # LOGIT MODEL: MARKET FINANCE × IPR
-# # ------------------------------------------------------------
-# 
-# logit_market <- feglm(
-#   breakthrough_any ~ ln_market * ipr_c +
-#     ln_gdp_pc + ln_trade + ln_rd + ln_tertiary | year,
-#   data = df,
-#   family = binomial("logit"),
-#   cluster = ~iso3c
-# )
-# 
-# summary(logit_market)
-# 
-# # ------------------------------------------------------------
-# # PREDICTED PROBABILITIES (INTERACTION PLOT)
-# # ------------------------------------------------------------
-# 
-# plot_predictions(
-#   logit_market,
-#   condition = list(
-#     ln_market = seq(
-#       quantile(df$ln_market, 0.05, na.rm = TRUE),
-#       quantile(df$ln_market, 0.95, na.rm = TRUE),
-#       length.out = 50
-#     ),
-#     ipr_c = c(
-#       quantile(df$ipr_c, 0.25, na.rm = TRUE),
-#       0,
-#       quantile(df$ipr_c, 0.75, na.rm = TRUE)
-#     )
-#   ),
-#   type = "response",
-#   vcov = FALSE
-# ) +
-#   labs(
-#     title = "Probability of Breakthrough Innovation",
-#     subtitle = "Predicted from pooled logit with year fixed effects",
-#     x = "Equity Market Depth (log)",
-#     y = "Pr(At Least One Breakthrough)",
-#     color = "IPR Level"
-#   ) +
-#   theme_minimal()
-# 
-# 
-# # ============================================================
-# # FIGURE 3: SELECTION VS INTENSITY (ZINB)
-# # ============================================================
-# 
-# library(pscl)
-# 
-# zinb_market <- zeroinfl(
-#   breakthrough_count ~ ln_market * ipr_c + ln_gdp_pc + ln_trade +
-#     offset(log(patent_count)) |
-#     ln_market + ipr_c + ln_gdp_pc,
-#   data = df,
-#   dist = "negbin"
-# )
-# 
-# # Extract coefficients
-# selection <- summary(zinb_market)$coefficients$zero
-# intensity <- summary(zinb_market)$coefficients$count
-# 
-# coef_df <- bind_rows(
-#   data.frame(term = rownames(selection), estimate = selection[,1], stage = "Selection"),
-#   data.frame(term = rownames(intensity), estimate = intensity[,1], stage = "Intensity")
-# )
-# 
-# ggplot(coef_df %>% filter(term %in% c("ln_market", "ipr_c", "ln_market:ipr_c")),
-#        aes(x = term, y = estimate, fill = stage)) +
-#   geom_col(position = "dodge") +
-#   labs(
-#     title = "Finance and IPR Affect Innovation Through Different Channels",
-#     subtitle = "Selection vs. intensity effects differ sharply",
-#     x = "",
-#     y = "Coefficient"
-#   ) +
-#   theme_minimal()
-
-# ============================================================
-# FIGURE 4: QUANTITY–QUALITY TRADEOFF
-# ============================================================
 
 ggplot(df, aes(x = ln_patents, y = quality_index_100)) +
   geom_point(alpha = 0.3) +
-  geom_smooth(method = "loess", se = FALSE) +
+  geom_smooth(method = "loess", se = FALSE, color= 'deeppink2') +
   labs(
     title = "Average Patent Quality and Patent Quantity",
     subtitle = "",
@@ -2109,7 +1961,7 @@ quality_market_df <- df %>%
 
 quality_market_ipr_df <- quality_market_df %>%
   mutate(
-    ipr_regime = ifelse(ipr_c >= 0, "Above-Average IP", "Below-Average IP")
+    ipr_regime = ifelse(ipr_c >= 0, "Above-Average IPR", "Below-Average IPR")
   )
 
 ggplot(quality_market_ipr_df,
@@ -2117,9 +1969,9 @@ ggplot(quality_market_ipr_df,
   geom_point(alpha = 0.5) +
   geom_smooth(method = "lm", se = FALSE) +
   labs(
-    title = "Patent Quality, Market Finance, and IP Regimes",
+    title = "Patent Quality, Market Finance, and IPR",
     x = "Log Market Capitalization / GDP",
-    y = "Patent Quality Index (0–100)",
+    y = "Patent Quality Index (0-100)",
     color = "IP Regime"
   ) +
   theme_minimal()

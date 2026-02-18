@@ -41,6 +41,8 @@ execute:
 number-sections: true
 self-contained: true  
 ---
+[Click here to download/view the Full Thesis (PDF)](documents/analysis.pdf)
+
 # python pqi script
 ```{python, eval=FALSE}
 """
@@ -603,6 +605,7 @@ zinb_vc <- run_zinb_incremental(
 
 ## breakthrough
 ```{r eval= TRUE, echo= TRUE, message= FALSE, warning= FALSE}
+
 library(ggplot2)
 library(dplyr)
 
@@ -617,6 +620,7 @@ cat("Percent zeros:", round(mean(df$breakthrough_count == 0, na.rm = TRUE) * 100
 cat("Mean breakthrough count:", mean(df$breakthrough_count, na.rm = TRUE), "\n")
 cat("Variance breakthrough count:", var(df$breakthrough_count, na.rm = TRUE), "\n")
 
+#| column: margin
 ggplot(df, aes(x = breakthrough_count)) +
   geom_histogram(binwidth = 1, fill = "steelblue1", color = "white") +
   coord_cartesian(xlim = c(0, 30)) +
@@ -626,9 +630,11 @@ ggplot(df, aes(x = breakthrough_count)) +
     y = "Frequency"
   ) +
   theme_minimal()
+
 ```
 ## patent quality distribution
 ```{r eval= TRUE, echo= TRUE, message= FALSE, warning= FALSE}
+#| column: margin
 ggplot(df, aes(x = quality_index_100)) +
   geom_density(fill = "deeppink1", alpha = 0.4) +
   labs(
@@ -640,6 +646,7 @@ ggplot(df, aes(x = quality_index_100)) +
 ```
 ## distibution of FD variables
 ```{r fig.width= 15, fig.height= 5, echo= TRUE, eval= TRUE, warning= FALSE, message= FALSE}
+#| column: margin
 library(dplyr)
 library(tidyverse)
 vars <- c("ln_market", "ln_bank", "ln_vc")
@@ -657,6 +664,7 @@ ggplot(df_long, aes(x = value)) +
 ```
 ## corr plot
 ```{r warning= FALSE, message= FALSE, echo= TRUE, eval= TRUE}
+#| column: margin
 library(corrplot)
 
 corr_vars <- df %>%
@@ -673,6 +681,7 @@ corrplot(corr_matrix, method = "color", type = "upper",
 ```
 ## interaction plots (marginal effects)
 ```{r echo= TRUE, eval= TRUE, message= FALSE, warning= FALSE}
+#| column: margin
 library(plm)
 library(marginaleffects)
 library(ggplot2)
@@ -728,8 +737,6 @@ p_me_quality <- ggplot(mfx, aes(x = ln_market, y = estimate)) +
   ) +
   theme_minimal(base_family = "serif")
 
-
-
 ggsave("figures/interaction_quality.pdf", plot = p_me_quality, width = 7, height = 5)
 
 p_me_quality
@@ -737,6 +744,7 @@ p_me_quality
 
 ## more graphs
 ```{r eval= TRUE, echo= TRUE, message= FALSE, warning= FALSE}
+#| column: margin
 # distibution of patent quality
 library(tidyverse)
 library(data.table)
@@ -794,6 +802,7 @@ ggsave(
 )
 ```
 ```{r eval= TRUE, echo= TRUE, message= FALSE, warning= FALSE, fig.width= 10, fig.height= 5}
+#| column: margin
 library(tidyverse)
 # scatterplots
 plot_df <- df %>%
@@ -879,6 +888,7 @@ print(p4)
 
 
 ```{r eval= TRUE, echo= TRUE, message= FALSE, warning= FALSE}
+#| column: margin
 quality_market_df <- df %>%
   filter(
     !is.na(quality_index_100),

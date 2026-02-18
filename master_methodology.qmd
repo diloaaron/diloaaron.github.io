@@ -1595,7 +1595,6 @@ library(lmtest)
 library(sandwich)
 library(stargazer)
 library(modelsummary) 
-config_modelsummary(factory_latex = "kableExtra")
 # For ZINB models
 
 options(dplyr.summarise.inform = FALSE)
@@ -1666,6 +1665,7 @@ run_twfe_incremental <- function(depvar, fd, fd_x_ipr, outfile, title, label_id,
     se = list(cluster_se(m1), cluster_se(m2), cluster_se(m3), cluster_se(m4), cluster_se(m5)),
     
     # Cleanup
+    table.placement = "H",
     omit.stat = c("ser", "f"),
     notes = c("Country \\& Year FE included. Clustered SE in parentheses."),
     notes.align = "l",
@@ -1706,37 +1706,29 @@ run_twfe_incremental(
   label_id = "tbl-market-quantity",
   fd_label = "Market Cap"
 )
+```
 
-
+```{r}
 # ==============================================================================
-# 2. ZINB MODELS (Modelsummary)
+# FINAL WORKING ZINB SCRIPT (Corrected Mapping & No Formatting Crashes)
 # ==============================================================================
-
-# Data Prep for ZINB (Variables must be in global env for zeroinfl sometimes)
-df[, ln_market_c := ln_market - mean(ln_market, na.rm=TRUE)]
-df[, ln_bank_c   := ln_bank   - mean(ln_bank, na.rm=TRUE)]
-df[, ln_vc_c     := ln_vc     - mean(ln_vc, na.rm=TRUE)]
-df[, ln_internal_patents := log(patent_count)]
 
 run_zinb_incremental <- function(finance_var, latex_name, title_name, label_id, finance_label) {
   
   require(pscl)
+  require(modelsummary)
   
-  # Construct variable names
+  # 1. Define internal names exactly as they appear in the data frame
   fd_c <- paste0(finance_var, "_c")
-  fd_x <- paste0(finance_var, "_x_ipr_c") # Assuming you created this interaction in data prep
-  
-  # If interaction isn't in DF, create it on the fly (safer to do outside, but this works)
-  if(!fd_x %in% names(df)) {
-    df[[fd_x]] <- df[[fd_c]] * df$ipr_c
-  }
+  fd_x <- paste0(finance_var, "_x_ipr")
   
   controls <- c("ln_gdp_pc", "ln_trade", "ln_rd", "ln_tertiary")
   models <- list()
   
-  # Run 4 incremental models
+  # 2. Estimate Models
   for (i in 1:4) {
     intensity_controls <- paste(controls[1:i], collapse = " + ")
+    # The '|' separates the count equation from the zero-inflation (selection) equation
     formula_str <- paste0(
       "breakthrough_count ~ ", fd_c, " + ipr_c + ", fd_x,
       " + ", intensity_controls,
@@ -1745,43 +1737,49 @@ run_zinb_incremental <- function(finance_var, latex_name, title_name, label_id, 
     models[[paste("Model", i)]] <- zeroinfl(as.formula(formula_str), data = df, dist = "negbin")
   }
   
-  # Map raw names to clean names
-  coef_map <- c(
-    "count_(Intercept)" = "Intercept (Count)",
-    "zero_(Intercept)"  = "Intercept (Zero)",
-    setNames(paste0("count_", fd_c), finance_label),
-    "count_ipr_c" = "IPR Strength",
-    setNames(paste0("count_", fd_x), paste0(finance_label, " $\\times$ IPR")),
-    "count_ln_gdp_pc" = "GDP per Capita",
-    "count_ln_trade" = "Trade Openness",
-    "count_ln_rd" = "R\\&D Expenditure",
-    "count_ln_tertiary" = "Tertiary Education",
-    "zero_ln_gdp_pc" = "GDP per Capita (Selection)"
+  # 3. CONSTRUCT COEF_MAP TO RECOVER MISSING COEFFICIENTS
+  # modelsummary prepends "count_" and "zero_" to ZINB variables.
+  # If you don't list them with these prefixes, they will be hidden.
+  cm <- c(
+    "count_(Intercept)"    = "Intercept (Count)",
+    "count_ipr_c"          = "IPR Strength",
+    "count_ln_gdp_pc"      = "GDP per Capita",
+    "count_ln_trade"       = "Trade Openness",
+    "count_ln_rd"          = "R\\&D Expenditure",
+    "count_ln_tertiary"    = "Tertiary Education",
+    "zero_(Intercept)"     = "Intercept (Zero)",
+    "zero_ln_gdp_pc"       = "GDP per Capita (Selection)"
   )
   
-  # Save LaTeX Table
+  # Add dynamic finance names safely with "count_" prefix
+  cm[paste0("count_", fd_c)] <- finance_label
+  cm[paste0("count_", fd_x)] <- paste0(finance_label, " $\\times$ IPR")
+  
+  # 4. Generate Output (Removes \num wrappers to prevent PDF crashes)
   modelsummary(
     models,
     output = latex_name,
     stars = TRUE,
-    coef_map = coef_map,
-    gof_omit = "IC|Log|Adj|Pseudo",
-    title = paste0(title_name, " \\label{", label_id, "}"), # <--- Embed label in title
-    notes = c("Standard errors in parentheses."),
-    escape = FALSE # Allows math symbols in labels
+    coef_map = cm,
+    gof_omit = "IC|Log|Adj|Pseudo|RMSE|R2|AIC|BIC",
+    escape = FALSE,
+    fmt = 3,
+    # This removes the \num{} command that was visible in your .tex files 
+    estimate = "{estimate}{stars}" 
   )
+  
+  # 5. POST-PROCESSING: Keep only tabular guts (Removes \begin{table}, etc.)
+  lines <- readLines(latex_name)
+  start <- grep("\\\\begin\\{tabular\\}", lines)
+  end <- grep("\\\\end\\{tabular\\}", lines)
+  if(length(start) > 0 && length(end) > 0) {
+    writeLines(lines[start:end], latex_name)
+  }
 }
 
-# --- RUN ZINB MARKET ---
-run_zinb_incremental(
-  finance_var = "ln_market",
-  latex_name  = "tables/zinb_market.tex",
-  title_name  = "ZINB: Market Finance and Breakthroughs",
-  label_id    = "tbl-zinb-market",
-  finance_label = "Market Cap"
-)
-
-cat("All tables generated successfully in 'tables/' folder.\n")
+# --- Execute for all models ---
+run_zinb_incremental("ln_market", "tables/zinb_market.tex", "ZINB: Market Finance", "tbl-zinb-market", "Market Cap")
+run_zinb_incremental("ln_bank", "tables/zinb_bank.tex", "ZINB: Bank Development", "tbl-zinb-bank", "Bank Credit")
+run_zinb_incremental("ln_vc", "tables/zinb_vc.tex", "ZINB: Venture Capital", "tbl-zinb-vc", "Venture Capital")
 ```
-
 
