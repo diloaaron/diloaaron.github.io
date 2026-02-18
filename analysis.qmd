@@ -1,6 +1,7 @@
 ---
 title: "Financial Structure, Intellectual Property Rights, and the Composition of Innovation"
 author: "Aaron DiLorenzo"
+date: "February 2026"
 format:
   pdf:
     documentclass: article
@@ -9,6 +10,13 @@ format:
     indent: true
     include-in-header: 
       text: |
+        \usepackage{amsmath}
+        \usepackage{amssymb}
+        \usepackage{setspace}
+        \onehalfspacing
+        \usepackage{titling}
+        \preauthor{\begin{center}\large}
+        \postauthor{\\ \vspace{0.5em} \large Advisor: Fuat \c{S}ener \end{center}}
         \newcommand{\num}[1]{#1}
 fontsize: 11pt
 geometry: margin=1in
@@ -201,7 +209,7 @@ Importantly, these estimates reflect within-country changes over time. The resul
 
 @fig-int-quality illustrates the interaction graphically, plotting predicted patent quality across levels of IPR at low and high levels of market development.
 
-![Marginal Effect of Market Finance on Quality at Different IPR Levels](figures/interaction_quality.pdf){#fig-int-quality width=85%}
+![Marginal Effect of Market Finance on Quality at Different IPR Levels](figures/interaction_quality.pdf){#fig-int-quality width=65%}
 
 Together, these results suggest that equity market development and patent protection do not operate independently. In financially constrained environments, stronger IPR may improve access to external finance and support higher-quality innovation. In financially mature systems, however, stronger patent protection appears to shift inventive activity toward lower-marginal-value patents, reducing average quality even as overall patenting remains high. The effect is compositional rather than purely scale-driven.
 
