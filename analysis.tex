@@ -532,10 +532,14 @@ specified using a logit link function:
 levels are expected to reduce this probability, reflecting greater
 absorptive capacity and technological infrastructure. Negative
 coefficients in this equation indicate a lower likelihood of structural
-exclusion from frontier innovation.Conditional on being capable of
-producing breakthroughs, the expected number of breakthrough patents
-\(\mu_{it}\) follows a negative binomial process with a log link
-function: \begin{equation}
+exclusion from frontier innovation.
+
+\subsection{Intensity (Breakthroughs per
+Patent)}\label{intensity-breakthroughs-per-patent}
+
+Conditional on being capable of producing breakthroughs, the expected
+number of breakthrough patents \(\mu_{it}\) follows a negative binomial
+process with a log link function: \begin{equation}
 \ln(\mu_{it}) = \beta_0 + \beta_1 FD_{it} + \beta_2 IPR_{it} + \beta_3 (FD_{it} \times IPR_{it}) + \mathbf{X}'{it}\beta + \ln(\text{Patents}_{it})\tag{3}\label{eq:intensity}
 \end{equation} where \(\mu_{it}\) represents the expected count of
 breakthrough patents. The term \(\ln(\text{Patents}_{it})\) enters as an

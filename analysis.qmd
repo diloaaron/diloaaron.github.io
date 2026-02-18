@@ -133,7 +133,10 @@ Breakthrough innovation exhibits two defining features: extreme overdispersion a
 The zero-inflation component, which models the log-odds $\pi_{it}$ of a country being a "structural non-innovator" in a given year, is specified using a logit link function:
 \begin{equation}\ln \left( \frac{\pi_{it}}{1 - \pi_{it}} \right) = \gamma_0 + \gamma_1 \ln(\text{GDP per capita}_{it})\tag{2}\label{eq:selection}
 \end{equation}
-where $\pi_{it}$ denotes the probability that country $i$ in year $t$ is in the zero-generating state. Higher income levels are expected to reduce this probability, reflecting greater absorptive capacity and technological infrastructure. Negative coefficients in this equation indicate a lower likelihood of structural exclusion from frontier innovation.Conditional on being capable of producing breakthroughs, the expected number of breakthrough patents $\mu_{it}$ follows a negative binomial process with a log link function:
+where $\pi_{it}$ denotes the probability that country $i$ in year $t$ is in the zero-generating state. Higher income levels are expected to reduce this probability, reflecting greater absorptive capacity and technological infrastructure. Negative coefficients in this equation indicate a lower likelihood of structural exclusion from frontier innovation.
+
+## Intensity (Breakthroughs per Patent)
+Conditional on being capable of producing breakthroughs, the expected number of breakthrough patents $\mu_{it}$ follows a negative binomial process with a log link function:
 \begin{equation}
 \ln(\mu_{it}) = \beta_0 + \beta_1 FD_{it} + \beta_2 IPR_{it} + \beta_3 (FD_{it} \times IPR_{it}) + \mathbf{X}'{it}\beta + \ln(\text{Patents}_{it})\tag{3}\label{eq:intensity}
 \end{equation}
