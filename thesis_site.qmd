@@ -41,7 +41,7 @@ execute:
 number-sections: true
 self-contained: true  
 ---
-[Click here to download/view the Full Thesis (PDF)](documents/analysis.pdf)
+[Click here to download/view the Full Thesis (PDF) *note: it is a rough draft*](documents/analysis.pdf)
 
 # python pqi script
 ```{python, eval=FALSE}
@@ -605,7 +605,7 @@ zinb_vc <- run_zinb_incremental(
 
 ## breakthrough
 ```{r eval= TRUE, echo= TRUE, message= FALSE, warning= FALSE}
-
+#| column: margin
 library(ggplot2)
 library(dplyr)
 
@@ -620,7 +620,6 @@ cat("Percent zeros:", round(mean(df$breakthrough_count == 0, na.rm = TRUE) * 100
 cat("Mean breakthrough count:", mean(df$breakthrough_count, na.rm = TRUE), "\n")
 cat("Variance breakthrough count:", var(df$breakthrough_count, na.rm = TRUE), "\n")
 
-#| column: margin
 ggplot(df, aes(x = breakthrough_count)) +
   geom_histogram(binwidth = 1, fill = "steelblue1", color = "white") +
   coord_cartesian(xlim = c(0, 30)) +
