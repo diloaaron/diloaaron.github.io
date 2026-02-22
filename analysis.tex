@@ -151,7 +151,7 @@
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
 \hypersetup{
-  pdftitle={Financial Structure, Intellectual Property Rights, and the Composition of Innovation},
+  pdftitle={Financial Structures, Intellectual Property Rights, and the Composition of Innovation},
   pdfauthor={Aaron DiLorenzo},
   colorlinks=true,
   linkcolor={blue},
@@ -161,7 +161,7 @@
   pdfcreator={LaTeX via pandoc}}
 
 
-\title{Financial Structure, Intellectual Property Rights, and the
+\title{Financial Structures, Intellectual Property Rights, and the
 Composition of Innovation}
 \author{Aaron DiLorenzo}
 \date{2026-02-01}
@@ -170,22 +170,22 @@ Composition of Innovation}
 
 
 \begin{abstract}
-This thesis examines how financial development and intellectual property rights (IPR) jointly shape the composition of innovation. Despite the central role of technological progress in Schumpeterian growth models, the global surge in patenting has not produced commensurate productivity gains, a phenomenon known as the “patent puzzle.” Using OECD Patent Quality Indicators and cross-country panel data, I estimate two-way fixed effects models linking average patent quality and patent quantity to distinct financing channels and IPR strength. The results show that equity market depth is positively associated with innovation quality, but the marginal effect of stronger patent protection declines as financial markets deepen and may become negative in highly developed systems. Bank-based finance is more closely associated with patent quantity than quality. These findings suggest that financial structure and legal institutions influence not only how much innovation occurs, but whether it reflects frontier-expanding technological progress.
+This thesis examines how financial development and intellectual property rights (IPR) jointly shape the composition of innovation. Despite the central role of technological progress in Schumpeterian growth models, the global surge in patenting has not produced commensurate productivity gains, a phenomenon known as the “patent puzzle.” Using OECD Patent Quality Indicators and cross-country panel data, I estimate two-way fixed effects models linking average patent quality and patent intensity to distinct financing channels and IPR strength. The results show that equity market depth is positively associated with innovation quality, but the marginal effect of stronger patent protection declines as financial markets deepen and may become negative in highly developed systems. A supplementary probability model of breakthrough (top 1\% cited) patent intensity further supports this association. Bank-based finance appears more closely associated with patent quantity than quality, though results of the Bank-based and Entrepreneurial-based channels remain less robust and compelling relative to the Market-Based results. These findings suggest that financial structure and legal institutions influence not only how much innovation occurs, but whether it reflects frontier-expanding technological progress.
 \end{abstract}
 
 \section{Introduction}\label{introduction}
 
 For adherents of endogenous growth theory, long-run prosperity is
-propelled by transformative technologies that alter production, reshape
+propelled by ground-breaking technologies that alter production, reshape
 markets, and expand what societies can achieve
 \citep{romer1990endogenous, aghion1992model}. From the combustion engine
 and the printing press to the CPU and contemporary large language
 models, technological progress has repeatedly driven sustained economic
 growth. Endogenous growth theory formalized this intuition by placing
-innovation at the center of the growth process. Yet one question remains
-less understood: under what conditions do genuinely transformative
-innovations emerge, rather than incremental or low-value additions to
-the technological frontier?
+innovation at the center of the growth process. Yet we still understand
+far less about the conditions that give rise to genuinely transformative
+innovations, rather than incremental, or low value additions to the
+technological frontier
 
 A central challenge is measurement. Traditional proxies for innovation
 such as patent counts or R\&D expenditure perform poorly in capturing
@@ -197,17 +197,18 @@ quantity of innovation tells us little about its economic significance.
 A more informative measure lies in innovation quality, understood as the
 technological and economic value embedded in inventive output. A growing
 literature develops patent-level indicators to capture this dimension,
-including forward citations, family size, claims, non-patent literature
-citations, originality, and generality
+drawing on patent-level micro data to infer quality from the structure
+of citation networks and disclosure characteristics
 \citep{squicciarini2013measuring, trajtenberg1997university, lanjouw2004patent, hall2005market, kogan2017technological}.
-While no single indicator is definitive, composite measures combining
-these dimensions provide a more robust proxy for meaningful innovation
-than raw patent counts or R\&D expenditure
+While no single indicator is definitive, as each captures a distinct
+facet of quality, composite measures combining these dimensions provide
+a more robust proxy for meaningful innovation than raw patent counts or
+R\&D expenditure
 
 Once innovation quality can be measured and compared across countries
-and over time, a deeper question emerges: under what institutional and
-financial environments do high-quality innovations arise, and when do
-economies instead produce more patents, but not better ones? A
+and over time, we can ask a deeper question: under what institutional
+and financial environments do high-quality innovations arise, and when
+do economies instead produce more patents, but not better ones? A
 revolutionary technology begins as an idea in a human mind, but its
 realization depends on a complicated ecosystem of incentives, financing,
 and legal institutions. On the financing side, firms require external
@@ -218,25 +219,24 @@ lending can enable firms to leverage intellectual property as collateral
 \citep{mann2018credit}, yet banks may end up financing patent portfolios
 optimized for borrowing rather than innovations with real technological
 value. Public equity markets can aggregate dispersed information and
-reward high-growth firms, but they may also respond to scale, momentum,
-or hype rather than underlying technological quality. Venture capital,
-with its high risk tolerance and active governance, may identify
-frontier innovators, but high-profile failures highlight its limits.
+reward high-growth firms \citep{fama1970efficient}, but they may also
+respond to scale, momentum, or hype rather than underlying technological
+quality. Venture capital, with its high risk tolerance and active
+governance, may identify frontier innovators, but high-profile failures
+highlight its limits.
 
 Legal institutions shape incentives alongside financial structure.
 Strong intellectual property rights (IPR) grant temporary monopoly
 profits in exchange for disclosure, but they also generate tradeoffs
-between patenting and secrecy. When protection is strong, firms may
-choose patenting over secrecy, increasing disclosure and potential
-spillovers. When protection is weak, firms may rely more heavily on
-secrecy, limiting diffusion. I proxy IPR strength using the Park Index,
-which aggregates multiple dimensions of patent protection across
-countries \citep{park2008international}. Stronger formal protection does
-not necessarily imply socially optimal innovation. Patents can
-facilitate productive disclosure, but they can also support strategic
-fencing, defensive accumulation, or rent-seeking behavior. The net
-effect of IPR on innovation quality may therefore depend on the broader
-financial environment.
+between patenting and secrecy \citep{Klien2020secrecy}. When protection
+is strong, firms may choose patenting over secrecy, increasing
+disclosure and potential spillovers. When protection is weak, firms may
+rely more heavily on secrecy, limiting diffusion. Stronger formal
+protection does not necessarily imply socially optimal innovation.
+Patents can facilitate productive disclosure, but they can also support
+strategic fencing, defensive accumulation, or rent-seeking behavior. The
+net effect of IPR on innovation quality may therefore depend on the
+broader financial environment.
 
 Recent theoretical work emphasizes precisely this interaction. In a
 Schumpeterian framework with financial frictions,
@@ -249,9 +249,8 @@ marginal growth benefits of stronger protection diminish. Similarly,
 protection stimulates R\&D primarily in financially underdeveloped
 economies, suggesting that strong IPR can partially substitute for weak
 financial systems. However, much of the existing cross-country evidence
-evaluates innovation using aggregate patent counts or R\&D expenditure,
-leaving open the question of how financial and legal institutions shape
-the composition of innovation across the quality distribution.
+evaluates innovation using qualitative measures, with the composition of
+innovation across the quality distribution remaining less explored.
 
 This thesis seeks to contribute to a wider understanding of how
 economies can foster the kinds of transformative technologies that drive
@@ -286,10 +285,8 @@ conditional on participation. These supplementary models reinforce the
 view that financial and legal regimes shape not only the volume of
 innovation, but its allocation across the quality spectrum.
 
-\section{Literature Review}\label{literature-review}
-
-\subsection{Innovation and Endogenous
-Growth}\label{innovation-and-endogenous-growth}
+The rest of the analysis proceeds as follows: \# Literature Review \#\#
+Innovation and Endogenous Growth
 
 Endogenous growth theory places innovation at the core of long-run
 economic development. In the canonical models of
@@ -326,15 +323,12 @@ of originality and generality capture technological breadth and
 cross-field impact, while citations to non-patent literature indicate
 scientific relevance \citep{squicciarini2013measuring}.
 
-More recently, composite indices have combined these dimensions into
-standardized measures of patent quality that allow cross-country and
-intertemporal comparison. The OECD Patent Quality Indicators aggregate
-multiple patent-level characteristics into interpretable summary
-metrics, facilitating analysis of innovation quality beyond simple
-patent counts. Compared to raw quantity measures, these composite
-indicators provide a richer representation of whether innovative
-activity reflects frontier technological progress or incremental patent
-accumulation.
+Building on \citet{lanjouw2004patent}, \citet{squicciarini2013measuring}
+propose composite indices, that, when aggregated allow cross country and
+inter temporal comparison. Compared to raw quantity measures, these
+composite indicators provide a richer representation of whether
+innovative activity reflects frontier technological progress or
+incremental patent accumulation.
 
 \subsection{Finance and Innovation}\label{finance-and-innovation}
 
@@ -352,7 +346,7 @@ enable firms to leverage intangible assets such as patents as collateral
 risk-sharing and price discovery, potentially rewarding high-growth and
 high-risk projects \citep{hall2005market}. Venture capital combines
 funding with active governance and screening, often targeting
-early-stage, high-growth firms.
+early-stage, high-growth firms \citep{lerner2020venture}.
 
 At the same time, financial development may alter the type of innovation
 pursued. Bank-based systems may favor safer, incremental innovation
@@ -408,16 +402,6 @@ lower-value innovation. Conversely, in financially constrained
 environments, stronger IPR may facilitate access to capital for more
 transformative projects.
 
-This thesis builds on the theoretical insights of
-\citet{klein2025patents} and the empirical evidence of
-\citet{maskus2019financial} by shifting the focus from innovation volume
-to innovation composition. By combining cross-country measures of
-financial development and patent protection with patent-level quality
-indicators, I examine whether financial--legal regimes determine not
-only how much innovation occurs, but whether it reflects
-frontier-expanding technological progress or lower-value patent
-proliferation.
-
 \section{Empirical Framework}\label{empirical-framework}
 
 \subsection{Motivation and Overview}\label{motivation-and-overview}
@@ -462,28 +446,24 @@ Model}\label{baseline-two-way-fixed-effects-model}
 
 The baseline specification estimates the relationship between financial
 development, intellectual property rights, and innovation outcomes using
-a two-way fixed effects panel model:
-
-\begin{equation}
+a two-way fixed effects panel model: \begin{equation}
 Y_{it} =
 \beta_0
 + \beta_1 FD_{it}
-+ \beta_2 IPR_{it}
-+ \beta_3 (FD_{it} \times IPR_{it})
++ \beta_2 IPR_{it}^{c}
++ \beta_3 (FD_{it} \times IPR_{it}^{c})
 + \mathbf{X}_{it}'\beta
 + \alpha_i
 + \lambda_t
 + \varepsilon_{it}
 \label{eq:baseline}
 \tag{1}
-\end{equation}
-
-where \(Y_{it}\) denotes either: Average patent quality (OECD composite
-index), or Log patents per 1,000 researchers. \(FD_{it}\) measures
-financial development and is alternately defined as: Log stock market
-capitalization to GDP (market-based finance), Log domestic bank credit
-to GDP (bank-based finance), or Log venture capital investment.
-\(IPR_{it}\) is the Park index of patent protection
+\end{equation} where \(Y_{it}\) denotes either: Average patent quality
+(OECD composite index), or Log patents per 1,000 researchers.
+\(FD_{it}\) measures financial development and is alternately defined
+as: Log stock market capitalization to GDP (market-based finance), Log
+domestic bank credit to GDP (bank-based finance), or Log venture capital
+investment. \(IPR_{it}^{c}\) is the Park index of patent protection
 \citep{park2008international}. \(\mathbf{X}_{it}\) includes controls for
 income per capita, trade openness, R\&D intensity, and tertiary
 education attainment. Country fixed effects \(\alpha_i\) absorb
@@ -508,11 +488,12 @@ differences.
 \subsection{Modeling Frontier Innovation: Zero-Inflated Negative
 Binomial}\label{modeling-frontier-innovation-zero-inflated-negative-binomial}
 
-Following the Zero-Inflated Negative Binomial (ZINB) framework (Long,
-1997), the model is estimated in two parts. The selection margin models
-the log-odds of being a structural non-innovator, and the intensity
-margin models the expected breakthrough count \(\mu_{it}\) via a
-log-link function, incorporating total patenting as an exposure offset.
+Following a standard Zero-Inflated Negative Binomial (ZINB) framework
+\citep{ucla_zinb, long1997regression}, the model is estimated in two
+parts. The selection margin models the log-odds of being a structural
+non-innovator, and the intensity margin models the expected breakthrough
+count \(\mu_{it}\) via a log-link function, incorporating total
+patenting as an exposure offset.
 
 Breakthrough innovation exhibits two defining features: extreme
 overdispersion and excess zeros. The variance of breakthrough counts
@@ -540,7 +521,7 @@ Patent)}\label{intensity-breakthroughs-per-patent}
 Conditional on being capable of producing breakthroughs, the expected
 number of breakthrough patents \(\mu_{it}\) follows a negative binomial
 process with a log link function: \begin{equation}
-\ln(\mu_{it}) = \beta_0 + \beta_1 FD_{it} + \beta_2 IPR_{it} + \beta_3 (FD_{it} \times IPR_{it}) + \mathbf{X}'{it}\beta + \ln(\text{Patents}_{it})\tag{3}\label{eq:intensity}
+\ln(\mu_{it}) = \beta_0 + \beta_1 FD_{it}^{c} + \beta_2 IPR_{it}^{c} + \beta_3 (FD_{it}^{c} \times IPR_{it}^{c}) + \mathbf{X}_{it}'\beta + \ln(\text{Patents}_{it})\tag{3}\label{eq:intensity}
 \end{equation} where \(\mu_{it}\) represents the expected count of
 breakthrough patents. The term \(\ln(\text{Patents}_{it})\) enters as an
 offset, effectively modeling the rate of breakthrough production. This
@@ -559,14 +540,11 @@ Measures}\label{patent-data-and-innovation-measures}
 
 The core innovation measures in this thesis are derived from the OECD
 Patent Quality Indicators database \citep{squicciarini2013measuring}.
-The dataset provides patent-level indicators constructed from
-international patent filings, harmonized across countries and technology
-classes. These indicators combine multiple dimensions of technological
-and economic value, including forward citations, family size, number of
-claims, technological scope, originality, generality, non-patent
-literature citations, and grant lag. Composite indices aggregate these
-characteristics into standardized measures of patent quality that are
-comparable across time and jurisdictions.
+The dataset provides patent-level indicators constructed from the EPO's
+PATSTAT, harmonized across countries and technology classes. This
+analysis uses the \emph{Patent Quality Index 4}, constructed as an
+unweighted average of a patent's forward citations (5 years), Family
+Size, Claims, and Generality.
 
 The primary dependent variable in the baseline analysis is average
 patent quality at the country-year level, constructed as the mean of the
@@ -576,17 +554,17 @@ captures the average technological significance of inventive output.
 
 To contrast quality with scale, I also construct a measure of patent
 quantity, defined as patents per 1,000 researchers and expressed in
-logarithmic form. Normalizing by researchers mitigates mechanical size
-effects and better reflects innovative intensity rather than population
-scale.
+logarithmic form. Normalizing by researchers mitigates size effects and
+better reflects innovative intensity rather than population scale.
 
 In addition to average quality, I employ a measure of breakthrough
-innovation. Following the OECD classification, breakthrough patents are
-defined as those in the top 1\% of citation distribution within their
-technology class and application year. These are aggregated to the
-country-year level to obtain breakthrough counts. Because breakthrough
-activity is highly skewed and frequently zero, it is analyzed separately
-using zero-inflated negative binomial models.
+innovation. Following the classification of
+\citet{Ahuja2001entrepreneurship}, breakthrough patents are defined as
+those in the top 1\% of citation distribution within their technology
+class and application year. These are aggregated to the country-year
+level to obtain breakthrough counts. Because breakthrough activity is
+highly skewed and frequently zero, it is analyzed separately using
+zero-inflated negative binomial models.
 
 \subsection{Financial Development}\label{financial-development}
 
@@ -595,13 +573,14 @@ capture differences in institutional structure:
 
 \begin{itemize}
 \item
-  Market-based finance: Log stock market capitalization to GDP.
+  Market-based finance: Log stock market capitalization to GDP
+  \citep{worldbank_wdi}.
 \item
   Bank-based finance: Log domestic credit to the private sector as a
-  share of GDP.
+  share of GDP \citep{worldbank_wdi}.
 \item
   Venture capital: Log venture capital investment, measured in constant
-  dollars.
+  dollars \citep{oecd_vc}.
 \end{itemize}
 
 These measures capture the relative depth and activity of equity
@@ -648,7 +627,7 @@ controls:
 
 These variables are commonly used in cross-country innovation and growth
 regressions and account for factors that may jointly influence financial
-development and innovative performance.
+development and innovative performance \citep{worldbank_wdi}.
 
 \subsection{Descriptive Patterns}\label{descriptive-patterns}
 
@@ -824,8 +803,8 @@ Figure~\ref{fig-qual-quant} illustrates the weak relationship between
 patent quantity and average quality across country-years, reinforcing
 the importance of distinguishing between these two margins.
 
-\subsection{Frontier Innovation: Breakthrough Patents
-(Supplementary)}\label{frontier-innovation-breakthrough-patents-supplementary}
+\subsection{Frontier Innovation: Breakthrough
+Patents}\label{frontier-innovation-breakthrough-patents}
 
 While average quality captures shifts in the distribution of innovation,
 breakthrough patents represent the upper tail of technological
@@ -875,29 +854,9 @@ estimates. Still, they complement the central finding: financial and
 legal regimes shape innovation across the quality spectrum, including
 the upper tail of breakthrough activity.
 
-\section{Summary of Findings}\label{summary-of-findings}
-
-\section{Robustness/Further Analysis/Further
-Study}\label{robustnessfurther-analysisfurther-study}
-
-\begin{itemize}
-\tightlist
-\item
-  say something about using the micro patent data
-\item
-  lags?
-\item
-  maybe pqi6 as alternative outcome?
-\item
-  the quadratic models
-\end{itemize}
-
-\section{Conclusion}\label{conclusion}
+\section{Summary and Final Thoughts}\label{summary-and-final-thoughts}
 
 \newpage
-
-\section{Appendix}\label{appendix}
-
 \appendix
 \section{Appendix: Supplementary Tables and Figures}
 
@@ -935,6 +894,8 @@ Y_{it} = \beta_0 + \beta_1 FD_{it} + \beta_2 IPR_{it} + \beta_3 (FD_{it} \times 
 
 \input{tables/twfe_bank_quantity.tex}
 
+\label{tbl-bank-quantity}
+
 \input{tables/twfe_vc_quantity.tex}
 
 \begin{table}[H]
@@ -957,7 +918,7 @@ Y_{it} = \beta_0 + \beta_1 FD_{it} + \beta_2 IPR_{it} + \beta_3 (FD_{it} \times 
 
 \centering{
 
-\includegraphics[width=0.85\linewidth,height=\textheight,keepaspectratio]{figures/fd_distributions.pdf}
+\includegraphics[width=0.85\linewidth,height=\textheight,keepaspectratio]{figures/finance_distribution.pdf}
 
 }
 
@@ -1017,7 +978,7 @@ Y_{it} = \beta_0 + \beta_1 FD_{it} + \beta_2 IPR_{it} + \beta_3 (FD_{it} \times 
 
 \centering{
 
-\includegraphics[width=0.85\linewidth,height=\textheight,keepaspectratio]{figures/quality_by_regime.pdf}
+\includegraphics[width=0.85\linewidth,height=\textheight,keepaspectratio]{figures/quality_by_market_ipr.pdf}
 
 }
 
@@ -1029,7 +990,7 @@ Y_{it} = \beta_0 + \beta_1 FD_{it} + \beta_2 IPR_{it} + \beta_3 (FD_{it} \times 
 
 \centering{
 
-\includegraphics[width=0.85\linewidth,height=\textheight,keepaspectratio]{figures/scatter_fd_quality.pdf}
+\includegraphics[width=0.85\linewidth,height=\textheight,keepaspectratio]{figures/finance_quality.pdf}
 
 }
 
@@ -1042,7 +1003,7 @@ Quality}
 
 \centering{
 
-\includegraphics[width=0.85\linewidth,height=\textheight,keepaspectratio]{figures/scatter_fd_quantity.pdf}
+\includegraphics[width=0.85\linewidth,height=\textheight,keepaspectratio]{figures/finance_quantity.pdf}
 
 }
 
@@ -1055,7 +1016,7 @@ Quantity}
 
 \centering{
 
-\includegraphics[width=0.85\linewidth,height=\textheight,keepaspectratio]{figures/scatter_ipr_quality.pdf}
+\includegraphics[width=0.85\linewidth,height=\textheight,keepaspectratio]{figures/ipr_quality.pdf}
 
 }
 
@@ -1067,7 +1028,7 @@ Quantity}
 
 \centering{
 
-\includegraphics[width=0.85\linewidth,height=\textheight,keepaspectratio]{figures/scatter_ipr_quantity.pdf}
+\includegraphics[width=0.85\linewidth,height=\textheight,keepaspectratio]{figures/ipr_quantity.pdf}
 
 }
 
@@ -1079,7 +1040,7 @@ Quantity}
 
 \centering{
 
-\includegraphics[width=0.85\linewidth,height=\textheight,keepaspectratio]{figures/simple_interaction_scatter.pdf}
+\includegraphics[width=0.85\linewidth,height=\textheight,keepaspectratio]{figures/quality_market_ipr.pdf}
 
 }
 
@@ -1088,6 +1049,44 @@ Quantity}
 \end{figure}%
 
 \newpage
+\clearpage
+\section*{Acknowledgments}
+\addcontentsline{toc}{section}{Acknowledgments}
+
+Most of all, I am profoundly grateful to Professor Fuat. The realization
+of this thesis is inseparable from his mentorship. As he would
+say---\emph{or maybe some guy named Newton?}---I am standing on the
+shoulders of giants. A close second to his intellect, his delightful
+personality made even the longest hours of research something to look
+forward to. I could not have asked for a better guide through this
+process.
+
+I am also indebted to the faculty of Union College. Particularly The
+Data Analytics Department, The Classics Department, and The Economics
+Department.
+
+I owe great thanks to my family, and especially to my parents, educators
+themselves, who instilled in me a deep respect for learning and
+supported my education at every stage. Their example made this
+achievement possible long before this project began.
+
+Finally, I must thank my friends, my coaches, and the men of the
+Gridiron who call themselves Dutchmen.
+
+\vspace{0.5cm}
+\vspace{0.5cm}
+
+\begin{center}
+\emph{„Die Lust der Zerstörung ist zugleich eine schaffende Lust.“}
+
+\vspace{0.5cm}
+Mikhail Bakunin
+\end{center}
+
+\vspace{0.5cm}
+
+\clearpage
+\thispagestyle{empty}
 
 
 \renewcommand\refname{References}

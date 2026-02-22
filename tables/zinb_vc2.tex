@@ -1,0 +1,36 @@
+\begin{tabular}[t]{lcccc}
+\toprule
+Intensity: Negative Binomial Count & Model 1 & Model 2 & Model 3 & Model 4\\
+\midrule
+Intercept (Count) & \num{\num{-8.201}}*** & \num{\num{-8.403}}*** & \num{\num{-10.171}}*** & \num{\num{-8.844}}***\\
+ & (\num{\num{1.618}}) & (\num{\num{1.631}}) & (\num{\num{1.986}}) & (\num{\num{2.939}})\\
+IPR Strength & \num{\num{-0.887}}*** & \num{\num{-0.932}}*** & \num{\num{-0.901}}*** & \num{\num{-0.636}}**\\
+ & (\num{\num{0.192}}) & (\num{\num{0.198}}) & (\num{\num{0.228}}) & (\num{\num{0.256}})\\
+Venture Capital & \num{\num{-0.049}} & \num{\num{-0.042}} & \num{\num{-0.154}} & \num{\num{-0.024}}\\
+ & (\num{\num{0.145}}) & (\num{\num{0.145}}) & (\num{\num{0.164}}) & (\num{\num{0.178}})\\
+Venture Capital $\times$ IPR & \num{\num{0.434}}*** & \num{\num{0.405}}*** & \num{\num{0.469}}*** & \num{\num{0.358}}*\\
+ & (\num{\num{0.146}}) & (\num{\num{0.150}}) & (\num{\num{0.162}}) & (\num{\num{0.186}})\\
+GDP per Capita & \num{\num{0.283}}* & \num{\num{0.342}}** & \num{\num{0.428}}** & \num{\num{0.202}}\\
+ & (\num{\num{0.148}}) & (\num{\num{0.162}}) & (\num{\num{0.190}}) & (\num{\num{0.233}})\\
+Trade Openness &  & \num{\num{-0.087}} & \num{\num{-0.040}} & \num{\num{0.083}}\\
+ &  & (\num{\num{0.100}}) & (\num{\num{0.106}}) & (\num{\num{0.128}})\\
+R\&D Expenditure &  &  & \num{\num{0.507}}** & \num{\num{0.483}}*\\
+ &  &  & (\num{\num{0.230}}) & (\num{\num{0.253}})\\
+Tertiary Education &  &  &  & \num{\num{0.056}}\\
+ &  &  &  & (\num{\num{0.262}})\\
+Log Theta &   &   &   &  \\
+ &   &   &   &  \\
+\midrule
+Selection: Logit Structural Zero & Model 1 & Model 2 & Model 3 & Model 4\\
+\midrule
+Intercept (Zero) & \num{\num{39.580}}*** & \num{\num{38.812}}*** & \num{\num{36.476}}*** & \num{\num{52.394}}***\\
+ & (\num{\num{9.254}}) & (\num{\num{9.304}}) & (\num{\num{11.430}}) & (\num{\num{18.440}})\\
+GDP per Capita (Selection) & \num{\num{-4.166}}*** & \num{\num{-4.093}}*** & \num{\num{-3.914}}*** & \num{\num{-5.502}}***\\
+ & (\num{\num{0.940}}) & (\num{\num{0.944}}) & (\num{\num{1.160}}) & (\num{\num{1.936}})\\
+\midrule
+Num.Obs. & \num{\num{428}} & \num{\num{428}} & \num{\num{408}} & \num{\num{358}}\\
+\bottomrule
+\multicolumn{5}{l}{\footnotesize \textit{Notes:} $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.} \\
+\multicolumn{5}{l}{\footnotesize Standard errors in parentheses.} \\
+\multicolumn{5}{l}{\rule{0pt}{1em}* p $<$ 0.1, ** p $<$ 0.05, *** p $<$ 0.01}\\
+\end{tabular}

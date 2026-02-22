@@ -442,7 +442,7 @@ vc_quantity <- run_twfe_incremental(
 ```
 
 # zinb models
-```{r results='asis', echo=TRUE, eval= TRUE, warning= FALSE, message= FALSE}
+```{r results='asis', echo=TRUE, eval=TRUE, warning=FALSE, message=FALSE}
 # ZINB MODELS
 
 library(data.table)
@@ -454,9 +454,9 @@ library(knitr)
 df <- fread("data/monarch_panel_transformed.csv")
 
 # center fd variables
-df[, ln_bank_c   := ln_bank   - mean(ln_bank,   na.rm = TRUE)]
-df[, ln_market_c := ln_market - mean(ln_market, na.rm = TRUE)]
-df[, ln_vc_c     := ln_vc     - mean(ln_vc,     na.rm = TRUE)]
+df[, ln_bank_c    := ln_bank    - mean(ln_bank,    na.rm = TRUE)]
+df[, ln_market_c  := ln_market  - mean(ln_market,  na.rm = TRUE)]
+df[, ln_vc_c      := ln_vc      - mean(ln_vc,      na.rm = TRUE)]
 
 df[, ln_bank_x_ipr_c   := ln_bank_c   * ipr_c]
 df[, ln_market_x_ipr_c := ln_market_c * ipr_c]
@@ -475,11 +475,9 @@ run_zinb_incremental <- function(finance_var, latex_name, title_name) {
   fd_x  <- paste0(finance_var, "_x_ipr_c")
 
   controls <- c("ln_gdp_pc", "ln_trade", "ln_rd", "ln_tertiary")
-
   models <- list()
 
   for (i in 1:4) {
-
     intensity_controls <- paste(controls[1:i], collapse = " + ")
 
     formula_str <- paste0(
@@ -499,64 +497,159 @@ run_zinb_incremental <- function(finance_var, latex_name, title_name) {
     models[[i]] <- model
   }
 
-# save latex tables
+  # clean labels
+  fin_label <- switch(finance_var,
+                      "ln_bank" = "Bank Credit",
+                      "ln_market" = "Market Cap",
+                      "ln_vc" = "Venture Capital")
+
+ # variable mapping and ordering
+  var_names <- c(
+    "count_(Intercept)",
+    "count_ipr_c",
+    paste0("count_", fd_c),
+    paste0("count_", fd_x),
+    "count_ln_gdp_pc",
+    "count_ln_trade",
+    "count_ln_rd",
+    "count_ln_tertiary",
+    "zero_(Intercept)",
+    "zero_ln_gdp_pc"
+  )
+
+  var_labels <- c(
+    "Intercept (Count)",
+    "IPR Strength",
+    fin_label,
+    paste0(fin_label, " $\\times$ IPR"),
+    "GDP per Capita",
+    "Trade Openness",
+    "R\\&D Expenditure",
+    "Tertiary Education",
+    "Intercept (Zero)",
+    "GDP per Capita (Selection)"
+  )
+
+  var_mapping <- setNames(var_labels, var_names)
+  # calculating log theta except this didnt work so I hardcoded from the html tables
+  fmt_lt <- function(x, se=FALSE) {
+    if(is.na(x)) return(" ")
+    val <- sprintf("\\num{%.3f}", x)
+    if(se) return(paste0("(", val, ")"))
+    return(val)
+  }
+
+  lt_est <- numeric(4)
+  lt_se  <- numeric(4)
+  for(i in 1:4) {
+    m <- models[[i]]
+    if (!is.null(m$theta) && !is.null(m$SE.theta)) {
+      lt_est[i] <- log(m$theta)
+      lt_se[i]  <- m$SE.theta / m$theta
+    } else {
+      lt_est[i] <- NA; lt_se[i] <- NA
+    }
+  }
+
+  row_lt_est <- paste0("Log Theta & ", paste(sapply(lt_est, fmt_lt, se=FALSE), collapse = " & "), "\\\\")
+  row_lt_se  <- paste0(" & ", paste(sapply(lt_se, fmt_lt, se=TRUE), collapse = " & "), "\\\\")
+
+#save LaTeX tables
   modelsummary(
     models,
     output = latex_name,
-    stars = TRUE,
+    escape = FALSE,
+    align = "lcccc",
+    stars = c("*" = .1, "**" = .05, "***" = .01),
+    fmt = function(x) sprintf("\\num{%.3f}", x),
     statistic = "({std.error})",
-    coef_omit = "Intercept",
-    gof_omit = "IC|Log|Adj|Pseudo",
-    title = title_name,
-    notes = c(
-      "Zero-Inflated Negative Binomial model.",
-      "Count equation models breakthrough intensity conditional on entry.",
-      "Selection equation models structural non-entry.",
-      "Selection equation includes ln_gdp_pc only.",
-      "Offset = log(total patents).",
-      "Standard errors in parentheses."
+    coef_map = var_mapping,
+    gof_map = list(list("raw" = "nobs", "clean" = "Num.Obs.", "fmt" = function(x) sprintf("\\num{%d}", x))),
+    notes = NULL #I add these later
+  )
+
+  
+  tex <- readLines(latex_name)
+
+  # clean the wrappers so it doesn't break my pdf
+  start_idx <- grep("\\\\begin\\{tabular\\}", tex)[1]
+  end_idx <- grep("\\\\end\\{tabular\\}", tex)[1]
+  if(!is.na(start_idx) && !is.na(end_idx)) tex <- tex[start_idx:end_idx]
+
+  # 
+  tex <- gsub("(\\\\num\\{[^}]+\\})(\\*+)", "\\1$^{\\2}$", tex)
+
+  # make the table easier to read
+  idx_toprule <- grep("\\\\toprule", tex)[1]
+  if (!is.na(idx_toprule)) {
+    tex[idx_toprule + 1] <- "Intensity: Negative Binomial Count & Model 1 & Model 2 & Model 3 & Model 4\\\\"
+  }
+
+  # 
+  idx_zero <- grep("Intercept \\(Zero\\)", tex)[1]
+  if (!is.na(idx_zero)) {
+    insertion <- c(
+      row_lt_est,
+      row_lt_se,
+      "\\midrule",
+      "Selection: Logit Structural Zero & Model 1 & Model 2 & Model 3 & Model 4\\\\",
+      "\\midrule"
     )
-  )
+    tex <- append(tex, insertion, after = idx_zero - 1)
+  }
 
-# save html
+  # custom notes
+  idx_bottomrule <- grep("\\\\bottomrule", tex)[1]
+  if (!is.na(idx_bottomrule)) {
+    notes <- c(
+      "\\multicolumn{5}{l}{\\footnotesize \\textit{Notes:} $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.} \\\\",
+      "\\multicolumn{5}{l}{\\footnotesize Standard errors in parentheses.} \\\\"
+    )
+    tex <- append(tex, notes, after = idx_bottomrule)
+  }
 
+  writeLines(tex, latex_name)
+
+  # html tables
   cat("\n\n")
-cat("##", title_name, "\n\n")
+  cat("##", title_name, "\n\n")
 
-for (j in 1:4) {
+  for (j in 1:4) {
+    cat("### Model", j, "\n\n")
+    model_sum <- summary(models[[j]])
 
-  cat("### Model", j, "\n\n")
+    # Intensity model
+    count_coefs <- model_sum$coefficients$count
+    
+    
+    if (!is.na(lt_est[j])) {
+      count_coefs <- rbind(count_coefs, "Log Theta" = c(lt_est[j], lt_se[j], NA, NA))
+    }
 
-  model_sum <- summary(models[[j]])
+    count_table <- data.frame(
+      Variable = rownames(count_coefs),
+      Coefficient = round(count_coefs[,1], 3),
+      Std_Error = round(count_coefs[,2], 3)
+    )
 
-#intensity model
-  count_coefs <- model_sum$coefficients$count
+    cat("#### Intensity (Negative Binomial Count Equation)\n\n")
+    print(knitr::kable(count_table, row.names = FALSE))
+    cat("\n\n")
 
-  count_table <- data.frame(
-    Variable = rownames(count_coefs),
-    Coefficient = round(count_coefs[,1], 3),
-    Std_Error = round(count_coefs[,2], 3)
-  )
+    # Selection model
+    zero_coefs <- model_sum$coefficients$zero
+    zero_table <- data.frame(
+      Variable = rownames(zero_coefs),
+      Coefficient = round(zero_coefs[,1], 3),
+      Std_Error = round(zero_coefs[,2], 3)
+    )
 
-  cat("#### Intensity (Negative Binomial Count Equation)\n\n")
-  print(knitr::kable(count_table))
-  cat("\n\n")
+    cat("#### Selection (Logit Structural Zero Equation)\n\n")
+    print(knitr::kable(zero_table, row.names = FALSE))
+    cat("\n\n")
 
-# selection model
-  zero_coefs <- model_sum$coefficients$zero
-
-  zero_table <- data.frame(
-    Variable = rownames(zero_coefs),
-    Coefficient = round(zero_coefs[,1], 3),
-    Std_Error = round(zero_coefs[,2], 3)
-  )
-
-  cat("#### Selection (Logit Structural Zero Equation)\n\n")
-  print(knitr::kable(zero_table))
-  cat("\n\n")
-
-  cat("Observations:", models[[j]]$n, "\n\n")
-}
+    cat("Observations:", models[[j]]$n, "\n\n")
+  }
 
   invisible(models)
 }
@@ -564,24 +657,23 @@ for (j in 1:4) {
 # run mkt
 zinb_market <- run_zinb_incremental(
   "ln_market",
-  "tables/zinb_market.tex",
+  "tables/zinb_market2.tex",
   "ZINB: Market Finance and Breakthrough Innovation"
 )
 
 # run bank
 zinb_bank <- run_zinb_incremental(
   "ln_bank",
-  "tables/zinb_bank.tex",
+  "tables/zinb_bank2.tex",
   "ZINB: Bank Finance and Breakthrough Innovation"
 )
 
 # run vc
 zinb_vc <- run_zinb_incremental(
   "ln_vc",
-  "tables/zinb_vc.tex",
+  "tables/zinb_vc2.tex",
   "ZINB: Venture Capital and Breakthrough Innovation"
 )
-
 ```
 
 # data diagnostics and graphs
@@ -603,50 +695,94 @@ cat("Percent zeros:", round(mean(df$breakthrough_count == 0, na.rm = TRUE) * 100
 cat("Mean breakthrough count:", mean(df$breakthrough_count, na.rm = TRUE), "\n")
 cat("Variance breakthrough count:", var(df$breakthrough_count, na.rm = TRUE), "\n")
 
-ggplot(df, aes(x = breakthrough_count)) +
-  geom_histogram(binwidth = 1, fill = "steelblue1", color = "white") +
+breakthrough_dstb <- ggplot(df, aes(x = breakthrough_count)) +
+  geom_histogram(binwidth = 1,
+                 fill = "#2C3E50",
+                 color = "white",
+                 linewidth = 0.2) +
   coord_cartesian(xlim = c(0, 30)) +
   labs(
-    title = "Distribution of Breakthrough Counts",
+    title = "Distribution of Breakthrough Patent Counts",
     x = "Breakthrough Count (Top 1% Patents)",
     y = "Frequency"
   ) +
-  theme_minimal()
-
+  theme_classic(base_family = "serif", base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    axis.title = element_text(face = "plain")
+  )
+breakthrough_dstb
+ggsave("figures/breakthrough_distribution.pdf",
+       plot = breakthrough_dstb,
+       width = 7,
+       height = 5)
 ```
 ## patent quality distribution
 ```{r eval= TRUE, echo= TRUE, message= FALSE, warning= FALSE}
 #| column: margin
-ggplot(df, aes(x = quality_index_100)) +
-  geom_density(fill = "deeppink1", alpha = 0.4) +
+quality_density <- ggplot(df, aes(x = quality_index_100)) +
+  geom_density(fill = "#2C3E50", alpha = 0.4, color = "#2C3E50", linewidth = 0.6) +
   labs(
     title = "Distribution of Patent Quality Index",
     x = "Patent Quality (0-100)",
     y = "Density"
   ) +
-  theme_minimal()
+  theme_classic(base_family = "serif", base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    axis.title = element_text(face = "plain")
+  )
+quality_density
+ggsave("figures/quality_density.pdf",
+       plot = quality_density,
+       width = 7,
+       height = 5)
 ```
 ## distibution of FD variables
 ```{r fig.width= 15, fig.height= 5, echo= TRUE, eval= TRUE, warning= FALSE, message= FALSE}
 #| column: margin
 library(dplyr)
-library(tidyverse)
+library(tidyr)
+library(ggplot2)
+
 vars <- c("ln_market", "ln_bank", "ln_vc")
 
 df_long <- df %>%
   select(all_of(vars)) %>%
-  pivot_longer(everything())
+  pivot_longer(everything()) %>%
+  mutate(name = dplyr::recode(name,
+                       ln_market = "Market Finance",
+                       ln_bank   = "Bank Finance",
+                       ln_vc     = "VC Finance"))
 
-ggplot(df_long, aes(x = value)) +
-  geom_density(fill = "deeppink1", alpha = 0.4) +
+finance_density <- ggplot(df_long, aes(x = value)) +
+  geom_density(fill = "#2C3E50",
+               alpha = 0.4,
+               color = "#2C3E50",
+               linewidth = 0.6) +
   facet_wrap(~name, scales = "free") +
-  theme_minimal() +
-  labs(title = "Distribution of Financial Development Measures")
-
+  labs(
+    title = "Distribution of Financial Development Measures",
+    x = "Log of Financial Development (% of GDP)",
+    y = "Density"
+  ) +
+  theme_classic(base_family = "serif", base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    strip.text = element_text(face = "bold")
+  )
+finance_density
+ggsave("figures/finance_distribution.pdf",
+       plot = finance_density,
+       width = 8,
+       height = 5)
 ```
 ## corr plot
-```{r warning= FALSE, message= FALSE, echo= TRUE, eval= TRUE}
+```{r}
+#| fig-width: 8
+#| fig-height: 8
 #| column: margin
+library(dplyr)
 library(corrplot)
 
 corr_vars <- df %>%
@@ -654,13 +790,41 @@ corr_vars <- df %>%
          ln_market, ln_bank, ln_vc,
          ipr_c, ln_gdp_pc, ln_trade,
          ln_rd, ln_tertiary) %>%
-  na.omit()
+  na.omit() %>%
+  rename(
+    "Patent Quality" = quality_index_100,
+    "Log Patents" = ln_patents,
+    "Market Finance" = ln_market,
+    "Bank Finance" = ln_bank,
+    "VC Finance" = ln_vc,
+    "IPR Index" = ipr_c,
+    "Log GDP per Capita" = ln_gdp_pc,
+    "Log Trade" = ln_trade,
+    "Log R&D" = ln_rd,
+    "Log Tertiary Education" = ln_tertiary
+  )
 
 corr_matrix <- cor(corr_vars)
 
-corrplot(corr_matrix, method = "color", type = "upper",
-         tl.cex = 0.8, number.cex = 0.7)
+par(family = "serif")
+
+corrplot(
+  corr_matrix,
+  method = "color",
+  type = "upper",
+  diag = FALSE,
+  col = colorRampPalette(c("#2C3E50", "white", "#8B2E2E"))(200),
+  tl.col = "black",
+  tl.cex = 0.9,
+  number.cex = 0.75,
+  addCoef.col = "black"
+)
+
+dev.copy(pdf, "figures/correlation_matrix.pdf", width = 8, height = 8)
+dev.off()
 ```
+
+
 ## interaction plots (marginal effects)
 ```{r echo= TRUE, eval= TRUE, message= FALSE, warning= FALSE}
 #| column: margin
@@ -689,12 +853,12 @@ ln_market_seq <- seq(
   length.out = 100
 )
 
-# Compute marginal effect of IPR across ln_market
+# compute marginal effect of IPR across ln_market
 mfx <- slopes(
   twfe_quality,
   variables = "ipr_c",
   newdata = datagrid(ln_market = ln_market_seq),
-  vcov = "HC1"   # match your robust SE specification
+  vcov = "HC1"   
 )
 
 # Extract coefficients to compute turning point
@@ -713,11 +877,19 @@ p_me_quality <- ggplot(mfx, aes(x = ln_market, y = estimate)) +
   geom_vline(xintercept = turning_point, linetype = "dotted") +
   labs(
     title = "Marginal Effect of IPR on Patent Quality",
-    subtitle = paste0("Turning point ≈ ", round(turning_point, 2)),
-    x = "Market Capitalization (log of Market Cap / GDP)",
+    subtitle = paste0("Turning point: ~ ", round(turning_point, 2)),
+    x = "Market Capitalization (log of Market Cap (% GDP))",
     y = "Marginal Effect of IPR on Quality"
   ) +
-  theme_minimal(base_family = "serif")
+  theme_classic(base_family = "serif") +
+  theme(
+    axis.text.x = element_text(size = 15),
+    axis.text.y = element_text(size = 15),
+    axis.title.x = element_text(size = 14),
+    axis.title.y = element_text(size = 14),
+    plot.title = element_text(size = 15, face = "bold"),
+    plot.subtitle = element_text(size = 13)
+  )
 
 ggsave("figures/interaction_quality.pdf", plot = p_me_quality, width = 7, height = 5)
 
@@ -743,50 +915,77 @@ df_plot <- df %>%
     group = paste0("Market Q", market_bin, " | ", ipr_regime)
   )
 
-ggplot(df_plot, aes(x = quality_index_100, fill = ipr_regime)) +
-  geom_density(alpha = 0.4) +
+quality_density_bins <- ggplot(df_plot, aes(x = quality_index_100, fill = ipr_regime)) +
+  geom_density(alpha = 0.4, color = NA) +
+  
   facet_wrap(~ market_bin, nrow = 1,
-             labeller = labeller(market_bin = function(x) paste("Market Q", x))) +
+             labeller = labeller(market_bin = function(x) paste("Market Tercile", x))) +
+  
+  scale_fill_manual(
+    values = c("Weak IPR" = "grey70",
+               "Strong IPR" = "#2C3E50")
+  ) +
+  
   labs(
-    title = "Innovation Quality Distributions by Market Finance and IPR",
-    subtitle = "",
-    x = "Patent Quality Index",
+    title = "Innovation Quality by Market Finance and IPR Regime",
+    x = "Patent Quality Index (0-100)",
     y = "Density",
     fill = "IPR Regime"
   ) +
-  theme_minimal()
-# quality and quantity relationship
-ggplot(df, aes(x = ln_patents, y = quality_index_100)) +
-  geom_point(alpha = 0.3) +
-  geom_smooth(method = "loess", se = FALSE, color= 'deeppink2') +
-  labs(
-    title = "Average Patent Quality and Patent Quantity",
-    subtitle = "",
-    x = "Patent Quantity (log)",
-    y = "Average Patent Quality"
-  ) +
-  theme_minimal()
-p_quality_quantity <- ggplot(df, aes(x = ln_patents, y = quality_index_100)) +
-  geom_point(alpha = 0.3) +
-  geom_smooth(method = "loess", se = FALSE, color = "deeppink2") +
-  labs(
-    title = NULL,
-    x = "Patent Quantity (log)",
-    y = "Average Patent Quality"
-  ) +
-  theme_minimal()
+  
+  theme_classic(base_family = "serif", base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    legend.position = "top",
+    strip.text = element_text(face = "bold")
+  )
 
 ggsave(
-  filename = "figures/quality_vs_quantity.pdf",
-  plot = p_quality_quantity,
-  width = 6,
-  height = 4
+  "figures/quality_by_market_ipr.pdf",
+  plot = quality_density_bins,
+  width = 7,
+  height = 5
 )
+# quality and quantity relationship
+p_quality_quantity <- ggplot(df, aes(x = ln_patents, y = quality_index_100)) +
+  geom_point(alpha = 0.25, color = "grey50") +
+  
+  geom_smooth(
+    method = "loess",
+    se = FALSE,
+    color = "#2C3E50",
+    linewidth = 1.1
+  ) +
+  
+  labs(
+    title = "Patent Quantity and Average Patent Quality",
+    x = "Log Patent Quantity",
+    y = "Average Patent Quality"
+  ) +
+  
+  theme_classic(base_family = "serif", base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold")
+  )
+
+ggsave(
+  "figures/quality_vs_quantity.pdf",
+  plot = p_quality_quantity,
+  width = 7,
+  height = 5
+)
+
+quality_density_bins
+p_quality_quantity
 ```
 ```{r eval= TRUE, echo= TRUE, message= FALSE, warning= FALSE, fig.width= 10, fig.height= 5}
 #| column: margin
 library(tidyverse)
-# scatterplots
+
+# --------------------------
+# Prepare Long Finance Data
+# --------------------------
+
 plot_df <- df %>%
   select(
     iso3c, year,
@@ -810,62 +1009,93 @@ plot_df <- df %>%
     )
   )
 
+# --------------------------
+# 1. Finance x Quality
+# --------------------------
 
-
-# fd x quality
 p1 <- ggplot(plot_df, aes(x = finance_depth, y = quality_index_100)) +
-  geom_point(alpha = 0.25) +
-  geom_smooth(method = "loess", se = FALSE, linewidth = 1, color = 'deeppink2') +
+  geom_point(alpha = 0.4, color = "grey50") +
+  geom_smooth(method = "loess", se = FALSE,
+              linewidth = 1.1, color = "#2C3E50") +
   facet_wrap(~ finance_type, scales = "free_x") +
   labs(
     title = "Financial Development and Patent Quality",
-    subtitle = "",
-    x = "Financial Depth (log)",
+    x = "Log Financial Development (% of GDP)",
     y = "Patent Quality Index (0-100)"
   ) +
-  theme_minimal()
+  theme_classic(base_family = "serif", base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    strip.text = element_text(face = "bold")
+  )
 
-# fd x quantity
+ggsave("figures/finance_quality.pdf", plot = p1, width = 7, height = 5)
+
+# --------------------------
+# 2. Finance x Quantity
+# --------------------------
+
 p2 <- ggplot(plot_df, aes(x = finance_depth, y = ln_patents)) +
-  geom_point(alpha = 0.25) +
-  geom_smooth(method = "loess", se = FALSE, linewidth = 1, color = 'deeppink2') +
+  geom_point(alpha = 0.4, color = "grey50") +
+  geom_smooth(method = "loess", se = FALSE,
+              linewidth = 1.1, color = "#2C3E50") +
   facet_wrap(~ finance_type, scales = "free_x") +
   labs(
     title = "Financial Development and Patent Quantity",
-    subtitle = "",
-    x = "Financial Depth (log)",
+    x = "Log Financial Development (% of GDP)",
     y = "Log Patents per 1,000 Researchers"
   ) +
-  theme_minimal()
+  theme_classic(base_family = "serif", base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    strip.text = element_text(face = "bold")
+  )
 
-# ipr x quality
+ggsave("figures/finance_quantity.pdf", plot = p2, width = 7, height = 5)
+
+# --------------------------
+# 3. IPR x Quality
+# --------------------------
+
 p3 <- ggplot(df, aes(x = ipr_c, y = quality_index_100)) +
-  geom_point(alpha = 0.25) +
-  geom_smooth(method = "loess", se = FALSE, linewidth = 1, color = 'deeppink2') +
+  geom_point(alpha = 0.4, color = "grey50") +
+  geom_smooth(method = "loess", se = FALSE,
+              linewidth = 1.1, color = "#2C3E50") +
   labs(
     title = "IPR Strength and Patent Quality",
-    subtitle = "Stronger IPR regimes show a weak relationship with quality",
     x = "IPR Strength (Centered Park Index)",
     y = "Patent Quality Index (0-100)"
   ) +
-  theme_minimal()
+  theme_classic(base_family = "serif", base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold")
+  )
 
-# ipr x quantity
+ggsave("figures/ipr_quality.pdf", plot = p3, width = 7, height = 5)
+
+# --------------------------
+# 4. IPR x Quantity
+# --------------------------
+
 p4 <- ggplot(df, aes(x = ipr_c, y = ln_patents)) +
-  geom_point(alpha = 0.25) +
-  geom_smooth(method = "loess", se = FALSE, linewidth = 1, color = 'deeppink2') +
+  geom_point(alpha = 0.4, color = "grey50") +
+  geom_smooth(method = "loess", se = FALSE,
+              linewidth = 1.1, color = "#2C3E50") +
   labs(
     title = "IPR Strength and Patent Quantity",
-    subtitle = "Stronger IPR regimes file more patents on average",
     x = "IPR Strength (Centered Park Index)",
     y = "Log Patents per 1,000 Researchers"
   ) +
-  theme_minimal()
+  theme_classic(base_family = "serif", base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold")
+  )
 
-print(p1)
-print(p2)
-print(p3)
-print(p4)
+ggsave("figures/ipr_quantity.pdf", plot = p4, width = 7, height = 5)
+p1
+p2
+p3
+p4
 ```
 
 
@@ -880,21 +1110,49 @@ quality_market_df <- df %>%
 
 quality_market_ipr_df <- quality_market_df %>%
   mutate(
-    ipr_regime = ifelse(ipr_c >= 0, "Above-Average IPR", "Below-Average IPR")
+    ipr_regime = ifelse(ipr_c >= 0,
+                        "Above-Average IPR",
+                        "Below-Average IPR")
   )
 
-ggplot(quality_market_ipr_df,
-       aes(x = ln_market, y = quality_index_100, color = ipr_regime)) +
-  geom_point(alpha = 0.5) +
-  geom_smooth(method = "lm", se = FALSE) +
-  labs(
-    title = "Patent Quality, Market Finance, and IPR",
-    x = "Log Market Capitalization / GDP",
-    y = "Patent Quality Index (0-100)",
-    color = "IP Regime"
+p_quality_market_ipr <- ggplot(
+  quality_market_ipr_df,
+  aes(x = ln_market,
+      y = quality_index_100,
+      color = ipr_regime)
+) +
+  
+  geom_point(alpha = 0.3) +
+  
+  geom_smooth(method = "lm",
+              se = FALSE,
+              linewidth = 1.2) +
+  
+  scale_color_manual(
+    values = c("Below-Average IPR" = "grey60",
+               "Above-Average IPR" = "#2C3E50")
   ) +
-  theme_minimal()
+  
+  labs(
+    title = "Patent Quality, Market Finance, and IPR Regimes",
+    x = "Log Market Capitalization (% of GDP)",
+    y = "Patent Quality Index (0-100)",
+    color = "IPR Regime:"
+  ) +
+  
+  theme_classic(base_family = "serif", base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    legend.position = "top"
+  )
 
+ggsave(
+  "figures/quality_market_ipr.pdf",
+  plot = p_quality_market_ipr,
+  width = 7,
+  height = 5
+)
+p_quality_market_ipr
 ```
 
 # robustness checks

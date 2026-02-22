@@ -8,4 +8,5 @@ update_thesis_site <- function() {
   system("git push")
 }
 
+
 update_thesis_site()
