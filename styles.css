@@ -1,0 +1,98 @@
+/* ===========================
+   Apple-Minimal Academic Style
+   =========================== */
+
+body {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #1d1d1f;
+  background-color: #ffffff;
+  line-height: 1.7;
+}
+
+/* Title */
+.quarto-title-block .title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Subtitle */
+.quarto-title-block .subtitle {
+  font-size: 1.1rem;
+  color: #6e6e73;
+  font-weight: 500;
+}
+
+/* Author + Date (left-aligned, muted, under subtitle) */
+.quarto-title-meta {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #6e6e73;
+}
+
+/* Section headers */
+main h1 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-top: 3rem;
+}
+
+main h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-top: 2rem;
+}
+
+/* Links */
+a {
+  color: #1d1d1f;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+/* Remove default Published label entirely */
+.quarto-title-meta-heading {
+  display: none !important;
+}
+
+/* Stack author and date vertically */
+.quarto-title-meta-contents {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-end;   /* right-align for left margin */
+  gap: 0.3rem;
+}
+
+/* Move metadata block into left margin */
+.quarto-title-block {
+  position: relative;
+}
+
+.quarto-title-meta {
+  position: absolute;
+  left: -220px;      /* adjust if needed */
+  top: 0.5rem;
+  width: 180px;
+  font-size: 0.9rem;
+  color: #6e6e73;
+}
+
+/* Replace date label */
+.quarto-title-meta-date::before {
+  content: "Last Updated: ";
+  font-weight: 500;
+}
+
+@media (max-width: 1100px) {
+  .quarto-title-meta {
+    position: static;
+    width: auto;
+    margin-top: 1rem;
+  }
+
+  .quarto-title-meta-contents {
+    align-items: flex-start;
+  }
+}

@@ -1,5 +1,5 @@
 ---
-title: "Financial Structures, Intellectual Property Rights, and the Composition of Innovation"
+title: "Financial Structure, Intellectual Property Rights, and the Composition of Innovation"
 author: "Aaron DiLorenzo"
 date: "February 2026"
 format:
@@ -31,12 +31,12 @@ extra_dependencies:
     - booktabs
 ---
 \begin{abstract}
-This thesis examines how financial development and intellectual property rights (IPR) jointly shape the composition of innovation. Despite the central role of technological progress in Schumpeterian growth models, the global surge in patenting has not produced commensurate productivity gains, a phenomenon known as the “patent puzzle.” Using OECD Patent Quality Indicators and cross-country panel data, I estimate two-way fixed effects models linking average patent quality and patent intensity to distinct financing channels and IPR strength. The results show that equity market depth is positively associated with innovation quality, but the marginal effect of stronger patent protection declines as financial markets deepen and may become negative in highly developed systems. Supplementary probability models of breakthrough patent intensity further supports this association. Bank-based finance appears more closely associated with patent quantity than quality, though results of the Bank-based and Entrepreneurial-based channels remain less robust and compelling relative to the Market-Based results. These findings suggest that financial structure and legal institutions influence not only how much innovation occurs, but whether it reflects frontier-expanding technological progress.
+This thesis investigates how financial development and intellectual property rights jointly shape the composition of innovation. Motivated by the “patent puzzle" and utilizing cross-country panel data, I estimate two-way fixed effects models linking patent quality and intensity to distinct financing channels and IPR strength. Results show that equity market depth is positively associated with innovation quality. However, the marginal effect of stronger patent protection declines as markets deepen, becoming negative in highly developed systems, a pattern reinforced by supplementary models of breakthrough intensity. In contrast, bank-based and entrepreneurial finance exhibit weaker and less stable associations, primarily affecting patent intensity rather than quality. These findings suggest that financial structure and legal institutions determine not only the scale of innovative activity, but whether it drives frontier-expanding technological progress as well.
 \end{abstract}
 
 # Introduction
 
-For adherents of endogenous growth theory, long-run prosperity is propelled by ground-breaking technologies that alter production, reshape markets, and expand what societies can achieve [@romer1990endogenous; @aghion1992model]. From the combustion engine and the printing press to the CPU and contemporary large language models, technological progress has repeatedly driven sustained economic growth. Endogenous growth theory formalized this intuition by placing innovation at the center of the growth process. Yet we still understand far less about the conditions that give rise to genuinely transformative innovations, rather than incremental, or low value additions to the technological frontier
+For adherents of endogenous growth theory, long-run prosperity is propelled by technologies that alter production, reshape markets, and expand what societies can achieve [@romer1990endogenous; @aghion1992model]. From the combustion engine and the printing press to the CPU and contemporary large language models, technological progress has repeatedly driven sustained economic growth. Endogenous growth theory formalized this intuition by placing innovation at the center of the growth process. Yet we still understand far less about the conditions that give rise to genuinely transformative innovations, rather than incremental, or low value additions to the technological frontier
 
 A central challenge is measurement. Traditional proxies for innovation such as patent counts or R&D expenditure perform poorly in capturing economically meaningful technological progress. The “patent puzzle” illustrates this tension: global patenting and R&D spending have risen substantially, yet productivity growth in many advanced economies has stagnated [@boldrin2013against]. This disconnect suggests that the quantity of innovation tells us little about its economic significance. A more informative measure lies in innovation quality, understood as the technological and economic value embedded in inventive output. A growing literature develops patent-level indicators to capture this dimension, drawing on patent-level micro data to infer quality from the structure of citation networks and disclosure characteristics [@squicciarini2013measuring; @trajtenberg1997university; @lanjouw2004patent; @hall2005market; @kogan2017technological]. While no single indicator is definitive, as each captures a distinct facet of quality, composite measures combining these dimensions provide a more robust proxy for meaningful innovation than raw patent counts or R&D expenditure
 
@@ -50,8 +50,9 @@ This thesis seeks to contribute to a wider understanding of how economies can fo
 
 These findings support a compositional interpretation of innovation. Financial systems and patent regimes jointly influence whether inventive activity concentrates in higher-quality, productivity-enhancing innovation or expands primarily along the extensive margin through lower-value patent proliferation. To further examine frontier innovation, I estimate zero-inflated negative binomial models of breakthrough patents (top 1% quality). The distribution of breakthrough counts exhibits substantial overdispersion and excess zeros, motivating a framework that distinguishes between structural non-participation in frontier innovation and the intensity of breakthrough production conditional on participation. These supplementary models reinforce the view that financial and legal regimes shape not only the volume of innovation, but its allocation across the quality spectrum.
 
-The rest of the analysis proceeds as follows: 
-# Literature Review
+The rest of the analysis proceeds as follows. @sec-lit reviews the theoretical and empirical literature on innovation, financial development, and intellectual property rights. @sec-emp outlines the empirical framework, including the two-way fixed effects baseline and the zero-inflated negative binomial model for breakthrough innovation. @sec-data describes the data and key variables. @sec-results presents the main results, beginning with average patent quality and quantity before turning to frontier innovation. @sec-conc concludes with [something... I'm yet to actually write this].
+
+# Literature Review {#sec-lit}
 ## Innovation and Endogenous Growth
 
 Endogenous growth theory places innovation at the core of long-run economic development. In the canonical models of @romer1990endogenous and @aghion1992model, technological progress arises from intentional R&D investment and creative destruction. Firms innovate to obtain temporary monopoly profits, and the pace of innovation determines sustained productivity growth. These frameworks emphasize that incentives, market structure, and institutional environments shape innovative effort.
@@ -84,7 +85,7 @@ Similarly, @maskus2019financial provide empirical evidence that patent protectio
 
 Despite this progress, most cross-country studies focus on aggregate patent counts, R&D spending, or growth outcomes. Much less attention has been paid to how financial structure and IPR regimes jointly shape the quality of innovation. If stronger patent protection in financially developed systems primarily encourages incremental or defensive patenting, aggregate increases in patenting may mask shifts toward lower-value innovation. Conversely, in financially constrained environments, stronger IPR may facilitate access to capital for more transformative projects.
 
-# Empirical Framework
+# Empirical Framework {#sec-emp}
 ## Motivation and Overview
 
 This section outlines the empirical strategy used to examine how financial structure and intellectual property institutions jointly shape innovative outcomes. The central objective is to distinguish between the volume of innovation and its composition, particularly with respect to patent quality and breakthrough activity.
@@ -140,7 +141,7 @@ where $\mu_{it}$ represents the expected count of breakthrough patents. The term
 
 Because fixed effects are incompatible with zero-inflated models, these ZINB specifications are estimated without country and year fixed effects. They are therefore interpreted as supplementary robustness analyses rather than causal estimates.
 
-# Data
+# Data {#sec-data}
 
 ## Patent Data and Innovation Measures
 
@@ -188,7 +189,7 @@ These variables are commonly used in cross-country innovation and growth regress
 
 The data reveal several facts that motivate the empirical strategy. First, patent quality and patent quantity are only weakly correlated across country-years, suggesting that scale and value capture distinct dimensions of innovation (see @fig-qual-quant). Second, breakthrough counts exhibit substantial overdispersion: the variance far exceeds the mean, and a large fraction of country-year observations record zero breakthroughs. These features justify modeling quality separately from quantity and motivate the use of ZINB specifications for frontier innovation. Descriptive statistics for all primary variables are provided in Table \ref{tbl-summary-stats} in the Appendix.
 
-# Results
+# Results {#sec-results}
 ## Market-Based Finance and Patent Quality
 I begin with the baseline two-way fixed effects estimates linking market-based financial development, intellectual property protection, and patent quality. Table \ref{tbl-market-quality} reports results for the specification in equation \eqref{eq:baseline}, incrementally introducing controls while retaining country and year fixed effects.
 
@@ -267,7 +268,7 @@ The selection equation shows that higher income per capita significantly reduces
 
 Because these ZINB models do not include country and year fixed effects, they are interpreted as complementary rather than causal within-country estimates. Still, they complement the central finding: financial and legal regimes shape innovation across the quality spectrum, including the upper tail of breakthrough activity.
 
-# Summary and Final Thoughts
+# Summary and Final Thoughts {#sec-conc}
 
 \newpage
 \appendix

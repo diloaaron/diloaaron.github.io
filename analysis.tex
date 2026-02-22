@@ -151,7 +151,7 @@
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
 \hypersetup{
-  pdftitle={Financial Structures, Intellectual Property Rights, and the Composition of Innovation},
+  pdftitle={Financial Structure, Intellectual Property Rights, and the Composition of Innovation},
   pdfauthor={Aaron DiLorenzo},
   colorlinks=true,
   linkcolor={blue},
@@ -161,7 +161,7 @@
   pdfcreator={LaTeX via pandoc}}
 
 
-\title{Financial Structures, Intellectual Property Rights, and the
+\title{Financial Structure, Intellectual Property Rights, and the
 Composition of Innovation}
 \author{Aaron DiLorenzo}
 \date{2026-02-01}
@@ -170,14 +170,14 @@ Composition of Innovation}
 
 
 \begin{abstract}
-This thesis examines how financial development and intellectual property rights (IPR) jointly shape the composition of innovation. Despite the central role of technological progress in Schumpeterian growth models, the global surge in patenting has not produced commensurate productivity gains, a phenomenon known as the “patent puzzle.” Using OECD Patent Quality Indicators and cross-country panel data, I estimate two-way fixed effects models linking average patent quality and patent intensity to distinct financing channels and IPR strength. The results show that equity market depth is positively associated with innovation quality, but the marginal effect of stronger patent protection declines as financial markets deepen and may become negative in highly developed systems. A supplementary probability model of breakthrough (top 1\% cited) patent intensity further supports this association. Bank-based finance appears more closely associated with patent quantity than quality, though results of the Bank-based and Entrepreneurial-based channels remain less robust and compelling relative to the Market-Based results. These findings suggest that financial structure and legal institutions influence not only how much innovation occurs, but whether it reflects frontier-expanding technological progress.
+This thesis investigates how financial development and intellectual property rights jointly shape the composition of innovation. Motivated by the “patent puzzle" and utilizing cross-country panel data, I estimate two-way fixed effects models linking patent quality and intensity to distinct financing channels and IPR strength. Results show that equity market depth is positively associated with innovation quality. However, the marginal effect of stronger patent protection declines as markets deepen, becoming negative in highly developed systems, a pattern reinforced by supplementary models of breakthrough intensity. In contrast, bank-based and entrepreneurial finance exhibit weaker and less stable associations, primarily affecting patent intensity rather than quality. These findings suggest that financial structure and legal institutions determine not only the scale of innovative activity, but whether it drives frontier-expanding technological progress as well.
 \end{abstract}
 
 \section{Introduction}\label{introduction}
 
 For adherents of endogenous growth theory, long-run prosperity is
-propelled by ground-breaking technologies that alter production, reshape
-markets, and expand what societies can achieve
+propelled by technologies that alter production, reshape markets, and
+expand what societies can achieve
 \citep{romer1990endogenous, aghion1992model}. From the combustion engine
 and the printing press to the CPU and contemporary large language
 models, technological progress has repeatedly driven sustained economic
@@ -285,8 +285,21 @@ conditional on participation. These supplementary models reinforce the
 view that financial and legal regimes shape not only the volume of
 innovation, but its allocation across the quality spectrum.
 
-The rest of the analysis proceeds as follows: \# Literature Review \#\#
-Innovation and Endogenous Growth
+The rest of the analysis proceeds as follows. Section~\ref{sec-lit}
+reviews the theoretical and empirical literature on innovation,
+financial development, and intellectual property rights.
+Section~\ref{sec-emp} outlines the empirical framework, including the
+two-way fixed effects baseline and the zero-inflated negative binomial
+model for breakthrough innovation. Section~\ref{sec-data} describes the
+data and key variables. Section~\ref{sec-results} presents the main
+results, beginning with average patent quality and quantity before
+turning to frontier innovation. Section~\ref{sec-conc} concludes with
+{[}something\ldots{} I'm yet to actually write this{]}.
+
+\section{Literature Review}\label{sec-lit}
+
+\subsection{Innovation and Endogenous
+Growth}\label{innovation-and-endogenous-growth}
 
 Endogenous growth theory places innovation at the core of long-run
 economic development. In the canonical models of
@@ -402,7 +415,7 @@ lower-value innovation. Conversely, in financially constrained
 environments, stronger IPR may facilitate access to capital for more
 transformative projects.
 
-\section{Empirical Framework}\label{empirical-framework}
+\section{Empirical Framework}\label{sec-emp}
 
 \subsection{Motivation and Overview}\label{motivation-and-overview}
 
@@ -464,8 +477,8 @@ Y_{it} =
 as: Log stock market capitalization to GDP (market-based finance), Log
 domestic bank credit to GDP (bank-based finance), or Log venture capital
 investment. \(IPR_{it}^{c}\) is the Park index of patent protection
-\citep{park2008international}. \(\mathbf{X}_{it}\) includes controls for
-income per capita, trade openness, R\&D intensity, and tertiary
+\citep{park2008international}. \(\mathbf{X}_{it}'\) includes controls
+for income per capita, trade openness, R\&D intensity, and tertiary
 education attainment. Country fixed effects \(\alpha_i\) absorb
 time-invariant characteristics. Year fixed effects \(\lambda_t\) capture
 global shocks. Standard errors are clustered at the country level.
@@ -533,7 +546,7 @@ ZINB specifications are estimated without country and year fixed
 effects. They are therefore interpreted as supplementary robustness
 analyses rather than causal estimates.
 
-\section{Data}\label{data}
+\section{Data}\label{sec-data}
 
 \subsection{Patent Data and Innovation
 Measures}\label{patent-data-and-innovation-measures}
@@ -642,7 +655,7 @@ separately from quantity and motivate the use of ZINB specifications for
 frontier innovation. Descriptive statistics for all primary variables
 are provided in Table \ref{tbl-summary-stats} in the Appendix.
 
-\section{Results}\label{results}
+\section{Results}\label{sec-results}
 
 \subsection{Market-Based Finance and Patent
 Quality}\label{market-based-finance-and-patent-quality}
@@ -854,7 +867,7 @@ estimates. Still, they complement the central finding: financial and
 legal regimes shape innovation across the quality spectrum, including
 the upper tail of breakthrough activity.
 
-\section{Summary and Final Thoughts}\label{summary-and-final-thoughts}
+\section{Summary and Final Thoughts}\label{sec-conc}
 
 \newpage
 \appendix

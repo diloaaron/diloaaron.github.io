@@ -1,32 +1,26 @@
 ---
-title: "Thesis Data Work"
+title: "Financial Structure, Intellectual Property Rights, and the Composition of Innovation"
+subtitle: "Replication Appendix"
 author: Aaron DiLorenzo
-date: "Feb 15, 2026"
-format: 
+date: last-modified
+date-format: "MMMM D, YYYY"
+format:
   html:
-    theme: cosmo
+    theme: default
+    page-layout: article
+    css: styles.css
     toc: true
-    toc-depth: 4
-    toc-expand: 2
-    code-fold: show
+    toc-location: right
+    number-sections: true
+    code-fold: true
     code-summary: "Show code"
     code-link: true
     code-overflow: scroll
     code-line-numbers: true
     code-copy: true
     include-in-header:
-      text: |
-        <style>
-        /* Replace "Published" with "Last updated" */
-        .quarto-title-block .date::before {
-          content: "Last updated: ";
-          display: inline;
-        }
-        .quarto-title-block .date em {
-          display: none;
-        }
-        </style>
-    
+        text: |
+          <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 execute:
   enabled: true
   python: false
@@ -43,7 +37,8 @@ self-contained: true
 ---
 [Click here to download/view the Full Thesis (PDF) *note: it is a rough draft*](documents/analysis.pdf)
 
-# python pqi script
+# Patent Quality Indicators Construction
+This thesis is solely concerned with the `quality_index_4` and `breakthrough` indicators
 ```{python, eval=FALSE}
 """
 OECD Patent Quality Indicators
@@ -53,14 +48,14 @@ normalization, winsorization, and aggregation procedures
 import polars as pl
 import os
 
-OUTPUT_DIR = "/Users/aarondilorenzo/Desktop/DATATHES/FINAL WORKING DATA"
+OUTPUT_DIR = ""
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 # for reproducing, change the file paths to correctly the downloaded data, 
 # they're too large for me to make this self running
 INDICATORS_FILE = "Data/202502_OECD_PATENT_QUALITY_EPO_INDIC.txt"
 COHORTS_FILE = "Data/202502_OECD_PATENT_QUALITY_EPO_INDIC_COHORT.txt"
 HAN_PATENTS_FILE = "Data/202502_HAN_PATENTS.txt"
-HARM_NAMES_FILE = "Data/DATATHES/202502_HARM_NAMES.txt"
+HARM_NAMES_FILE = "Data/202502_HARM_NAMES.txt"
 
 FINAL_PATENT_FILE = "OECD_patent_quality_final.parquet"
 FINAL_COUNTRY_FILE = "OECD_country_year_final.csv"
@@ -146,7 +141,7 @@ if __name__ == "__main__":
     main()
 ```
 
-# data construction
+# Data Construction and Variable Assembly
 ```{r eval= TRUE, echo= TRUE, warning= FALSE, message= FALSE}
 # data construction script
 # pivoting datasets, interpolating the Park index, and adding iso3c keys not included in this script
@@ -269,7 +264,7 @@ fwrite(df, "data/monarch_panel_transformed.csv")
 summary(df)
 
 ```
-# baseline twfe
+# Baseline Two-Way Fixed Effects (TWFE) Models
 ```{r results='asis', echo=TRUE, eval= TRUE, warning= FALSE, message= FALSE}
 # baseline twfe models
 
@@ -441,7 +436,7 @@ vc_quantity <- run_twfe_incremental(
 
 ```
 
-# zinb models
+# Zero-Inflated Negative Binomial (ZINB) Models
 ```{r results='asis', echo=TRUE, eval=TRUE, warning=FALSE, message=FALSE}
 # ZINB MODELS
 
@@ -676,9 +671,9 @@ zinb_vc <- run_zinb_incremental(
 )
 ```
 
-# data diagnostics and graphs
+# Data Diagnostics and Exploratory Analysis
 
-## breakthrough
+## Breakthrough Innovation Measure
 ```{r eval= TRUE, echo= TRUE, message= FALSE, warning= FALSE}
 #| column: margin
 library(ggplot2)
@@ -717,7 +712,7 @@ ggsave("figures/breakthrough_distribution.pdf",
        width = 7,
        height = 5)
 ```
-## patent quality distribution
+## Distribution of Patent Quality
 ```{r eval= TRUE, echo= TRUE, message= FALSE, warning= FALSE}
 #| column: margin
 quality_density <- ggplot(df, aes(x = quality_index_100)) +
@@ -738,7 +733,7 @@ ggsave("figures/quality_density.pdf",
        width = 7,
        height = 5)
 ```
-## distibution of FD variables
+## Distribution of Financial Development Variables
 ```{r fig.width= 15, fig.height= 5, echo= TRUE, eval= TRUE, warning= FALSE, message= FALSE}
 #| column: margin
 library(dplyr)
@@ -777,7 +772,7 @@ ggsave("figures/finance_distribution.pdf",
        width = 8,
        height = 5)
 ```
-## corr plot
+## Correlation Matrix
 ```{r}
 #| fig-width: 8
 #| fig-height: 8
@@ -825,7 +820,7 @@ dev.off()
 ```
 
 
-## interaction plots (marginal effects)
+## Interaction Effects (Marginal Effects Plot)
 ```{r echo= TRUE, eval= TRUE, message= FALSE, warning= FALSE}
 #| column: margin
 library(plm)
@@ -896,7 +891,7 @@ ggsave("figures/interaction_quality.pdf", plot = p_me_quality, width = 7, height
 p_me_quality
 ```
 
-## more graphs
+## Additional Figures
 ```{r eval= TRUE, echo= TRUE, message= FALSE, warning= FALSE}
 #| column: margin
 # distibution of patent quality
@@ -916,7 +911,7 @@ df_plot <- df %>%
   )
 
 quality_density_bins <- ggplot(df_plot, aes(x = quality_index_100, fill = ipr_regime)) +
-  geom_density(alpha = 0.4, color = NA) +
+  geom_density(alpha = 0.4, color = 'grey30') +
   
   facet_wrap(~ market_bin, nrow = 1,
              labeller = labeller(market_bin = function(x) paste("Market Tercile", x))) +
@@ -1155,12 +1150,12 @@ ggsave(
 p_quality_market_ipr
 ```
 
-# robustness checks
+# Robustness Checks
 - quadratic models
 - lags
 - idk some other stuff
 
-## joint tests and nonlinearity tests
+## Joint Significance and Nonlinearity Tests
 ```{r echo= TRUE, eval= TRUE, message= FALSE, warning= FALSE}
 # robustness and model analysis
 
