@@ -445,13 +445,13 @@ financial channels.
 
 Second, because frontier innovation is rare and highly concentrated, I
 explicitly model breakthrough activity using zero-inflated negative
-binomial (ZINB) models (add the Long citation). This framework
-distinguishes between (i) the probability that a country is structurally
-unlikely to produce frontier innovation and (ii) the intensity of
-breakthrough production conditional on participation. Together, these
-approaches allow the analysis to address the central question of the
-thesis: Do financial structure and patent institutions shape not only
-how much innovation occurs, but whether it reflects high-quality,
+binomial (ZINB) models \citep{ucla_zinb}. This framework distinguishes
+between (i) the probability that a country is structurally unlikely to
+produce frontier innovation and (ii) the intensity of breakthrough
+production conditional on participation. Together, these approaches
+allow the analysis to address the central question of the thesis: Do
+financial structure and patent institutions shape not only how much
+innovation occurs, but whether it reflects high-quality,
 frontier-expanding technological progress?
 
 \subsection{Baseline Two-Way Fixed Effects
@@ -486,7 +486,7 @@ global shocks. Standard errors are clustered at the country level.
 The coefficient of primary interest is \(\beta_3\), which captures how
 the marginal effect of patent protection varies with financial
 development. The marginal effect of IPR on innovation is: \[
-\frac{\partial Y_{it}}{\partial IPR_{it}} = \beta_2 + \beta_3 FD_{it}
+\frac{\partial Y_{it}}{\partial IPR_{it}^c} = \beta_2 + \beta_3 FD_{it}
 \] A negative \(\beta_3\) implies that the impact of stronger patent
 protection declines as financial markets deepen. This interaction is
 central to the compositional interpretation developed in the Results
@@ -501,24 +501,36 @@ differences.
 \subsection{Modeling Frontier Innovation: Zero-Inflated Negative
 Binomial}\label{modeling-frontier-innovation-zero-inflated-negative-binomial}
 
-Following a standard Zero-Inflated Negative Binomial (ZINB) framework
+Breakthrough innovation exhibits two defining features: extreme
+overdispersion and excess zeros (see Figure \ref{fig-bt-dist}). The
+variance of breakthrough counts substantially exceeds the mean,
+invalidating a Poisson assumption, and a large fraction of country-year
+observations record zero breakthroughs. These zeros likely reflect a
+mixture of structural incapacity and stochastic variation. The variance
+of a Negative Binomial distribution is defined as: \[
+Var(Y_{it}) = \mu_{it} + \alpha \mu_{it}^2
+\] where \(\alpha\) represents the overdispersion parameter. As
+\(\alpha \to 0\), the variance approaches the mean (\(\mu_{it}\)) and
+the distribution converges back to the Poisson. Note that in the
+empirical estimation, the software package I use (R) parameterizes this
+by estimating \(\theta\), which is the inverse of the dispersion
+parameter (\(\theta = \alpha^{-1}\)). Therefore, the significance of
+\(\ln(\theta)\) in the results tables confirms the presence of
+overdispersion and validates the Negative Binomial specification. For a
+full mathematical derivation of the zero-inflated likelihood function
+and probability mass functions, see \citet{Ulrich1995twopart}.
+
+Following a standard ZINB framework
 \citep{ucla_zinb, long1997regression}, the model is estimated in two
 parts. The selection margin models the log-odds of being a structural
 non-innovator, and the intensity margin models the expected breakthrough
 count \(\mu_{it}\) via a log-link function, incorporating total
 patenting as an exposure offset.
 
-Breakthrough innovation exhibits two defining features: extreme
-overdispersion and excess zeros. The variance of breakthrough counts
-substantially exceeds the mean, invalidating a Poisson assumption, and a
-large fraction of country-year observations record zero breakthroughs.
-These zeros likely reflect a mixture of structural incapacity and
-stochastic variation.
-
 \subsection{Selection Equation}\label{selection-equation}
 
-The zero-inflation component, which models the log-odds \(\pi_{it}\) of
-a country being a ``structural non-innovator'' in a given year, is
+The zero-inflated component, which models the log-odds \(\pi_{it}\) of a
+country being a ``structural non-innovator'' in a given year, is
 specified using a logit link function:
 \begin{equation}\ln \left( \frac{\pi_{it}}{1 - \pi_{it}} \right) = \gamma_0 + \gamma_1 \ln(\text{GDP per capita}_{it})\tag{2}\label{eq:selection}
 \end{equation} where \(\pi_{it}\) denotes the probability that country
@@ -553,11 +565,11 @@ Measures}\label{patent-data-and-innovation-measures}
 
 The core innovation measures in this thesis are derived from the OECD
 Patent Quality Indicators database \citep{squicciarini2013measuring}.
-The dataset provides patent-level indicators constructed from the EPO's
+The dataset provides patent-level indicators derived from the EPO's
 PATSTAT, harmonized across countries and technology classes. This
-analysis uses the \emph{Patent Quality Index 4}, constructed as an
-unweighted average of a patent's forward citations (5 years), Family
-Size, Claims, and Generality.
+analysis uses the \emph{Patent Quality Index 4}, an unweighted average
+of a patent's forward citations (5 years), Family Size, Claims, and
+Generality.
 
 The primary dependent variable in the baseline analysis is average
 patent quality at the country-year level, constructed as the mean of the
@@ -640,7 +652,8 @@ controls:
 
 These variables are commonly used in cross-country innovation and growth
 regressions and account for factors that may jointly influence financial
-development and innovative performance \citep{worldbank_wdi}.
+development and innovative performance. All control variables are
+sourced from The World Bank's WDI database \citep{worldbank_wdi}.
 
 \subsection{Descriptive Patterns}\label{descriptive-patterns}
 
@@ -660,58 +673,42 @@ are provided in Table \ref{tbl-summary-stats} in the Appendix.
 \subsection{Market-Based Finance and Patent
 Quality}\label{market-based-finance-and-patent-quality}
 
-I begin with the baseline two-way fixed effects estimates linking
-market-based financial development, intellectual property protection,
-and patent quality. Table \ref{tbl-market-quality} reports results for
-the specification in equation \eqref{eq:baseline}, incrementally
-introducing controls while retaining country and year fixed effects.
+Table \ref{tbl-market-quality} reports five specifications corresponding
+to equation \eqref{eq:baseline}. Column (1) holds all covariates
+constant, while Columns (2) through (5) incrementally add controls;
+country and year fixed effects are retained across all models. The
+discussion focuses primarily Columns (3) and (4), which balance sample
+size and controls. \input{tables/twfe_market_quality.tex}
 
-\input{tables/twfe_market_quality.tex}
+In Column (3), the coefficient on IPR strength (mean-centered Park
+Index) is positive and statistically significant, while the interaction
+between log market capitalization and IPR is negative and significant at
+the 1\% level. Because IPR is centered, its coefficient represents the
+marginal effect of stronger patent protection evaluated at the sample
+mean level of financial depth. The estimated turning point is given by:
+\[\widehat{FD}^* = -\frac{\beta_{IPR}}{\beta_{\text{Interaction}}}\]
+Using Column (3) coefficients, the threshold occurs at approximately
+\(\widehat{FD}^* = 3.02\) in log market capitalization. This value lies
+below the sample mean of financial depth, indicating that the marginal
+effect of stronger patent protection becomes negative within the
+observed range of the data.
 
-Across specifications, stock market depth is positively associated with
-average patent quality. In column (4), the coefficient on log market
-capitalization remains positive and statistically significant. Evaluated
-at the sample mean of IPR strength, a one standard deviation increase in
-market depth (approximately one log point) is associated with roughly a
-one-point increase in the patent quality index. This magnitude is
-economically meaningful given the relatively tight distribution of
-average quality across advanced economies.
-
-Stronger patent protection, measured by the Park Index, is also
-positively associated with patent quality when evaluated at average
-levels of financial development. However, the central result concerns
-the interaction between market finance and IPR strength. The coefficient
-on the interaction term is negative and statistically significant across
-specifications. Because \(\beta_3 < 0\), the marginal effect of stronger
-patent protection declines as market depth increases. Formally,
-
-\[
-\frac{\partial Y_{it}}{\partial IPR_{it}} = \beta_2 + \beta_3 FD_{it}
-\]
-
-The marginal effect of stronger IPR on patent quality declines with
-financial market depth. The implied turning point occurs at
-\(\ln(\text{Market Finance}_{it})≈ 3.66\). Given that the sample mean is
-approximately 3.76, this threshold lies very close to the center of the
-observed distribution rather than in the extreme tail. In other words,
-the reversal occurs at typical levels of financial development in
-advanced economies. For countries below this threshold, stronger patent
-protection is associated with higher average patent quality. For
-countries above it, stronger patent protection is associated with lower
-average quality. The interaction remains robust to incremental controls,
-and a joint Wald test rejects the null that the financial depth and
-interaction terms are jointly zero (p = 0.0032).
-
-Importantly, these estimates reflect within-country changes over time.
-The results therefore capture how shifts in financial structure and
-patent protection within a country are associated with changes in the
-quality of its innovative output. The relatively modest within \(R^2\)
-values are typical in fixed-effects panel models, which rely exclusively
-on within-country variation rather than cross-sectional differences.
+Column (4), reinforces this pattern. The interaction term remains
+negative and highly significant (\(\widehat{FD}^* = 3.66\)), while the
+direct coefficient on market capitalization remains positive and gains
+significance. Evaluated at the sample mean, stronger IPR increases
+patent quality only in financially shallow systems. As market depth
+rises, the marginal effect declines and becomes negative for financially
+advanced economies. A joint Wald test in Column (4) rejects the null
+that financial depth and the interaction term are jointly zero (p =
+0.0032), confirming that the relationship is not driven by isolated
+coefficient instability.
 
 Figure~\ref{fig-int-quality} illustrates the interaction graphically,
-plotting predicted patent quality across levels of IPR at low and high
-levels of market development.
+showing the declining marginal effect of IPR across increasing levels of
+financial development. The turning point reflects the estimates in
+Column (4), given the economies present in the sample {[}I should add
+cross-ref to sample countries in appdx{]}.
 
 \begin{figure}
 
@@ -726,20 +723,38 @@ Quality at Different IPR Levels}
 
 \end{figure}%
 
-Together, these results suggest that equity market development and
-patent protection do not operate independently. In financially
-constrained environments, stronger IPR may improve access to external
-finance and support higher-quality innovation. In financially mature
-systems, however, stronger patent protection appears to shift inventive
-activity toward lower-marginal-value patents, reducing average quality
-even as overall patenting remains high. The effect is compositional
-rather than purely scale-driven.
+Economically, the magnitudes are meaningful. In Column (4), a one-unit
+increase in the Park Index raises patent quality by roughly 4.3 points
+(on a 0-100 scale) when evaluated at the sample mean of financial depth.
+However, because the interaction coefficient is -1.168, this marginal
+effect declines as markets deepen. At sufficiently high levels of market
+capitalization, the net effect of stronger patent protection becomes
+negative.
+
+The direct effect of market depth itself is modest, but fairly stable.
+Because market capitalization is log-transformed, a 10\% increase in
+market capitalization corresponds to approximately a 0.10 change in the
+log term. In Column (4), this implies that a 10\% increase in market
+depth raises patent quality by roughly 0.1 points at average IPR.
+
+Across all specifications, market-based financial development shows a
+stable, positive association with patent quality, becoming significant
+at the 5\% level in Column (4). IPR strength consistently shows a stable
+and positive effect on quality, with all specifications reaching some
+level of significance. Crucially, the interaction term remains negative,
+stable, and highly significant across all specifications. This robust
+finding confirms that while patent protection may support quality in
+financially shallow systems, it exhibits diminishing, and ultimately
+negative marginal returns as equity markets deepen.
 
 \subsection{Bank-Based Finance and Patent
 Quality}\label{bank-based-finance-and-patent-quality}
 
-Table \ref{tbl-bank-quality} presents analogous estimates replacing
-market capitalization with bank credit.
+Table \ref{tbl-bank-quality} reports the five TWFE specifiations
+replacing market capitalization with bank credit. As in the market
+regressions, country and year fixed effects are included throughout. The
+bank--quality results do not display the stability or economic
+credibility observed in the market models.
 
 \input{tables/twfe_bank_quality.tex}
 
@@ -748,26 +763,20 @@ finance and patent quality is weaker and less stable. Coefficients on
 bank credit vary across specifications and are not consistently
 distinguishable from zero. The interaction between bank finance and IPR
 strength does not display the same sign stability observed for
-market-based finance, and economic magnitudes are small relative to
-those estimated for equity markets.
+market-based finance, and economic magnitudes and significance are
+unstable, relative to those estimated for equity markets.
 
-These patterns suggest that bank-based financial development does not
-exhibit a systematic association with shifts in average innovation
-quality. One interpretation is consistent with theories of relationship
-lending and collateral-based finance: banks may be well-suited to
-funding incremental innovation with predictable returns, but less
-effective at channeling resources toward frontier projects that raise
-the upper tail of the quality distribution. While banks play a critical
-role in overall economic activity, the evidence here does not indicate
-that deeper banking systems are strongly associated with improvements in
-patent quality.
+While banks play a critical role in overall economic activity, the
+evidence here does not indicate that deeper banking systems are strongly
+associated with improvements in patent quality.
 
 \subsection{Venture Capital and Patent
 Quality}\label{venture-capital-and-patent-quality}
 
 Estimates using venture capital investment as the financial channel are
-reported in Table \ref{tbl-vc-quality} (see Appendix). The sample size
-is smaller due to data availability constraints.
+reported in Table \ref{tbl-vc-quality} (see Appendix). Relative to the
+market and bank regressions, sample size declines meaningfully due to
+data availability
 
 The coefficients on venture capital and its interaction with IPR are not
 consistently statistically significant and exhibit sensitivity to
@@ -783,12 +792,23 @@ protection.
 
 \subsection{Innovation Quantity}\label{innovation-quantity}
 
-To distinguish composition from scale, I next examine patent quantity
-per researcher as the dependent variable. Tables
-\ref{tbl-market-quantity} and \ref{tbl-bank-quantity} report the
-corresponding TWFE estimates.
+To distinguish quality from scale, I next examine patent quantity per
+researcher as the dependent variable. Tables \ref{tbl-market-quantity},
+\ref{tbl-bank-quantity}, and \ref{tbl-vc-quantity} report the
+corresponding TWFE estimates. Because the dependent variable is logged,
+coefficients can be interpreted as elasticities. The most meaningful
+results concern Table \ref{tbl-bank-quantity}
 
-\input{tables/twfe_market_quantity.tex}
+\input{tables/twfe_bank_quantity.tex}
+
+\label{tbl-bank-quantity}
+
+For bank-based finance, all specifications show a positive interaction
+between bank credit and IPR for patent quantity. This pattern contrasts
+with the quality results and suggests that stronger patent protection in
+deeper bank-oriented systems may expand patenting activity along the
+extensive margin without necessarily increasing average technological
+value.
 
 For market-based finance, neither the main effect nor the interaction
 with IPR displays the same consistent and economically meaningful
@@ -796,15 +816,9 @@ pattern observed for patent quality. The interaction between equity
 market depth and patent protection that appears prominently in the
 quality regressions does not replicate for patent quantity.
 
-For bank-based finance, some specifications show a positive interaction
-between bank credit and IPR for patent quantity. This pattern contrasts
-with the quality results and suggests that stronger patent protection in
-bank-oriented systems may expand patenting activity along the extensive
-margin without necessarily increasing average technological value.
-
 Venture capital exhibits a negative association with patent quantity in
-some specifications, though these estimates are sensitive to controls
-and sample size and should be interpreted cautiously.
+some specifications, though these estimates are sensitive to controls,
+as well as sample size, and should therefore be interpreted cautiously.
 
 The key implication is that financial structure and patent protection
 affect different dimensions of innovation differently. The strongest and
@@ -812,17 +826,33 @@ most stable interaction appears for patent quality rather than patent
 quantity, supporting a compositional interpretation of innovation rather
 than a purely scale-based one.
 
-Figure~\ref{fig-qual-quant} illustrates the weak relationship between
-patent quantity and average quality across country-years, reinforcing
-the importance of distinguishing between these two margins.
+Figure~\ref{fig-qual-quant} illustrates the relationship between patent
+quantity and average quality across country-years, reinforcing the
+importance of distinguishing between these two margins.
 
 \subsection{Frontier Innovation: Breakthrough
 Patents}\label{frontier-innovation-breakthrough-patents}
 
-While average quality captures shifts in the distribution of innovation,
-breakthrough patents represent the upper tail of technological
-significance. Breakthrough counts exhibit substantial overdispersion and
-excess zeros, motivating the ZINB framework described in Section 3.
+Tables \ref{tbl-zinb-market}, \ref{tbl-zinb-bank}, and \ref{tbl-zinb-vc}
+present ZINB models of breakthrough patents. These models separate the
+innovation process into (i) a selection equation governing structural
+non-participation and (ii) an intensity equation governing breakthrough
+production conditional on participation. Intensity coefficients are
+interpreted as log-rate effects on expected breakthroughs per patent
+(with exponentiated values indicating percentage changes), while
+selection coefficients reflect log-odds effects on the probability of
+structural non-participation.
+
+Across all specifications and financial channels, the dispersion
+parameter (log theta) is statistically significant, confirming
+substantial overdispersion and justifying the use of the negative
+binomial framework.
+
+Because these models do not include country and year fixed effects, they
+are interpreted as complementary rather than causal within-country
+estimates. Still, the results mirror the central finding: financial and
+legal regimes shape innovation across the quality spectrum, including
+the upper tail of breakthrough activity.
 
 \begin{table}[H]
 \centering
@@ -831,41 +861,47 @@ excess zeros, motivating the ZINB framework described in Section 3.
 \input{tables/zinb_market.tex}
 \end{table}
 
-Table \ref{tbl-zinb-market} presents the ZINB estimates decomposing
-breakthrough innovation into a selection margin (structural
-non-participation) and an intensity margin (breakthrough production
-conditional on participation).
+In the market specification, the selection equation shows that higher
+GDP per capita reduces the probability of structural exclusion from
+frontier innovation. As controls are added and the sample narrows,
+statistical significance weakens, though signs and magnitude remain
+stable.
 
-In the negative binomial (intensity) equation, the coefficient on IPR
-strength is negative in several specifications. Interpreted in
-percentage terms, a one-unit increase in IPR strength corresponds to a
-reduction in expected breakthrough intensity, holding other variables
-constant. Exponentiating the coefficient implies that stronger patent
-protection is associated with a meaningful decline in frontier
-breakthrough output per patent: a one-unit increase in IPR reduces
-breakthrough intensity by \textasciitilde37\%. This result is consistent
-with the possibility that stronger formal protection can encourage
-strategic patenting or rent-seeking behavior rather than genuine
-technological advances.
+Because the intensity equation conditions on countries already capable
+of producing frontier innovation, these results effectively reflect the
+financially advanced segment of the TWFE interaction curve. The
+consistently negative IPR coefficient therefore reinforces the earlier
+finding that in financially mature systems, stronger patent protection
+is associated with lower-quality innovation outcomes. While the
+interaction between market depth and IPR may be positive in certain
+specifications, this may reflect attenuation rather than reversal. The
+net marginal effect of IPR remains negative at higher levels of
+financial depth.
 
-The interaction between market development and IPR in the intensity
-equation further suggests that the relationship between patent
-protection and frontier innovation varies with financial depth,
-consistent with the mechanism identified in the TWFE quality
-regressions.
+The bank-based ZINB specification (see Table \ref{tbl-zinb-bank})
+exhibits greater instability. While IPR remains negative and
+statistically significant in the intensity equation across
+specifications, other coefficients show sensitivity to controls and
+sample size. Although the negative IPR coefficient aligns directionally
+with the other findings, coefficient instability suggests caution in
+drawing strong conclusions from this table.
 
-The selection equation shows that higher income per capita significantly
-reduces the probability of structural non-participation in frontier
-innovation. Economically, this implies that richer economies are
-substantially less likely to be in a regime where breakthrough
-innovation is absent, consistent with absorptive capacity, research
-infrastructure, and human capital explanations.
+Despite smaller samples, the venture capital models (see Table
+\ref{tbl-zinb-bank}) yields a clearer pattern, similar to the market
+results. The selection equation consistently indicates that higher GDP
+per capita reduces structural exclusion from frontier innovation.
 
-Because these ZINB models do not include country and year fixed effects,
-they are interpreted as complementary rather than causal within-country
-estimates. Still, they complement the central finding: financial and
-legal regimes shape innovation across the quality spectrum, including
-the upper tail of breakthrough activity.
+In the intensity equation, IPR strength is negative and statistically
+significant across specifications. The interaction between VC depth and
+IPR is positive across columns but does not overturn the negative
+baseline effect of IPR.
+
+As with the market specification, because the intensity equation
+conditions on frontier-capable economies, these results represent the
+advanced portion of the TWFE interaction curve. The consistently
+negative IPR coefficient reinforces the central finding: in financially
+mature systems, stronger patent protection is associated with reduced
+breakthrough intensity per patent.
 
 \section{Summary and Final Thoughts}\label{sec-conc}
 
@@ -905,9 +941,7 @@ Y_{it} = \beta_0 + \beta_1 FD_{it} + \beta_2 IPR_{it} + \beta_3 (FD_{it} \times 
 
 \input{tables/twfe_vc_quality.tex}
 
-\input{tables/twfe_bank_quantity.tex}
-
-\label{tbl-bank-quantity}
+\input{tables/twfe_market_quantity.tex}
 
 \input{tables/twfe_vc_quantity.tex}
 
