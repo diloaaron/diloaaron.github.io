@@ -1,28 +1,30 @@
 
-\begin{table}[H] \centering 
+% Table created by stargazer v.5.2.3 by Marek Hlavac, Social Policy Institute. E-mail: marek.hlavac at gmail.com
+% Date and time: Fri, Feb 27, 2026 - 16:02:46
+\begin{table}[!htbp] \centering 
   \caption{Bank Finance and Patent Quality} 
-  \label{tbl-bank-quality} 
+  \label{} 
 \begin{tabular}{@{\extracolsep{5pt}}lccccc} 
 \\[-1.8ex]\hline 
 \hline \\[-1.8ex] 
- & \multicolumn{5}{c}{\textit{Dependent variable:}} \\ 
+ & \multicolumn{5}{c}{Dependent Variable: Patent Quality (0–100)} \\ 
 \cline{2-6} 
-\\[-1.8ex] & \multicolumn{5}{c}{Patent Quality} \\ 
+\\[-1.8ex] & \multicolumn{5}{c}{quality\_index\_100} \\ 
 \\[-1.8ex] & (1) & (2) & (3) & (4) & (5)\\ 
 \hline \\[-1.8ex] 
- Bank Credit & $-$1.162$^{*}$ & $-$0.989 & $-$0.910 & 0.213 & $-$0.397 \\ 
+ ln\_bank & $-$1.162$^{*}$ & $-$0.989 & $-$0.910 & 0.213 & $-$0.397 \\ 
   & (0.705) & (0.752) & (0.710) & (0.766) & (0.884) \\ 
-  IPR Strength & $-$1.297 & $-$1.065 & $-$1.907 & 5.569$^{**}$ & 3.667 \\ 
+  ipr\_c & $-$1.297 & $-$1.065 & $-$1.907 & 5.569$^{**}$ & 3.667 \\ 
   & (2.874) & (2.993) & (3.376) & (2.283) & (2.758) \\ 
-  Bank Credit $\times$ IPR & 0.481 & 0.446 & 0.648 & $-$1.236$^{**}$ & $-$0.722 \\ 
+  ln\_bank\_x\_ipr & 0.481 & 0.446 & 0.648 & $-$1.236$^{**}$ & $-$0.722 \\ 
   & (0.888) & (0.834) & (0.915) & (0.538) & (0.698) \\ 
-  GDP per Capita (log) &  & $-$0.693 & $-$0.988 & $-$1.668 & $-$1.655 \\ 
+  ln\_gdp\_pc &  & $-$0.693 & $-$0.988 & $-$1.668 & $-$1.655 \\ 
   &  & (2.532) & (2.356) & (1.089) & (1.021) \\ 
-  Trade Openness &  &  & 3.016 & $-$0.447 & $-$1.335 \\ 
+  ln\_trade &  &  & 3.016 & $-$0.447 & $-$1.335 \\ 
   &  &  & (1.946) & (1.236) & (1.526) \\ 
-  R\&D Expenditure &  &  &  & 1.487 & 2.405 \\ 
+  ln\_rd &  &  &  & 1.487 & 2.405 \\ 
   &  &  &  & (1.412) & (1.894) \\ 
-  Tertiary Education &  &  &  &  & $-$0.594 \\ 
+  ln\_tertiary &  &  &  &  & $-$0.594 \\ 
   &  &  &  &  & (0.889) \\ 
  \hline \\[-1.8ex] 
 Observations & 1,329 & 1,308 & 1,302 & 920 & 723 \\ 
@@ -30,7 +32,9 @@ R$^{2}$ & 0.010 & 0.008 & 0.019 & 0.017 & 0.012 \\
 Adjusted R$^{2}$ & $-$0.067 & $-$0.069 & $-$0.060 & $-$0.075 & $-$0.111 \\ 
 \hline 
 \hline \\[-1.8ex] 
-\textit{Note:}  & \multicolumn{5}{l}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\ 
- & \multicolumn{5}{l}{Country \& Year FE included. Clustered SE in parentheses.} \\ 
+\textit{Note:}  & \multicolumn{5}{r}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\ 
+ & \multicolumn{5}{r}{Country and year fixed effects included in all models.} \\ 
+ & \multicolumn{5}{r}{Standard errors clustered by country.} \\ 
+ & \multicolumn{5}{r}{* p<0.1; ** p<0.05; *** p<0.01} \\ 
 \end{tabular} 
 \end{table} 

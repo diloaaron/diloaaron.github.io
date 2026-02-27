@@ -37,6 +37,8 @@ self-contained: true
 ---
 [Click here to download/view the Full Thesis (PDF) *note: it is a rough draft*](documents/analysis.pdf)
 
+*this appendix is outdated, reflects previous quantity version and other adjustments*
+
 # Patent Quality Indicators Construction
 This thesis is solely concerned with the `quality_index_4` and `breakthrough` indicators
 ```{python, eval=FALSE}
@@ -262,8 +264,15 @@ df <- df %>%
 fwrite(df, "data/monarch_panel_transformed.csv")
 
 summary(df)
-
 ```
+```{r}
+hist(df$tertiary_enrollment_percent,
+     main = "Histogram of Market Cap (% GDP)",
+     xlab = "Market Cap (% GDP)",
+     col = "lightblue",
+     breaks = 20)
+```
+
 # Baseline Two-Way Fixed Effects (TWFE) Models
 ```{r results='asis', echo=TRUE, eval= TRUE, warning= FALSE, message= FALSE}
 # baseline twfe models
