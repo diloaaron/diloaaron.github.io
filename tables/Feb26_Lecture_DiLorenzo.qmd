@@ -1,0 +1,181 @@
+---
+title: "Bivariate & Time-series Data"
+author: "Aaron DiLorenzo"
+date: "2026-02-26"
+date-format: "MMMM D, YYYY"
+format:
+  html:
+    embed-resources: true
+    code-fold: show
+    code-tools: 
+      source: false
+    df-print: paged
+    theme:
+      light: journal
+      dark: darkly
+    page-layout: full
+    toc: true
+    toc-float: true
+---
+packages
+```{r warning= FALSE, message= FALSE}
+library(tidyverse)
+library(lubridate)
+library(ggExtra)
+```
+
+```{r message= FALSE}
+bangladesh_gw <- read_csv("https://stahlm.github.io/ENS_215/Data/NationalSurveyData_DPHE_BGS_LabData.csv") %>% 
+  drop_na()
+```
+# scatter plot
+```{r}
+fig_1 <- bangladesh_gw %>% 
+  ggplot(aes(x = WELL_DEPTH_m, y = LAT_DEG)) +
+  geom_point(alpha = 0.3, color= '#2C3E50') +
+  theme_classic()+
+  ggtitle('Well depth and Latitude')
+  
+fig_1
+
+hist(bangladesh_gw$WELL_DEPTH_m, 
+     col= '#2C3E50')
+hist(bangladesh_gw$LAT_DEG,
+     col= '#2C3E50')
+```
+```{r}
+fig_2 <- ggMarginal(fig_1, type= 'histogram', fill= '#2C3E50')
+fig_2
+```
+
+```{r}
+fig_3 <- ggMarginal(fig_1, type= 'boxplot', fill= '#2C3E50')
+fig_3
+```
+# hex density plots
+```{r}
+bangladesh_gw %>% 
+  ggplot(aes(x = WELL_DEPTH_m, y = LAT_DEG)) +
+  geom_hex() + 
+  theme_classic()
+
+bangladesh_gw %>% 
+  ggplot(aes(x = WELL_DEPTH_m, y = LAT_DEG)) +
+  geom_hex() + 
+  
+  scale_fill_viridis_c() +
+  
+  theme_classic()
+```
+
+# time series
+```{r message= FALSE}
+flow <- read_csv("https://stahlm.github.io/ENS_215/Data/USGS_streamflow_01351500.csv") %>% 
+  drop_na() %>% 
+  filter(Year >= 1940 & Year < 2025) %>%  # select years 1940 through 2024
+  mutate(Date = make_date(Year, Month, Day)) # create a Date column that has the dates as an R date object
+```
+```{r}
+flow %>% 
+  ggplot(aes(x = Date, y = flow_cfs)) +
+  geom_line() +
+  theme_classic() +
+  labs(title = "USGS Gage 01351500", 
+       y = "Flow (cfs)",
+       x = "")
+```
+```{r}
+flow %>% 
+  ggplot(aes(x = Date, y = flow_cfs)) +
+  geom_line() +
+  theme_classic() +
+  labs(title = "USGS Gage 01351500", 
+       y = "Flow (cfs)",
+       x = "")+
+  scale_y_log10()
+```
+```{r}
+flow %>% 
+  mutate(decade = Year - Year %% 10)
+
+flow %>% 
+  mutate(decade = Year - Year %% 10) %>% 
+  ggplot(aes(x = Date, y = flow_cfs)) +
+  geom_line() +
+  scale_y_log10() +
+  theme_classic() +
+  facet_wrap(~ decade, scales = "free_x")
+
+```
+# raster plot
+```{r}
+midpoint2use <- median(log10(flow$flow_cfs))
+
+flow %>% 
+  mutate(DOY= yday(Date)) %>% 
+  ggplot(aes(x= DOY, y= Year,
+             fill= log10(flow_cfs)
+             )) +
+  geom_tile()+
+  scale_fill_gradient2(low= 'red', mid= 'green', high = 'blue',
+                       midpoint= midpoint2use)+
+  theme_classic()+
+  labs(title= 'Schoharie Creek Flows',
+       y= 'Year',
+       x= 'Day of Year',
+       fill= 'log(flow')
+```
+# seasonal plots
+```{r message= FALSE}
+mauna_loa <- read_csv("https://stahlm.github.io/ENS_215/Data/Mauna_loa_CO2_data.csv", skip = 2)
+
+mauna_loa %>% 
+  filter(Year >= 2020) %>%  #  filter(Year >= 2020) %>% 
+  ggplot(aes(x= Month, y= CO2_ppm, group= Year, color= Year))+
+  geom_line(linewidth= 1)+
+  scale_color_gradient(low= 'blue', high= 'red')+
+  theme_classic()+
+  scale_x_continuous(breaks= seq(1:12))
+
+```
+# cycle plots
+```{r message= FALSE}
+precip_data <- read_csv("https://stahlm.github.io/ENS_215/Data/noaa_cag_state_precipitation.csv")
+
+precip_data <- precip_data %>% 
+  mutate(Precip_inches = Value)
+```
+```{r}
+precip_data %>% 
+  filter(YEAR >=1980,
+         STATE== 'California') %>% 
+  mutate(DATE= ymd(paste(YEAR, MONTH, 15))) %>% 
+  ggplot(aes(x=DATE, y= Precip_inches))+
+  geom_line()+
+  geom_point()+
+  theme_classic() +
+    geom_smooth(
+    method = "loess",
+    se = FALSE,
+    color = "#2C3E50",
+    linewidth = 1.1
+  ) 
+
+```
+
+```{r}
+precip_data %>% 
+  filter(YEAR >= 1980,
+         YEAR < 2025,
+         STATE== 'California'
+         ) %>% 
+  ggplot(aes(x= YEAR, y= Precip_inches))+
+  geom_point(alpha= .4)+
+  geom_smooth(method= 'lm', se= FALSE, color = "#2C3E99")+
+  facet_wrap(~MONTH, ncol= 12)+
+  theme_classic()+
+  theme(axis.text.x= element_blank())
+  
+  
+```
+

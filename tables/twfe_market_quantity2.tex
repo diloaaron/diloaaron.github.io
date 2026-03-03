@@ -1,0 +1,35 @@
+\begin{table}[H] \centering 
+  \caption{Market Finance and Patent Quantity} 
+  \label{tbl-maket-quantity2} 
+\begin{tabular}{@{\extracolsep{5pt}}lccccc} 
+\\[-1.8ex]\hline 
+\hline \\[-1.8ex] 
+ & \multicolumn{5}{c}{\textit{Dependent variable:}} \\ 
+\cline{2-6} 
+\\[-1.8ex] & \multicolumn{5}{c}{$\ln(\text{Patents per Capita})$} \\ 
+\\[-1.8ex] & (1) & (2) & (3) & (4) & (5)\\ 
+\hline \\[-1.8ex] 
+  $\ln(\text{Market Cap}/GDP)^{c}$ & 0.095 & $-$0.070 & $-$0.085 & $-$0.135$^{*}$ & 0.011 \\ 
+  & (0.096) & (0.081) & (0.079) & (0.081) & (0.110) \\ 
+  $\text{IPR Strength}^{c}$ & 0.491$^{***}$ & 0.158 & 0.153 & 0.109 & 0.086 \\ 
+  & (0.177) & (0.124) & (0.121) & (0.118) & (0.161) \\ 
+  $\text{Market}^{c} \times \text{IPR}^{c}$ & 0.194$^{**}$ & 0.132$^{**}$ & 0.133$^{**}$ & 0.180$^{***}$ & 0.174$^{**}$ \\ 
+  & (0.079) & (0.062) & (0.062) & (0.046) & (0.069) \\ 
+  $\ln(\text{GDP per Capita})$ &  & 2.419$^{***}$ & 2.460$^{***}$ & 1.360$^{***}$ & 0.771$^{**}$ \\ 
+  &  & (0.545) & (0.550) & (0.491) & (0.374) \\ 
+  $\ln(\text{Trade Openness})$ &  &  & 0.208 & $-$0.021 & $-$0.312 \\ 
+  &  &  & (0.216) & (0.238) & (0.267) \\ 
+  $\ln(\text{R\&D Expenditure})$ &  &  &  & 1.053$^{*}$ & 0.756$^{*}$ \\ 
+  &  &  &  & (0.606) & (0.458) \\ 
+  $\ln(\text{Tertiary Education})$ &  &  &  &  & 0.929$^{***}$ \\ 
+  &  &  &  &  & (0.249) \\ 
+ \hline \\[-1.8ex] 
+Observations & 1,334 & 1,329 & 1,329 & 841 & 598 \\ 
+R$^{2}$ & 0.096 & 0.355 & 0.357 & 0.210 & 0.385 \\ 
+\hline 
+\hline \\[-1.8ex] 
+\textit{Note:}  & \multicolumn{5}{l}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\ 
+ & \multicolumn{5}{l}{Country \& Year FE included. Clustered SE in parentheses.} \\ 
+ & \multicolumn{5}{l}{Continuous variables log-transformed + 1; FD, IPR mean-centered}\\
+\end{tabular} 
+\end{table}

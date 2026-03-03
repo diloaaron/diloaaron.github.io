@@ -1,9 +1,1342 @@
 ---
-title: Senior Thesis
+title: "Financial Structure, Intellectual Property Rights, and the Composition of Innovation"
+subtitle: "Replication Appendix"
+author: Aaron DiLorenzo
+date: last-modified
+date-format: "MMMM D, YYYY"
+
+format:
+  html:
+    theme: default
+    page-layout: article
+    toc: true
+    toc-location: right
+    number-sections: true
+    code-fold: true
+    code-summary: "Show code"
+    code-line-numbers: true
+    code-copy: true
+    code-overflow: scroll
+
+execute:
+  echo: true
+  eval: true
+  warning: false
+  message: true
+  cache: true
+  freeze: auto
 ---
 
-## Financial Structure, Intellectual Property Rights, and the Composition of Innovation
-
-Brief description of your thesis here.
+This page contains the full methodological workflow for my thesis. It begins with the construction of aggregate Patent Quality Indicators (which are too large to be added as dependencies to this page, but that data can be requested from the authors. For replication, just adjust the filepaths). Next, I merge all individual datasets, and apply transformations as needed. I run all the models, generate all tables, and all the figures that appear in the actual write-up.
 
 [Download Full Paper](documents/analysis.pdf)
+
+
+# Patent Quality Indicators Construction
+This thesis is solely concerned with the `quality_index_4` and `breakthrough` indicators
+```{python, eval=FALSE}
+"""
+OECD Patent Quality Indicators
+normalization, winsorization, and aggregation procedures
+"""
+
+import polars as pl
+import os
+
+OUTPUT_DIR = ""
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+# for reproducing, change the file paths to correctly the downloaded data, 
+# they're too large for me to make this self running
+INDICATORS_FILE = "Data/202502_OECD_PATENT_QUALITY_EPO_INDIC.txt"
+COHORTS_FILE = "Data/202502_OECD_PATENT_QUALITY_EPO_INDIC_COHORT.txt"
+HAN_PATENTS_FILE = "Data/202502_HAN_PATENTS.txt"
+HARM_NAMES_FILE = "Data/202502_HARM_NAMES.txt"
+
+FINAL_PATENT_FILE = "OECD_patent_quality_final.parquet"
+FINAL_COUNTRY_FILE = "OECD_country_year_final.csv"
+
+WINSOR_VARS = ["family_size", "grant_lag", "bwd_cits", "npl_cits", "claims", "fwd_cits5", "fwd_cits7"]
+COMPOSITE_VARS = ["generality", "originality", "radicalness", "quality_index_4", "quality_index_6"]
+
+# load the data
+
+def load_data():
+
+    cohorts = pl.read_csv(COHORTS_FILE, separator="|", infer_schema_length=0)
+    cohorts = cohorts.rename({c: c.strip() for c in cohorts.columns})
+
+    indicators = pl.read_csv(INDICATORS_FILE, separator="|", infer_schema_length=10000)
+    indicators = indicators.rename({c: c.strip() for c in indicators.columns})
+
+    han = pl.read_csv(HAN_PATENTS_FILE, separator="|")
+    han = han.rename({c: c.strip() for c in han.columns})
+    han = han.rename({"Appln_id": "appln_id"})
+
+    harm = pl.read_csv(HARM_NAMES_FILE, separator="|")
+    harm = harm.rename({c: c.strip() for c in harm.columns})
+    harm = harm.select(["HARM_ID", "Person_ctry_code"])
+
+    han = han.join(harm, on="HARM_ID", how="left")
+
+    return cohorts, indicators, han
+
+# main function
+
+def main():
+
+    cohorts, indicators, han = load_data()
+
+    merged = indicators.join(han, on="appln_id", how="left")
+
+    # ensure breakthrough is binary
+    if "breakthrough" in merged.columns:
+        merged = merged.with_columns(
+            pl.col("breakthrough").fill_null(0).cast(pl.Int8)
+        )
+
+    # aggregation to country/year
+
+    agg_exprs = []
+
+    # normalized indicators
+    norm_cols = [c for c in merged.columns if c.endswith("_norm")]
+    for c in norm_cols:
+        agg_exprs.append(pl.mean(c).alias(f"avg_{c}"))
+
+    # mean for composite indicator
+    for c in COMPOSITE_VARS:
+        if c in merged.columns:
+            agg_exprs.append(pl.mean(c).alias(f"avg_{c}"))
+
+    # breakthrough counts
+    agg_exprs.extend([
+        pl.sum("breakthrough").alias("breakthrough_count"),
+        pl.count("appln_id").alias("patent_count"),
+        (pl.sum("breakthrough") / pl.count("appln_id")).alias("pct_breakthrough")
+    ])
+
+    country_agg = (
+        merged
+        .filter(pl.col("Person_ctry_code").is_not_null())
+        .group_by(["Person_ctry_code", "filing"])
+        .agg(agg_exprs)
+        .rename({"Person_ctry_code": "iso3c", "filing": "year"})
+        .sort(["iso3c", "year"])
+    )
+
+    country_agg.write_csv(
+        os.path.join(OUTPUT_DIR, FINAL_COUNTRY_FILE)
+    )
+
+    merged.write_parquet(
+        os.path.join(OUTPUT_DIR, FINAL_PATENT_FILE)
+    )
+
+if __name__ == "__main__":
+    main()
+```
+
+# Data Construction and Variable Assembly
+```{r eval= TRUE, echo= TRUE, warning= FALSE, message= FALSE}
+# data construction script
+# pivoting datasets, interpolating the Park index, and adding iso3c keys not included in this script
+rm(list = ls())
+
+library(data.table)
+library(dplyr)
+
+options(dplyr.summarise.inform = FALSE)
+
+# load individual datasets
+pqi      <- fread("data/OECD_country_year_final.csv")
+fd       <- fread("data/FD_Final.csv")
+vc       <- fread("data/VC_final.csv")
+counts   <- fread("data/counts_res_final.csv")
+controls <- fread("data/Controls_final.csv")
+park     <- fread("data/Park_final.csv")
+
+# clean up/standardize NAs
+
+clean_missing <- function(df) {
+  df[df == ".."] <- NA
+  df[df == "NA"] <- NA
+  df[df == ""]   <- NA
+  return(df)
+}
+
+pqi      <- clean_missing(pqi)
+fd       <- clean_missing(fd)
+vc       <- clean_missing(vc)
+counts   <- clean_missing(counts)
+controls <- clean_missing(controls)
+park     <- clean_missing(park)
+
+# fix duplicate researchers col
+counts <- counts %>%
+  select(-researchers_per_million)
+
+# merge datasets
+df <- pqi %>%
+  left_join(park %>% select(iso3c, year, ipp_index_IP_transformed),
+            by = c("iso3c", "year")) %>%
+  left_join(fd,       by = c("iso3c", "year")) %>%
+  left_join(vc,       by = c("iso3c", "year")) %>%
+  left_join(counts,   by = c("iso3c", "year")) %>%
+  left_join(controls, by = c("iso3c", "year"))
+
+# ensure numeric
+numeric_vars <- c(
+  "researchers_per_million",
+  "population_total",
+  "gdp_pc_const2015usd",
+  "bank_credit_gdp",
+  "market_cap_gdp",
+  "VC_investment",
+  "trade_percent_gdp",
+  "rd_expenditure_percent_gdp",
+  "tertiary_enrollment_percent",
+  "patent_applications_residents",
+  "breakthrough_count",
+  "patent_count",
+  "ipp_index_IP_transformed"
+)
+
+for (v in numeric_vars) {
+  if (v %in% names(df)) {
+    df[[v]] <- as.numeric(df[[v]])
+  }
+}
+
+# variable construction
+df <- df %>%
+  mutate(
+    # researchers total
+    researchers_total =
+      researchers_per_million * (population_total / 1e6),
+    
+    # Patents per 1000 researchers
+    patents_per_1000_researchers =
+      (patent_applications_residents / researchers_total) * 1000,
+    
+    patents_per_1000_researchers =
+      ifelse(
+        is.infinite(patents_per_1000_researchers) |
+        patents_per_1000_researchers < 0,
+        NA,
+        patents_per_1000_researchers
+      ),
+    
+    # scale quality index 4
+    quality_index_100 = avg_quality_index_4 * 100,
+    
+    # VC scaling so it matches
+    VC_investment_pct = VC_investment * 100,
+    
+    # Log transforms
+    ln_patents   = log(patents_per_1000_researchers + 1),
+    ln_gdp_pc    = log(gdp_pc_const2015usd + 1),
+    ln_bank      = log(bank_credit_gdp + 1),
+    ln_market    = log(market_cap_gdp + 1),
+    ln_vc        = log(VC_investment_pct + 1),
+    ln_trade     = log(trade_percent_gdp + 1),
+    ln_rd        = log(rd_expenditure_percent_gdp + 1),
+    ln_tertiary  = log(tertiary_enrollment_percent + 1),
+    
+    # mean-center IPR
+    ipr_c =
+      ipp_index_IP_transformed -
+      mean(ipp_index_IP_transformed, na.rm = TRUE),
+    
+    # interaction terms
+    ln_bank_x_ipr   = ln_bank   * ipr_c,
+    ln_market_x_ipr = ln_market * ipr_c,
+    ln_vc_x_ipr     = ln_vc     * ipr_c
+  )
+
+# save final panel
+fwrite(df, "data/monarch_panel_transformed.csv")
+
+summary(df)
+```
+```{r}
+hist(df$tertiary_enrollment_percent,
+     main = "Histogram of Market Cap (% GDP)",
+     xlab = "Market Cap (% GDP)",
+     col = "lightblue",
+     breaks = 20)
+```
+
+# Baseline Two-Way Fixed Effects (TWFE) Models
+```{r results='asis', echo=TRUE, eval= TRUE, warning= FALSE, message= FALSE}
+# baseline twfe models
+
+rm(list = ls())
+
+library(data.table)
+library(dplyr)
+library(plm)
+library(lmtest)
+library(sandwich)
+library(stargazer)
+
+options(dplyr.summarise.inform = FALSE)
+
+# load data
+
+df <- fread("data/monarch_panel_transformed.csv")
+
+
+if (!dir.exists("tables")) {
+  dir.create("tables")
+}
+
+# clustered se
+
+cluster_se <- function(model) {
+  sqrt(diag(vcovHC(model, type = "HC1", cluster = "group")))
+}
+
+# function
+
+run_twfe_incremental <- function(depvar, fd, fd_x_ipr, outfile, title) {
+
+# maximize samples by finance type
+
+  base <- df %>%
+    filter(
+      !is.na(.data[[depvar]]),
+      !is.na(.data[[fd]]),
+      !is.na(ipr_c)
+    )
+
+  panel <- pdata.frame(base, index = c("iso3c", "year"))
+# specifications
+
+  f1 <- as.formula(paste(depvar, "~", fd, "+ ipr_c +", fd_x_ipr))
+  f2 <- update(f1, . ~ . + ln_gdp_pc)
+  f3 <- update(f2, . ~ . + ln_trade)
+  f4 <- update(f3, . ~ . + ln_rd)
+  f5 <- update(f4, . ~ . + ln_tertiary)
+
+  m1 <- plm(f1, data = panel, model = "within", effect = "twoways")
+  m2 <- plm(f2, data = panel, model = "within", effect = "twoways")
+  m3 <- plm(f3, data = panel, model = "within", effect = "twoways")
+  m4 <- plm(f4, data = panel, model = "within", effect = "twoways")
+  m5 <- plm(f5, data = panel, model = "within", effect = "twoways")
+  
+  html_table <- capture.output(
+  stargazer(
+    m1, m2, m3, m4, m5,
+    type = "html",
+    title = title,
+    dep.var.caption = ifelse(
+      depvar == "quality_index_100",
+      "Dependent Variable: Patent Quality (0–100)",
+      "Dependent Variable: ln(Patents per 1,000 Researchers)"
+    ),
+    se = list(
+      cluster_se(m1),
+      cluster_se(m2),
+      cluster_se(m3),
+      cluster_se(m4),
+      cluster_se(m5)
+    ),
+    omit.stat = c("ser", "f"),
+    notes = c(
+      "Country and year fixed effects included in all models.",
+      "Standard errors clustered by country.",
+      "* p<0.1; ** p<0.05; *** p<0.01"
+    ),
+    no.space = TRUE
+  )
+)
+
+cat(paste(html_table, collapse = "\n"))
+
+
+# latex tables
+  stargazer(
+    m1, m2, m3, m4, m5,
+    type = "latex",
+    out  = outfile,
+    title = title,
+    dep.var.caption = ifelse(
+      depvar == "quality_index_100",
+      "Dependent Variable: Patent Quality (0–100)",
+      "Dependent Variable: ln(Patents per 1,000 Researchers)"
+    ),
+    se = list(
+      cluster_se(m1),
+      cluster_se(m2),
+      cluster_se(m3),
+      cluster_se(m4),
+      cluster_se(m5)
+    ),
+    omit.stat = c("ser", "f"),
+    notes = c(
+      "Country and year fixed effects included in all models.",
+      "Standard errors clustered by country.",
+      "* p<0.1; ** p<0.05; *** p<0.01"
+    ),
+    no.space = TRUE
+  )
+
+  return(list(m1, m2, m3, m4, m5))
+}
+
+# quality models
+
+market_quality <- run_twfe_incremental(
+  depvar   = "quality_index_100",
+  fd       = "ln_market",
+  fd_x_ipr = "ln_market_x_ipr",
+  outfile  = "tables/twfe_market_quality.tex",
+  title    = "Market Finance and Patent Quality"
+)
+
+bank_quality <- run_twfe_incremental(
+  depvar   = "quality_index_100",
+  fd       = "ln_bank",
+  fd_x_ipr = "ln_bank_x_ipr",
+  outfile  = "tables/twfe_bank_quality.tex",
+  title    = "Bank Finance and Patent Quality"
+)
+
+vc_quality <- run_twfe_incremental(
+  depvar   = "quality_index_100",
+  fd       = "ln_vc",
+  fd_x_ipr = "ln_vc_x_ipr",
+  outfile  = "tables/twfe_vc_quality.tex",
+  title    = "Venture Capital and Patent Quality"
+)
+
+# quantity models
+
+market_quantity <- run_twfe_incremental(
+  depvar   = "ln_patents",
+  fd       = "ln_market",
+  fd_x_ipr = "ln_market_x_ipr",
+  outfile  = "tables/twfe_market_quantity.tex",
+  title    = "Market Finance and Patent Quantity"
+)
+
+bank_quantity <- run_twfe_incremental(
+  depvar   = "ln_patents",
+  fd       = "ln_bank",
+  fd_x_ipr = "ln_bank_x_ipr",
+  outfile  = "tables/twfe_bank_quantity.tex",
+  title    = "Bank Finance and Patent Quantity"
+)
+
+vc_quantity <- run_twfe_incremental(
+  depvar   = "ln_patents",
+  fd       = "ln_vc",
+  fd_x_ipr = "ln_vc_x_ipr",
+  outfile  = "tables/twfe_vc_quantity.tex",
+  title    = "Venture Capital and Patent Quantity"
+)
+
+```
+
+# Zero-Inflated Negative Binomial (ZINB) Models
+```{r results='asis', echo=TRUE, eval=TRUE, warning=FALSE, message=FALSE}
+# ZINB MODELS
+
+library(data.table)
+library(pscl)
+library(modelsummary)
+library(dplyr)
+library(knitr)
+
+df <- fread("data/monarch_panel_transformed.csv")
+
+# center fd variables
+df[, ln_bank_c    := ln_bank    - mean(ln_bank,    na.rm = TRUE)]
+df[, ln_market_c  := ln_market  - mean(ln_market,  na.rm = TRUE)]
+df[, ln_vc_c      := ln_vc      - mean(ln_vc,      na.rm = TRUE)]
+
+df[, ln_bank_x_ipr_c   := ln_bank_c   * ipr_c]
+df[, ln_market_x_ipr_c := ln_market_c * ipr_c]
+df[, ln_vc_x_ipr_c     := ln_vc_c     * ipr_c]
+
+df[, ln_internal_patents := log(patent_count)]
+
+if (!dir.exists("tables")) {
+  dir.create("tables")
+}
+
+# zinb with incremental controls
+run_zinb_incremental <- function(finance_var, latex_name, title_name) {
+
+  fd_c  <- paste0(finance_var, "_c")
+  fd_x  <- paste0(finance_var, "_x_ipr_c")
+
+  controls <- c("ln_gdp_pc", "ln_trade", "ln_rd", "ln_tertiary")
+  models <- list()
+
+  for (i in 1:4) {
+    intensity_controls <- paste(controls[1:i], collapse = " + ")
+
+    formula_str <- paste0(
+      "breakthrough_count ~ ",
+      fd_c, " + ipr_c + ", fd_x,
+      " + ", intensity_controls,
+      " + offset(ln_internal_patents) | ",
+      "ln_gdp_pc"
+    )
+
+    model <- zeroinfl(
+      as.formula(formula_str),
+      data = df,
+      dist = "negbin"
+    )
+
+    models[[i]] <- model
+  }
+
+  # clean labels
+  fin_label <- switch(finance_var,
+                      "ln_bank" = "Bank Credit",
+                      "ln_market" = "Market Cap",
+                      "ln_vc" = "Venture Capital")
+
+ # variable mapping and ordering
+  var_names <- c(
+    "count_(Intercept)",
+    "count_ipr_c",
+    paste0("count_", fd_c),
+    paste0("count_", fd_x),
+    "count_ln_gdp_pc",
+    "count_ln_trade",
+    "count_ln_rd",
+    "count_ln_tertiary",
+    "zero_(Intercept)",
+    "zero_ln_gdp_pc"
+  )
+
+  var_labels <- c(
+    "Intercept (Count)",
+    "IPR Strength",
+    fin_label,
+    paste0(fin_label, " $\\times$ IPR"),
+    "GDP per Capita",
+    "Trade Openness",
+    "R\\&D Expenditure",
+    "Tertiary Education",
+    "Intercept (Zero)",
+    "GDP per Capita (Selection)"
+  )
+
+  var_mapping <- setNames(var_labels, var_names)
+  # calculating log theta except this didnt work so I hardcoded from the html tables
+  fmt_lt <- function(x, se=FALSE) {
+    if(is.na(x)) return(" ")
+    val <- sprintf("\\num{%.3f}", x)
+    if(se) return(paste0("(", val, ")"))
+    return(val)
+  }
+
+  lt_est <- numeric(4)
+  lt_se  <- numeric(4)
+  for(i in 1:4) {
+    m <- models[[i]]
+    if (!is.null(m$theta) && !is.null(m$SE.theta)) {
+      lt_est[i] <- log(m$theta)
+      lt_se[i]  <- m$SE.theta / m$theta
+    } else {
+      lt_est[i] <- NA; lt_se[i] <- NA
+    }
+  }
+
+  row_lt_est <- paste0("Log Theta & ", paste(sapply(lt_est, fmt_lt, se=FALSE), collapse = " & "), "\\\\")
+  row_lt_se  <- paste0(" & ", paste(sapply(lt_se, fmt_lt, se=TRUE), collapse = " & "), "\\\\")
+
+#save LaTeX tables
+  modelsummary(
+    models,
+    output = latex_name,
+    escape = FALSE,
+    align = "lcccc",
+    stars = c("*" = .1, "**" = .05, "***" = .01),
+    fmt = function(x) sprintf("\\num{%.3f}", x),
+    statistic = "({std.error})",
+    coef_map = var_mapping,
+    gof_map = list(list("raw" = "nobs", "clean" = "Num.Obs.", "fmt" = function(x) sprintf("\\num{%d}", x))),
+    notes = NULL #I add these later
+  )
+
+  
+  tex <- readLines(latex_name)
+
+  # clean the wrappers so it doesn't break my pdf
+  start_idx <- grep("\\\\begin\\{tabular\\}", tex)[1]
+  end_idx <- grep("\\\\end\\{tabular\\}", tex)[1]
+  if(!is.na(start_idx) && !is.na(end_idx)) tex <- tex[start_idx:end_idx]
+
+  # 
+  tex <- gsub("(\\\\num\\{[^}]+\\})(\\*+)", "\\1$^{\\2}$", tex)
+
+  # make the table easier to read
+  idx_toprule <- grep("\\\\toprule", tex)[1]
+  if (!is.na(idx_toprule)) {
+    tex[idx_toprule + 1] <- "Intensity: Negative Binomial Count & Model 1 & Model 2 & Model 3 & Model 4\\\\"
+  }
+
+  # 
+  idx_zero <- grep("Intercept \\(Zero\\)", tex)[1]
+  if (!is.na(idx_zero)) {
+    insertion <- c(
+      row_lt_est,
+      row_lt_se,
+      "\\midrule",
+      "Selection: Logit Structural Zero & Model 1 & Model 2 & Model 3 & Model 4\\\\",
+      "\\midrule"
+    )
+    tex <- append(tex, insertion, after = idx_zero - 1)
+  }
+
+  # custom notes
+  idx_bottomrule <- grep("\\\\bottomrule", tex)[1]
+  if (!is.na(idx_bottomrule)) {
+    notes <- c(
+      "\\multicolumn{5}{l}{\\footnotesize \\textit{Notes:} $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.} \\\\",
+      "\\multicolumn{5}{l}{\\footnotesize Standard errors in parentheses.} \\\\"
+    )
+    tex <- append(tex, notes, after = idx_bottomrule)
+  }
+
+  writeLines(tex, latex_name)
+
+  # html tables
+  cat("\n\n")
+  cat("##", title_name, "\n\n")
+
+  for (j in 1:4) {
+    cat("### Model", j, "\n\n")
+    model_sum <- summary(models[[j]])
+
+    # Intensity model
+    count_coefs <- model_sum$coefficients$count
+    
+    
+    if (!is.na(lt_est[j])) {
+      count_coefs <- rbind(count_coefs, "Log Theta" = c(lt_est[j], lt_se[j], NA, NA))
+    }
+
+    count_table <- data.frame(
+      Variable = rownames(count_coefs),
+      Coefficient = round(count_coefs[,1], 3),
+      Std_Error = round(count_coefs[,2], 3)
+    )
+
+    cat("#### Intensity (Negative Binomial Count Equation)\n\n")
+    print(knitr::kable(count_table, row.names = FALSE))
+    cat("\n\n")
+
+    # Selection model
+    zero_coefs <- model_sum$coefficients$zero
+    zero_table <- data.frame(
+      Variable = rownames(zero_coefs),
+      Coefficient = round(zero_coefs[,1], 3),
+      Std_Error = round(zero_coefs[,2], 3)
+    )
+
+    cat("#### Selection (Logit Structural Zero Equation)\n\n")
+    print(knitr::kable(zero_table, row.names = FALSE))
+    cat("\n\n")
+
+    cat("Observations:", models[[j]]$n, "\n\n")
+  }
+
+  invisible(models)
+}
+
+# run mkt
+zinb_market <- run_zinb_incremental(
+  "ln_market",
+  "tables/zinb_market2.tex",
+  "ZINB: Market Finance and Breakthrough Innovation"
+)
+
+# run bank
+zinb_bank <- run_zinb_incremental(
+  "ln_bank",
+  "tables/zinb_bank2.tex",
+  "ZINB: Bank Finance and Breakthrough Innovation"
+)
+
+# run vc
+zinb_vc <- run_zinb_incremental(
+  "ln_vc",
+  "tables/zinb_vc2.tex",
+  "ZINB: Venture Capital and Breakthrough Innovation"
+)
+```
+
+# Data Diagnostics and Exploratory Analysis
+
+## Breakthrough Innovation Measure
+```{r eval= TRUE, echo= TRUE, message= FALSE, warning= FALSE}
+#| column: margin
+library(ggplot2)
+library(dplyr)
+
+# breakthrough count diagnostics (justifies model choice)
+
+df <- fread("data/monarch_panel_transformed.csv")
+
+cat("Total observations:", nrow(df), "\n")
+cat("Zero breakthrough observations:", sum(df$breakthrough_count == 0, na.rm = TRUE), "\n")
+cat("Percent zeros:", round(mean(df$breakthrough_count == 0, na.rm = TRUE) * 100, 2), "%\n")
+
+cat("Mean breakthrough count:", mean(df$breakthrough_count, na.rm = TRUE), "\n")
+cat("Variance breakthrough count:", var(df$breakthrough_count, na.rm = TRUE), "\n")
+
+breakthrough_dstb <- ggplot(df, aes(x = breakthrough_count)) +
+  geom_histogram(binwidth = 1,
+                 fill = "#2C3E50",
+                 color = "white",
+                 linewidth = 0.2) +
+  coord_cartesian(xlim = c(0, 30)) +
+  labs(
+    title = "Distribution of Breakthrough Patent Counts",
+    x = "Breakthrough Count (Top 1% Patents)",
+    y = "Frequency"
+  ) +
+  theme_classic(base_family = "serif", base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    axis.title = element_text(face = "plain")
+  )
+breakthrough_dstb
+ggsave("figures/breakthrough_distribution.pdf",
+       plot = breakthrough_dstb,
+       width = 7,
+       height = 5)
+```
+## Distribution of Patent Quality
+```{r eval= TRUE, echo= TRUE, message= FALSE, warning= FALSE}
+#| column: margin
+quality_density <- ggplot(df, aes(x = quality_index_100)) +
+  geom_density(fill = "#2C3E50", alpha = 0.4, color = "#2C3E50", linewidth = 0.6) +
+  labs(
+    title = "Distribution of Patent Quality Index",
+    x = "Patent Quality (0-100)",
+    y = "Density"
+  ) +
+  theme_classic(base_family = "serif", base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    axis.title = element_text(face = "plain")
+  )
+quality_density
+ggsave("figures/quality_density.pdf",
+       plot = quality_density,
+       width = 7,
+       height = 5)
+```
+## Distribution of Financial Development Variables
+```{r fig.width= 15, fig.height= 5, echo= TRUE, eval= TRUE, warning= FALSE, message= FALSE}
+#| column: margin
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+vars <- c("ln_market", "ln_bank", "ln_vc")
+
+df_long <- df %>%
+  select(all_of(vars)) %>%
+  pivot_longer(everything()) %>%
+  mutate(name = dplyr::recode(name,
+                       ln_market = "Market Finance",
+                       ln_bank   = "Bank Finance",
+                       ln_vc     = "VC Finance"))
+
+finance_density <- ggplot(df_long, aes(x = value)) +
+  geom_density(fill = "#2C3E50",
+               alpha = 0.4,
+               color = "#2C3E50",
+               linewidth = 0.6) +
+  facet_wrap(~name, scales = "free") +
+  labs(
+    title = "Distribution of Financial Development Measures",
+    x = "Log of Financial Development (% of GDP)",
+    y = "Density"
+  ) +
+  theme_classic(base_family = "serif", base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    strip.text = element_text(face = "bold")
+  )
+finance_density
+ggsave("figures/finance_distribution.pdf",
+       plot = finance_density,
+       width = 8,
+       height = 5)
+```
+## Correlation Matrix
+```{r}
+#| fig-width: 8
+#| fig-height: 8
+#| column: margin
+library(dplyr)
+library(corrplot)
+
+corr_vars <- df %>%
+  select(quality_index_100, ln_patents,
+         ln_market, ln_bank, ln_vc,
+         ipr_c, ln_gdp_pc, ln_trade,
+         ln_rd, ln_tertiary) %>%
+  na.omit() %>%
+  rename(
+    "Patent Quality" = quality_index_100,
+    "Log Patents" = ln_patents,
+    "Market Finance" = ln_market,
+    "Bank Finance" = ln_bank,
+    "VC Finance" = ln_vc,
+    "IPR Index" = ipr_c,
+    "Log GDP per Capita" = ln_gdp_pc,
+    "Log Trade" = ln_trade,
+    "Log R&D" = ln_rd,
+    "Log Tertiary Education" = ln_tertiary
+  )
+
+corr_matrix <- cor(corr_vars)
+
+par(family = "serif")
+
+corrplot(
+  corr_matrix,
+  method = "color",
+  type = "upper",
+  diag = FALSE,
+  col = colorRampPalette(c("#2C3E50", "white", "#8B2E2E"))(200),
+  tl.col = "black",
+  tl.cex = 0.9,
+  number.cex = 0.75,
+  addCoef.col = "black"
+)
+
+dev.copy(pdf, "figures/correlation_matrix.pdf", width = 8, height = 8)
+dev.off()
+```
+
+
+## Interaction Effects (Marginal Effects Plot)
+```{r echo= TRUE, eval= TRUE, message= FALSE, warning= FALSE}
+#| column: margin
+library(plm)
+library(marginaleffects)
+library(ggplot2)
+library(dplyr)
+
+# Column 4 specification
+twfe_quality <- plm(
+  quality_index_100 ~ 
+    ln_market * ipr_c +
+    ln_gdp_pc +
+    ln_trade +
+    ln_rd,
+  data = df,
+  index = c("iso3c", "year"),
+  model = "within",
+  effect = "twoways"
+)
+
+# Sequence over observed ln_market range
+ln_market_seq <- seq(
+  min(df$ln_market, na.rm = TRUE),
+  max(df$ln_market, na.rm = TRUE),
+  length.out = 100
+)
+
+# compute marginal effect of IPR across ln_market
+mfx <- slopes(
+  twfe_quality,
+  variables = "ipr_c",
+  newdata = datagrid(ln_market = ln_market_seq),
+  vcov = "HC1"   
+)
+
+# Extract coefficients to compute turning point
+coefs <- coef(twfe_quality)
+
+beta2 <- coefs["ipr_c"]
+beta3 <- coefs["ln_market:ipr_c"]
+
+turning_point <- -beta2 / beta3
+
+# Plot
+p_me_quality <- ggplot(mfx, aes(x = ln_market, y = estimate)) +
+  geom_line(size = 1.1) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_vline(xintercept = turning_point, linetype = "dotted") +
+  labs(
+    title = "Marginal Effect of IPR on Patent Quality",
+    subtitle = paste0("Turning point: ~ ", round(turning_point, 2)),
+    x = "Market Capitalization (log of Market Cap (% GDP))",
+    y = "Marginal Effect of IPR on Quality"
+  ) +
+  theme_classic(base_family = "serif") +
+  theme(
+    axis.text.x = element_text(size = 15),
+    axis.text.y = element_text(size = 15),
+    axis.title.x = element_text(size = 14),
+    axis.title.y = element_text(size = 14),
+    plot.title = element_text(size = 15, face = "bold"),
+    plot.subtitle = element_text(size = 13)
+  )
+
+ggsave("figures/interaction_quality.pdf", plot = p_me_quality, width = 7, height = 5)
+
+p_me_quality
+```
+
+## Additional Figures
+```{r eval= TRUE, echo= TRUE, message= FALSE, warning= FALSE}
+#| column: margin
+# distibution of patent quality
+library(tidyverse)
+library(data.table)
+
+df <- fread("data/monarch_panel_transformed.csv")
+
+# Create bins
+df_plot <- df %>%
+  filter(!is.na(ln_market), !is.na(ipr_c), !is.na(quality_index_100)) %>%
+  mutate(
+    market_bin = ntile(ln_market, 3),
+    ipr_regime = ifelse(ipr_c <= median(ipr_c, na.rm = TRUE),
+                        "Weak IPR", "Strong IPR"),
+    group = paste0("Market Q", market_bin, " | ", ipr_regime)
+  )
+
+quality_density_bins <- ggplot(df_plot, aes(x = quality_index_100, fill = ipr_regime)) +
+  geom_density(alpha = 0.4, color = 'grey30') +
+  
+  facet_wrap(~ market_bin, nrow = 1,
+             labeller = labeller(market_bin = function(x) paste("Market Tercile", x))) +
+  
+  scale_fill_manual(
+    values = c("Weak IPR" = "grey70",
+               "Strong IPR" = "#2C3E50")
+  ) +
+  
+  labs(
+    title = "Innovation Quality by Market Finance and IPR Regime",
+    x = "Patent Quality Index (0-100)",
+    y = "Density",
+    fill = "IPR Regime"
+  ) +
+  
+  theme_classic(base_family = "serif", base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    legend.position = "top",
+    strip.text = element_text(face = "bold")
+  )
+
+ggsave(
+  "figures/quality_by_market_ipr.pdf",
+  plot = quality_density_bins,
+  width = 7,
+  height = 5
+)
+# quality and quantity relationship
+p_quality_quantity <- ggplot(df, aes(x = ln_patents, y = quality_index_100)) +
+  geom_point(alpha = 0.25, color = "grey50") +
+  
+  geom_smooth(
+    method = "loess",
+    se = FALSE,
+    color = "#2C3E50",
+    linewidth = 1.1
+  ) +
+  
+  labs(
+    title = "Patent Quantity and Average Patent Quality",
+    x = "Log Patent Quantity",
+    y = "Average Patent Quality"
+  ) +
+  
+  theme_classic(base_family = "serif", base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold")
+  )
+
+ggsave(
+  "figures/quality_vs_quantity.pdf",
+  plot = p_quality_quantity,
+  width = 7,
+  height = 5
+)
+
+quality_density_bins
+p_quality_quantity
+```
+```{r eval= TRUE, echo= TRUE, message= FALSE, warning= FALSE, fig.width= 10, fig.height= 5}
+#| column: margin
+library(tidyverse)
+
+# --------------------------
+# Prepare Long Finance Data
+# --------------------------
+
+plot_df <- df %>%
+  select(
+    iso3c, year,
+    quality_index_100,
+    ln_patents,
+    ipr_c,
+    ln_bank, ln_market, ln_vc
+  ) %>%
+  pivot_longer(
+    cols = c(ln_bank, ln_market, ln_vc),
+    names_to = "finance_type",
+    values_to = "finance_depth"
+  ) %>%
+  mutate(
+    finance_type = case_match(
+      finance_type,
+      "ln_bank"   ~ "Bank Finance",
+      "ln_market" ~ "Market Finance",
+      "ln_vc"     ~ "Venture Capital",
+      .default = finance_type
+    )
+  )
+
+# --------------------------
+# 1. Finance x Quality
+# --------------------------
+
+p1 <- ggplot(plot_df, aes(x = finance_depth, y = quality_index_100)) +
+  geom_point(alpha = 0.4, color = "grey50") +
+  geom_smooth(method = "loess", se = FALSE,
+              linewidth = 1.1, color = "#2C3E50") +
+  facet_wrap(~ finance_type, scales = "free_x") +
+  labs(
+    title = "Financial Development and Patent Quality",
+    x = "Log Financial Development (% of GDP)",
+    y = "Patent Quality Index (0-100)"
+  ) +
+  theme_classic(base_family = "serif", base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    strip.text = element_text(face = "bold")
+  )
+
+ggsave("figures/finance_quality.pdf", plot = p1, width = 7, height = 5)
+
+# --------------------------
+# 2. Finance x Quantity
+# --------------------------
+
+p2 <- ggplot(plot_df, aes(x = finance_depth, y = ln_patents)) +
+  geom_point(alpha = 0.4, color = "grey50") +
+  geom_smooth(method = "loess", se = FALSE,
+              linewidth = 1.1, color = "#2C3E50") +
+  facet_wrap(~ finance_type, scales = "free_x") +
+  labs(
+    title = "Financial Development and Patent Quantity",
+    x = "Log Financial Development (% of GDP)",
+    y = "Log Patents per 1,000 Researchers"
+  ) +
+  theme_classic(base_family = "serif", base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    strip.text = element_text(face = "bold")
+  )
+
+ggsave("figures/finance_quantity.pdf", plot = p2, width = 7, height = 5)
+
+# --------------------------
+# 3. IPR x Quality
+# --------------------------
+
+p3 <- ggplot(df, aes(x = ipr_c, y = quality_index_100)) +
+  geom_point(alpha = 0.4, color = "grey50") +
+  geom_smooth(method = "loess", se = FALSE,
+              linewidth = 1.1, color = "#2C3E50") +
+  labs(
+    title = "IPR Strength and Patent Quality",
+    x = "IPR Strength (Centered Park Index)",
+    y = "Patent Quality Index (0-100)"
+  ) +
+  theme_classic(base_family = "serif", base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold")
+  )
+
+ggsave("figures/ipr_quality.pdf", plot = p3, width = 7, height = 5)
+
+# --------------------------
+# 4. IPR x Quantity
+# --------------------------
+
+p4 <- ggplot(df, aes(x = ipr_c, y = ln_patents)) +
+  geom_point(alpha = 0.4, color = "grey50") +
+  geom_smooth(method = "loess", se = FALSE,
+              linewidth = 1.1, color = "#2C3E50") +
+  labs(
+    title = "IPR Strength and Patent Quantity",
+    x = "IPR Strength (Centered Park Index)",
+    y = "Log Patents per 1,000 Researchers"
+  ) +
+  theme_classic(base_family = "serif", base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold")
+  )
+
+ggsave("figures/ipr_quantity.pdf", plot = p4, width = 7, height = 5)
+p1
+p2
+p3
+p4
+```
+
+
+```{r eval= TRUE, echo= TRUE, message= FALSE, warning= FALSE}
+#| column: margin
+quality_market_df <- df %>%
+  filter(
+    !is.na(quality_index_100),
+    !is.na(ln_market),
+    !is.na(ipr_c)
+  )
+
+quality_market_ipr_df <- quality_market_df %>%
+  mutate(
+    ipr_regime = ifelse(ipr_c >= 0,
+                        "Above-Average IPR",
+                        "Below-Average IPR")
+  )
+
+p_quality_market_ipr <- ggplot(
+  quality_market_ipr_df,
+  aes(x = ln_market,
+      y = quality_index_100,
+      color = ipr_regime)
+) +
+  
+  geom_point(alpha = 0.3) +
+  
+  geom_smooth(method = "lm",
+              se = FALSE,
+              linewidth = 1.2) +
+  
+  scale_color_manual(
+    values = c("Below-Average IPR" = "grey60",
+               "Above-Average IPR" = "#2C3E50")
+  ) +
+  
+  labs(
+    title = "Patent Quality, Market Finance, and IPR Regimes",
+    x = "Log Market Capitalization (% of GDP)",
+    y = "Patent Quality Index (0-100)",
+    color = "IPR Regime:"
+  ) +
+  
+  theme_classic(base_family = "serif", base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    legend.position = "top"
+  )
+
+ggsave(
+  "figures/quality_market_ipr.pdf",
+  plot = p_quality_market_ipr,
+  width = 7,
+  height = 5
+)
+p_quality_market_ipr
+```
+
+# Robustness Checks
+- quadratic models
+- lags
+- idk some other stuff
+
+## Joint Significance and Nonlinearity Tests
+```{r echo= TRUE, eval= TRUE, message= FALSE, warning= FALSE}
+# robustness and model analysis
+
+library(dplyr)
+library(plm)
+library(lmtest)
+library(sandwich)
+library(car)
+
+# center fd variables
+df <- fread("data/monarch_panel_transformed.csv")
+
+df_ext <- df %>%
+  mutate(
+    ln_bank_c   = ln_bank   - mean(ln_bank,   na.rm = TRUE),
+    ln_market_c = ln_market - mean(ln_market, na.rm = TRUE),
+    ln_vc_c     = ln_vc     - mean(ln_vc,     na.rm = TRUE),
+    
+    ln_bank_x_ipr   = ln_bank_c * ipr_c,
+    ln_market_x_ipr = ln_market_c * ipr_c,
+    ln_vc_x_ipr     = ln_vc_c * ipr_c,
+
+    ln_bank_c2   = ln_bank_c^2,
+    ln_market_c2 = ln_market_c^2,
+    ln_vc_c2     = ln_vc_c^2
+  )
+
+panel_ext <- pdata.frame(df_ext, index = c("iso3c", "year"))
+
+# clustered se
+vcov_clust <- function(x) vcovHC(x, method = "arellano", cluster = "group")
+
+# run models, see where squared terms are justified
+
+cat("\n testing for nonlinearity \n")
+
+#  formulas to check squared term p-values
+
+check_quad <- function(dv, base_var) {
+  f <- as.formula(paste0(dv, " ~ ", base_var, "_c + ", base_var, "_c2 + ipr_c + ", 
+                        base_var, "_x_ipr + ln_gdp_pc + ln_trade + ln_rd"))
+  
+  m <- plm(f, data = panel_ext, model = "within", effect = "twoways")
+  
+  cat("\nChecking Quadratic for:", dv, "vs", base_var, "\n")
+  # square term included
+  print(coeftest(m, vcov = vcov_clust(m))[2, ]) 
+}
+
+check_quad("quality_index_100", "ln_market")
+check_quad("quality_index_100", "ln_bank")    # EXPECTED: significant
+check_quad("quality_index_100", "ln_vc")
+check_quad("ln_patents",        "ln_market")
+check_quad("ln_patents",        "ln_bank")
+check_quad("ln_patents",        "ln_vc")        # EXPECTED: significant
+
+# final models and joint tests
+cat("\n joint significance tests \n")
+
+run_final <- function(dv, base_var, use_quad = FALSE) {
+  
+  main_vars <- if(use_quad) {
+    paste0(base_var, "_c + ", base_var, "_c2")
+  } else {
+    paste0(base_var, "_c")
+  }
+  
+  f <- as.formula(paste0(dv, " ~ ", main_vars, " + ipr_c + ", base_var, "_x_ipr + ln_gdp_pc + ln_trade + ln_rd"))
+  m <- plm(f, data = panel_ext, model = "within", effect = "twoways")
+  
+  cat("\n", paste(rep("-", 40), collapse = ""), "\n")
+  cat("FINAL MODEL:", dv, "by", base_var, "(Quadratic =", use_quad, ")\n")
+  
+  # joint signif
+  hyp <- if(use_quad) {
+    c(paste0(base_var, "_c = 0"), paste0(base_var, "_c2 = 0"), paste0(base_var, "_x_ipr = 0"))
+  } else {
+    c(paste0(base_var, "_c = 0"), paste0(base_var, "_x_ipr = 0"))
+  }
+  
+  cat("\n[Joint Significance Test]\n")
+  print(linearHypothesis(m, hyp, vcov = vcov_clust))
+  
+  # within fit
+  cat("\n[Within R-squared]:", summary(m)$r.squared[1], "\n")
+}
+
+# quality final
+run_final("quality_index_100", "ln_market", use_quad = FALSE)
+run_final("quality_index_100", "ln_bank",   use_quad = TRUE)
+run_final("quality_index_100", "ln_vc",     use_quad = FALSE)
+
+# quantity final
+run_final("ln_patents",        "ln_market", use_quad = FALSE)
+run_final("ln_patents",        "ln_bank",   use_quad = FALSE)
+run_final("ln_patents",        "ln_vc",     use_quad = TRUE)
+```
+
+# Variable Glossary
+
+**Identifiers**
+
+- `iso3c` - Three-letter ISO country code. Primary country identifier used to merge OECD PQI, financial development, institutional, and macroeconomic datasets.
+- `year` - Observation year (country-year panel structure).
+- `Country Name` - Human-readable country name (not used in estimation; included for clarity).
+
+**Patent Quality Indicators (OECD PQI)**
+
+All quality indicators are aggregated to the country-year level using the mean across patents.
+
+- `avg_patent_scope_norm` - Average normalized patent scope; number of jurisdictions in which a patent family is filed (proxy for economic value and international relevance).
+- `avg_family_size_norm` - Average normalized patent family size; number of related patent filings across offices (proxy for strategic and economic importance).
+- `avg_grant_lag_norm` - Average normalized grant lag; time between application and grant (proxy for complexity).
+- `avg_bwd_cits_norm` - Average normalized backward citations; references to prior patents (knowledge base intensity).
+- `avg_npl_cits_norm` - Average normalized non-patent literature citations; references to scientific publications (science linkage).
+- `avg_claims_norm` - Average normalized number of claims; legal scope of protection.
+- `avg_fwd_cits5_norm` - Average normalized forward citations within 5 years; short-run technological impact.
+- `avg_fwd_cits7_norm` - Average normalized forward citations within 7 years; medium-run technological impact.
+- `avg_generality` - Technological breadth index (0-1); dispersion of forward citations across technology classes.
+- `avg_originality` - Citation diversity index (0-1); dispersion of backward citations across technology classes.
+- `avg_radicalness` - Novelty index (0-1); degree to which cited prior art differs from focal patent classification.
+- `avg_quality_index_4` - Composite patent quality index based on four core indicators.
+- `avg_quality_index_6` - Composite patent quality index based on six indicators.
+- `quality_index_100` - `avg_quality_index_4` * 100 for interpretability (used in TWFE models).
+- `avg_renewal` - Average years a patent is renewed; proxy for economic value (where available).
+
+**Breakthrough Innovation Variables**
+
+- `breakthrough` - (patent-level, in Python step) Binary indicator equal to 1 if the patent belongs to the top 1% most cited patents within cohort, 0 otherwise.
+- `breakthrough_count` - Country-year count of breakthrough patents (sum of top 1% patents).
+- `patent_count` - Total number of patents in OECD PQI data for that country–year.
+- `pct_breakthrough` - Share of patents in a country-year that qualify as breakthroughs: `breakthrough_count` / `patent_count`.
+- `ln_internal_patents` - Log of `patent_count`; used as an offset in count models.
+
+**Patent Quantity Measures**
+
+- `patent_applications_residents` - Resident patent applications (WDI source).
+- `researchers_per_million` - Researchers per million inhabitants; used to normalize patent output.
+- `population_total` - Total population; used to compute total researchers.
+- `researchers_total` - Computed as: `researchers_per_million` * (`population_total` / 1,000,000).
+- `patents_per_1000_researchers` - Scaled patent intensity measure: `patent_applications_residents` / `researchers_total` * 1000.
+- `ln_patents` - Log transformation of patents per 1,000 researchers (+1 shift).
+
+**Financial Development Variables**
+
+- `bank_credit_gdp` - Domestic credit to private sector (% of GDP). Proxy for banking sector depth.
+- `market_cap_gdp` - Market capitalization of listed domestic companies (% of GDP). Proxy for stock market depth.
+- `VC_investment` - Venture capital investment as % of GDP.
+- `VC_investment_pct` - `VC_investment` * 100, rescaled to match percentage units of other financial variables.
+- `ln_bank` - Log of `bank_credit_gdp` + 1.
+- `ln_market` - Log of `market_cap_gdp` + 1.
+- `ln_vc` - Log of `VC_investment_pct` + 1.
+- `[fd_var]_x_ipr` - Interaction term between financial development variable and institutional quality.
+- `[fd_var]_c` - Mean-centered financial variable (used only in ZINB models).
+- `[fd_var]_x_ipr_c` - Interaction between centered finance variable and centered IPR (ZINB only).
+
+**Institutional Variable**
+
+- `ipp_index_IP_transformed` - Park Intellectual Property Protection Index (0-5 scale); five-year fill interpolation.
+- `ipr_c` - Mean-centered Park index. Used to improve interpretation of interaction coefficients.
+
+**Macroeconomic Controls**
+
+All controls are log-transformed (+1 shift where necessary).
+
+- `gdp_pc_const2015usd` - GDP per capita (constant 2015 USD).
+- `ln_gdp_pc` - Log GDP per capita.
+- `trade_percent_gdp` - Trade openness (% of GDP).
+- `ln_trade` - Log trade openness.
+- `rd_expenditure_percent_gdp` - R&D expenditure (% of GDP).
+- `ln_rd` - Log R&D expenditure.
+- `tertiary_enrollment_percent` - Gross tertiary enrollment (%).
+- `ln_tertiary` - Log tertiary enrollment.
+
+**Model-Specific Parameters**
+
+- `Log(theta)` - Log of dispersion parameter in negative binomial models. Captures overdispersion relative to Poisson.
+
+
+
+
+
