@@ -1,0 +1,22 @@
+project:
+  type: website
+  output-dir: docs
+
+website:
+  title: "Aaron DiLorenzo"
+  navbar:
+    left:
+      - text: Home
+        href: index.qmd
+      - text: Thesis
+        href: thesis.qmd
+      - text: Energy Project
+        href: fracking.qmd
+      - text: ML Project
+        href: ml.qmd
+
+format:
+  html:
+    theme: cosmo
+    toc: false
+

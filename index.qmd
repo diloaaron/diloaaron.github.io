@@ -1,0 +1,17 @@
+---
+title: Aaron DiLorenzo
+---
+
+## About Me
+
+Economics major at Union College with interests in economic growth, innovation, and applied econometrics.
+
+## Research
+
+- [Senior Thesis](thesis.html)
+- Energy & Unconventional Extraction (forthcoming)
+- Machine Learning & Big Data Analytics (forthcoming)
+
+## Resume
+
+[Download Resume](documents/resume.pdf)

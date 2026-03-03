@@ -1,0 +1,9 @@
+---
+title: Senior Thesis
+---
+
+## Financial Structure, Intellectual Property Rights, and the Composition of Innovation
+
+Brief description of your thesis here.
+
+[Download Full Paper](documents/analysis.pdf)

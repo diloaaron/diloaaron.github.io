@@ -7,3 +7,6 @@
 .RData
 .DS_Store
 *.html
+
+/.quarto/
+**/*.quarto_ipynb
