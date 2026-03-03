@@ -6,10 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Aaron DiLorenzo">
+<meta name="author" content="dilo">
 <meta name="dcterms.date" content="2026-03-03">
 
-<title>Financial Structure, Intellectual Property Rights, and the Composition of Innovation – Aaron DiLorenzo</title>
+<title>Financial Structure, Intellectual Property Rights, and the Composition of Innovation – Aaron DiLorenzo | Research</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -117,7 +117,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="./index.html">
-    <span class="navbar-title">Aaron DiLorenzo</span>
+    <span class="navbar-title">Aaron DiLorenzo | Research</span>
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
@@ -136,11 +136,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="./fracking.html"> 
-<span class="menu-text">Energy Project</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./ml.html"> 
-<span class="menu-text">ML Project</span></a>
+<span class="menu-text">Oil &amp; Gas Project</span></a>
   </li>  
 </ul>
           </div> <!-- /navcollapse -->
@@ -219,7 +215,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
-             <p>Aaron DiLorenzo </p>
+             <p>dilo </p>
           </div>
   </div>
     
@@ -244,8 +240,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h1 data-number="1"><span class="header-section-number">1</span> Patent Quality Indicators Construction</h1>
 <p>This thesis is solely concerned with the <code>quality_index_4</code> and <code>breakthrough</code> indicators</p>
 <div class="cell">
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="co">"""</span></span>
 <span id="cb1-2"><a href="#cb1-2"></a><span class="co">OECD Patent Quality Indicators</span></span>
 <span id="cb1-3"><a href="#cb1-3"></a><span class="co">normalization, winsorization, and aggregation procedures</span></span>
@@ -345,14 +339,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-97"><a href="#cb1-97"></a></span>
 <span id="cb1-98"><a href="#cb1-98"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">"__main__"</span>:</span>
 <span id="cb1-99"><a href="#cb1-99"></a>    main()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 </div>
 </section>
 <section id="data-construction-and-variable-assembly" class="level1" data-number="2">
 <h1 data-number="2"><span class="header-section-number">2</span> Data Construction and Variable Assembly</h1>
 <div class="cell">
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="co"># data construction script</span></span>
 <span id="cb2-2"><a href="#cb2-2"></a><span class="co"># pivoting datasets, interpolating the Park index, and adding iso3c keys not included in this script</span></span>
 <span id="cb2-3"><a href="#cb2-3"></a><span class="fu">rm</span>(<span class="at">list =</span> <span class="fu">ls</span>())</span>
@@ -472,7 +463,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-117"><a href="#cb2-117"></a><span class="fu">fwrite</span>(df, <span class="st">"data/monarch_panel_transformed.csv"</span>)</span>
 <span id="cb2-118"><a href="#cb2-118"></a></span>
 <span id="cb2-119"><a href="#cb2-119"></a><span class="fu">summary</span>(df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>     iso2                year      avg_generality   avg_originality 
  Length:2783        Min.   :1978   Min.   :0.0000   Min.   :0.0000  
@@ -581,14 +571,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <div class="cell">
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="fu">hist</span>(df<span class="sc">$</span>tertiary_enrollment_percent,</span>
 <span id="cb4-2"><a href="#cb4-2"></a>     <span class="at">main =</span> <span class="st">"Histogram of Market Cap (% GDP)"</span>,</span>
 <span id="cb4-3"><a href="#cb4-3"></a>     <span class="at">xlab =</span> <span class="st">"Market Cap (% GDP)"</span>,</span>
 <span id="cb4-4"><a href="#cb4-4"></a>     <span class="at">col =</span> <span class="st">"lightblue"</span>,</span>
 <span id="cb4-5"><a href="#cb4-5"></a>     <span class="at">breaks =</span> <span class="dv">20</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -600,8 +587,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="baseline-two-way-fixed-effects-twfe-models" class="level1" data-number="3">
 <h1 data-number="3"><span class="header-section-number">3</span> Baseline Two-Way Fixed Effects (TWFE) Models</h1>
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="co"># baseline twfe models</span></span>
 <span id="cb5-2"><a href="#cb5-2"></a></span>
 <span id="cb5-3"><a href="#cb5-3"></a><span class="fu">rm</span>(<span class="at">list =</span> <span class="fu">ls</span>())</span>
@@ -727,7 +712,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-123"><a href="#cb5-123"></a>  <span class="at">outfile  =</span> <span class="st">"tables/twfe_market_quality.tex"</span>,</span>
 <span id="cb5-124"><a href="#cb5-124"></a>  <span class="at">title    =</span> <span class="st">"Market Finance and Patent Quality"</span></span>
 <span id="cb5-125"><a href="#cb5-125"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <table style="text-align:center">
 <caption>
 <strong>Market Finance and Patent Quality</strong>
@@ -1133,8 +1117,6 @@ Standard errors clustered by country.
 </tbody></table>
 % Table created by stargazer v.5.2.3 by Marek Hlavac, Social Policy Institute. E-mail: marek.hlavac at gmail.com % Date and time: Tue, Mar 03, 2026 - 16:28:07
 
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>bank_quality <span class="ot">&lt;-</span> <span class="fu">run_twfe_incremental</span>(</span>
 <span id="cb6-2"><a href="#cb6-2"></a>  <span class="at">depvar   =</span> <span class="st">"quality_index_100"</span>,</span>
 <span id="cb6-3"><a href="#cb6-3"></a>  <span class="at">fd       =</span> <span class="st">"ln_bank"</span>,</span>
@@ -1142,7 +1124,6 @@ Standard errors clustered by country.
 <span id="cb6-5"><a href="#cb6-5"></a>  <span class="at">outfile  =</span> <span class="st">"tables/twfe_bank_quality.tex"</span>,</span>
 <span id="cb6-6"><a href="#cb6-6"></a>  <span class="at">title    =</span> <span class="st">"Bank Finance and Patent Quality"</span></span>
 <span id="cb6-7"><a href="#cb6-7"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <table style="text-align:center">
 <caption>
 <strong>Bank Finance and Patent Quality</strong>
@@ -1548,8 +1529,6 @@ Standard errors clustered by country.
 </tbody></table>
 % Table created by stargazer v.5.2.3 by Marek Hlavac, Social Policy Institute. E-mail: marek.hlavac at gmail.com % Date and time: Tue, Mar 03, 2026 - 16:28:08
 
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>vc_quality <span class="ot">&lt;-</span> <span class="fu">run_twfe_incremental</span>(</span>
 <span id="cb7-2"><a href="#cb7-2"></a>  <span class="at">depvar   =</span> <span class="st">"quality_index_100"</span>,</span>
 <span id="cb7-3"><a href="#cb7-3"></a>  <span class="at">fd       =</span> <span class="st">"ln_vc"</span>,</span>
@@ -1557,7 +1536,6 @@ Standard errors clustered by country.
 <span id="cb7-5"><a href="#cb7-5"></a>  <span class="at">outfile  =</span> <span class="st">"tables/twfe_vc_quality.tex"</span>,</span>
 <span id="cb7-6"><a href="#cb7-6"></a>  <span class="at">title    =</span> <span class="st">"Venture Capital and Patent Quality"</span></span>
 <span id="cb7-7"><a href="#cb7-7"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <table style="text-align:center">
 <caption>
 <strong>Venture Capital and Patent Quality</strong>
@@ -1963,8 +1941,6 @@ Standard errors clustered by country.
 </tbody></table>
 % Table created by stargazer v.5.2.3 by Marek Hlavac, Social Policy Institute. E-mail: marek.hlavac at gmail.com % Date and time: Tue, Mar 03, 2026 - 16:28:10
 
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="co"># quantity models</span></span>
 <span id="cb8-2"><a href="#cb8-2"></a></span>
 <span id="cb8-3"><a href="#cb8-3"></a>market_quantity <span class="ot">&lt;-</span> <span class="fu">run_twfe_incremental</span>(</span>
@@ -1974,7 +1950,6 @@ Standard errors clustered by country.
 <span id="cb8-7"><a href="#cb8-7"></a>  <span class="at">outfile  =</span> <span class="st">"tables/twfe_market_quantity.tex"</span>,</span>
 <span id="cb8-8"><a href="#cb8-8"></a>  <span class="at">title    =</span> <span class="st">"Market Finance and Patent Quantity"</span></span>
 <span id="cb8-9"><a href="#cb8-9"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <table style="text-align:center">
 <caption>
 <strong>Market Finance and Patent Quantity</strong>
@@ -2380,8 +2355,6 @@ Standard errors clustered by country.
 </tbody></table>
 % Table created by stargazer v.5.2.3 by Marek Hlavac, Social Policy Institute. E-mail: marek.hlavac at gmail.com % Date and time: Tue, Mar 03, 2026 - 16:28:12
 
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>bank_quantity <span class="ot">&lt;-</span> <span class="fu">run_twfe_incremental</span>(</span>
 <span id="cb9-2"><a href="#cb9-2"></a>  <span class="at">depvar   =</span> <span class="st">"ln_patents"</span>,</span>
 <span id="cb9-3"><a href="#cb9-3"></a>  <span class="at">fd       =</span> <span class="st">"ln_bank"</span>,</span>
@@ -2389,7 +2362,6 @@ Standard errors clustered by country.
 <span id="cb9-5"><a href="#cb9-5"></a>  <span class="at">outfile  =</span> <span class="st">"tables/twfe_bank_quantity.tex"</span>,</span>
 <span id="cb9-6"><a href="#cb9-6"></a>  <span class="at">title    =</span> <span class="st">"Bank Finance and Patent Quantity"</span></span>
 <span id="cb9-7"><a href="#cb9-7"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <table style="text-align:center">
 <caption>
 <strong>Bank Finance and Patent Quantity</strong>
@@ -2795,8 +2767,6 @@ Standard errors clustered by country.
 </tbody></table>
 % Table created by stargazer v.5.2.3 by Marek Hlavac, Social Policy Institute. E-mail: marek.hlavac at gmail.com % Date and time: Tue, Mar 03, 2026 - 16:28:14
 
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>vc_quantity <span class="ot">&lt;-</span> <span class="fu">run_twfe_incremental</span>(</span>
 <span id="cb10-2"><a href="#cb10-2"></a>  <span class="at">depvar   =</span> <span class="st">"ln_patents"</span>,</span>
 <span id="cb10-3"><a href="#cb10-3"></a>  <span class="at">fd       =</span> <span class="st">"ln_vc"</span>,</span>
@@ -2804,7 +2774,6 @@ Standard errors clustered by country.
 <span id="cb10-5"><a href="#cb10-5"></a>  <span class="at">outfile  =</span> <span class="st">"tables/twfe_vc_quantity.tex"</span>,</span>
 <span id="cb10-6"><a href="#cb10-6"></a>  <span class="at">title    =</span> <span class="st">"Venture Capital and Patent Quantity"</span></span>
 <span id="cb10-7"><a href="#cb10-7"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <table style="text-align:center">
 <caption>
 <strong>Venture Capital and Patent Quantity</strong>
@@ -3213,8 +3182,6 @@ Standard errors clustered by country.
 </section>
 <section id="zero-inflated-negative-binomial-zinb-models" class="level1" data-number="4">
 <h1 data-number="4"><span class="header-section-number">4</span> Zero-Inflated Negative Binomial (ZINB) Models</h1>
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="co"># ZINB MODELS</span></span>
 <span id="cb11-2"><a href="#cb11-2"></a></span>
 <span id="cb11-3"><a href="#cb11-3"></a><span class="fu">library</span>(data.table)</span>
@@ -3432,7 +3399,6 @@ Standard errors clustered by country.
 <span id="cb11-215"><a href="#cb11-215"></a>  <span class="st">"tables/zinb_market2.tex"</span>,</span>
 <span id="cb11-216"><a href="#cb11-216"></a>  <span class="st">"ZINB: Market Finance and Breakthrough Innovation"</span></span>
 <span id="cb11-217"><a href="#cb11-217"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <section id="zinb-market-finance-and-breakthrough-innovation" class="level2" data-number="4.1">
 <h2 data-number="4.1" class="anchored" data-anchor-id="zinb-market-finance-and-breakthrough-innovation"><span class="header-section-number">4.1</span> ZINB: Market Finance and Breakthrough Innovation</h2>
 <section id="model-1" class="level3" data-number="4.1.1">
@@ -3751,15 +3717,12 @@ Standard errors clustered by country.
 </tbody>
 </table>
 <p>Observations: 641</p>
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="co"># run bank</span></span>
 <span id="cb12-2"><a href="#cb12-2"></a>zinb_bank <span class="ot">&lt;-</span> <span class="fu">run_zinb_incremental</span>(</span>
 <span id="cb12-3"><a href="#cb12-3"></a>  <span class="st">"ln_bank"</span>,</span>
 <span id="cb12-4"><a href="#cb12-4"></a>  <span class="st">"tables/zinb_bank2.tex"</span>,</span>
 <span id="cb12-5"><a href="#cb12-5"></a>  <span class="st">"ZINB: Bank Finance and Breakthrough Innovation"</span></span>
 <span id="cb12-6"><a href="#cb12-6"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 </section>
 </section>
 </section>
@@ -4081,15 +4044,12 @@ Standard errors clustered by country.
 </tbody>
 </table>
 <p>Observations: 728</p>
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a><span class="co"># run vc</span></span>
 <span id="cb13-2"><a href="#cb13-2"></a>zinb_vc <span class="ot">&lt;-</span> <span class="fu">run_zinb_incremental</span>(</span>
 <span id="cb13-3"><a href="#cb13-3"></a>  <span class="st">"ln_vc"</span>,</span>
 <span id="cb13-4"><a href="#cb13-4"></a>  <span class="st">"tables/zinb_vc2.tex"</span>,</span>
 <span id="cb13-5"><a href="#cb13-5"></a>  <span class="st">"ZINB: Venture Capital and Breakthrough Innovation"</span></span>
 <span id="cb13-6"><a href="#cb13-6"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 </section>
 </section>
 </section>
@@ -4420,8 +4380,6 @@ Standard errors clustered by country.
 <section id="breakthrough-innovation-measure" class="level2 page-columns page-full" data-number="5.1">
 <h2 data-number="5.1" class="anchored" data-anchor-id="breakthrough-innovation-measure"><span class="header-section-number">5.1</span> Breakthrough Innovation Measure</h2>
 <div class="cell page-columns page-full">
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a><span class="fu">library</span>(ggplot2)</span>
 <span id="cb14-2"><a href="#cb14-2"></a><span class="fu">library</span>(dplyr)</span>
 <span id="cb14-3"><a href="#cb14-3"></a></span>
@@ -4430,40 +4388,25 @@ Standard errors clustered by country.
 <span id="cb14-6"><a href="#cb14-6"></a>df <span class="ot">&lt;-</span> <span class="fu">fread</span>(<span class="st">"data/monarch_panel_transformed.csv"</span>)</span>
 <span id="cb14-7"><a href="#cb14-7"></a></span>
 <span id="cb14-8"><a href="#cb14-8"></a><span class="fu">cat</span>(<span class="st">"Total observations:"</span>, <span class="fu">nrow</span>(df), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Total observations: 2783 </code></pre>
 </div>
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a><span class="fu">cat</span>(<span class="st">"Zero breakthrough observations:"</span>, <span class="fu">sum</span>(df<span class="sc">$</span>breakthrough_count <span class="sc">==</span> <span class="dv">0</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Zero breakthrough observations: 1933 </code></pre>
 </div>
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a><span class="fu">cat</span>(<span class="st">"Percent zeros:"</span>, <span class="fu">round</span>(<span class="fu">mean</span>(df<span class="sc">$</span>breakthrough_count <span class="sc">==</span> <span class="dv">0</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">*</span> <span class="dv">100</span>, <span class="dv">2</span>), <span class="st">"%</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Percent zeros: 69.46 %</code></pre>
 </div>
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a><span class="fu">cat</span>(<span class="st">"Mean breakthrough count:"</span>, <span class="fu">mean</span>(df<span class="sc">$</span>breakthrough_count, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Mean breakthrough count: 4.850521 </code></pre>
 </div>
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a><span class="fu">cat</span>(<span class="st">"Variance breakthrough count:"</span>, <span class="fu">var</span>(df<span class="sc">$</span>breakthrough_count, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Variance breakthrough count: 439.1753 </code></pre>
 </div>
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a>breakthrough_dstb <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> breakthrough_count)) <span class="sc">+</span></span>
 <span id="cb24-2"><a href="#cb24-2"></a>  <span class="fu">geom_histogram</span>(<span class="at">binwidth =</span> <span class="dv">1</span>,</span>
 <span id="cb24-3"><a href="#cb24-3"></a>                 <span class="at">fill =</span> <span class="st">"#2C3E50"</span>,</span>
@@ -4481,7 +4424,6 @@ Standard errors clustered by country.
 <span id="cb24-15"><a href="#cb24-15"></a>    <span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"plain"</span>)</span>
 <span id="cb24-16"><a href="#cb24-16"></a>  )</span>
 <span id="cb24-17"><a href="#cb24-17"></a>breakthrough_dstb</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 
 <div class="no-row-height column-margin column-container"><div class="cell-output-display">
 <div>
@@ -4489,20 +4431,15 @@ Standard errors clustered by country.
 <p><img src="thesis_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
-</div></div><details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a><span class="fu">ggsave</span>(<span class="st">"figures/breakthrough_distribution.pdf"</span>,</span>
+</div></div><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a><span class="fu">ggsave</span>(<span class="st">"figures/breakthrough_distribution.pdf"</span>,</span>
 <span id="cb25-2"><a href="#cb25-2"></a>       <span class="at">plot =</span> breakthrough_dstb,</span>
 <span id="cb25-3"><a href="#cb25-3"></a>       <span class="at">width =</span> <span class="dv">7</span>,</span>
 <span id="cb25-4"><a href="#cb25-4"></a>       <span class="at">height =</span> <span class="dv">5</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 </div>
 </section>
 <section id="distribution-of-patent-quality" class="level2 page-columns page-full" data-number="5.2">
 <h2 data-number="5.2" class="anchored" data-anchor-id="distribution-of-patent-quality"><span class="header-section-number">5.2</span> Distribution of Patent Quality</h2>
 <div class="cell page-columns page-full">
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a>quality_density <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> quality_index_100)) <span class="sc">+</span></span>
 <span id="cb26-2"><a href="#cb26-2"></a>  <span class="fu">geom_density</span>(<span class="at">fill =</span> <span class="st">"#2C3E50"</span>, <span class="at">alpha =</span> <span class="fl">0.4</span>, <span class="at">color =</span> <span class="st">"#2C3E50"</span>, <span class="at">linewidth =</span> <span class="fl">0.6</span>) <span class="sc">+</span></span>
 <span id="cb26-3"><a href="#cb26-3"></a>  <span class="fu">labs</span>(</span>
@@ -4516,7 +4453,6 @@ Standard errors clustered by country.
 <span id="cb26-11"><a href="#cb26-11"></a>    <span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"plain"</span>)</span>
 <span id="cb26-12"><a href="#cb26-12"></a>  )</span>
 <span id="cb26-13"><a href="#cb26-13"></a>quality_density</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 
 <div class="no-row-height column-margin column-container"><div class="cell-output-display">
 <div>
@@ -4524,20 +4460,15 @@ Standard errors clustered by country.
 <p><img src="thesis_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
-</div></div><details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a><span class="fu">ggsave</span>(<span class="st">"figures/quality_density.pdf"</span>,</span>
+</div></div><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a><span class="fu">ggsave</span>(<span class="st">"figures/quality_density.pdf"</span>,</span>
 <span id="cb27-2"><a href="#cb27-2"></a>       <span class="at">plot =</span> quality_density,</span>
 <span id="cb27-3"><a href="#cb27-3"></a>       <span class="at">width =</span> <span class="dv">7</span>,</span>
 <span id="cb27-4"><a href="#cb27-4"></a>       <span class="at">height =</span> <span class="dv">5</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 </div>
 </section>
 <section id="distribution-of-financial-development-variables" class="level2 page-columns page-full" data-number="5.3">
 <h2 data-number="5.3" class="anchored" data-anchor-id="distribution-of-financial-development-variables"><span class="header-section-number">5.3</span> Distribution of Financial Development Variables</h2>
 <div class="cell page-columns page-full">
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1"></a><span class="fu">library</span>(dplyr)</span>
 <span id="cb28-2"><a href="#cb28-2"></a><span class="fu">library</span>(tidyr)</span>
 <span id="cb28-3"><a href="#cb28-3"></a><span class="fu">library</span>(ggplot2)</span>
@@ -4569,7 +4500,6 @@ Standard errors clustered by country.
 <span id="cb28-29"><a href="#cb28-29"></a>    <span class="at">strip.text =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>)</span>
 <span id="cb28-30"><a href="#cb28-30"></a>  )</span>
 <span id="cb28-31"><a href="#cb28-31"></a>finance_density</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 
 <div class="no-row-height column-margin column-container"><div class="cell-output-display">
 <div>
@@ -4577,20 +4507,15 @@ Standard errors clustered by country.
 <p><img src="thesis_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="1440"></p>
 </figure>
 </div>
-</div></div><details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a><span class="fu">ggsave</span>(<span class="st">"figures/finance_distribution.pdf"</span>,</span>
+</div></div><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a><span class="fu">ggsave</span>(<span class="st">"figures/finance_distribution.pdf"</span>,</span>
 <span id="cb29-2"><a href="#cb29-2"></a>       <span class="at">plot =</span> finance_density,</span>
 <span id="cb29-3"><a href="#cb29-3"></a>       <span class="at">width =</span> <span class="dv">8</span>,</span>
 <span id="cb29-4"><a href="#cb29-4"></a>       <span class="at">height =</span> <span class="dv">5</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 </div>
 </section>
 <section id="correlation-matrix" class="level2 page-columns page-full" data-number="5.4">
 <h2 data-number="5.4" class="anchored" data-anchor-id="correlation-matrix"><span class="header-section-number">5.4</span> Correlation Matrix</h2>
 <div class="cell page-columns page-full">
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1"></a><span class="fu">library</span>(dplyr)</span>
 <span id="cb30-2"><a href="#cb30-2"></a><span class="fu">library</span>(corrplot)</span>
 <span id="cb30-3"><a href="#cb30-3"></a></span>
@@ -4628,7 +4553,6 @@ Standard errors clustered by country.
 <span id="cb30-35"><a href="#cb30-35"></a>  <span class="at">number.cex =</span> <span class="fl">0.75</span>,</span>
 <span id="cb30-36"><a href="#cb30-36"></a>  <span class="at">addCoef.col =</span> <span class="st">"black"</span></span>
 <span id="cb30-37"><a href="#cb30-37"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 
 <div class="no-row-height column-margin column-container"><div class="cell-output-display">
 <div>
@@ -4636,18 +4560,12 @@ Standard errors clustered by country.
 <p><img src="thesis_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="768"></p>
 </figure>
 </div>
-</div></div><details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1"></a><span class="fu">dev.copy</span>(pdf, <span class="st">"figures/correlation_matrix.pdf"</span>, <span class="at">width =</span> <span class="dv">8</span>, <span class="at">height =</span> <span class="dv">8</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
+</div></div><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1"></a><span class="fu">dev.copy</span>(pdf, <span class="st">"figures/correlation_matrix.pdf"</span>, <span class="at">width =</span> <span class="dv">8</span>, <span class="at">height =</span> <span class="dv">8</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>pdf 
   3 </code></pre>
 </div>
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1"></a><span class="fu">dev.off</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>quartz_off_screen 
                 2 </code></pre>
@@ -4657,8 +4575,6 @@ Standard errors clustered by country.
 <section id="interaction-effects-marginal-effects-plot" class="level2 page-columns page-full" data-number="5.5">
 <h2 data-number="5.5" class="anchored" data-anchor-id="interaction-effects-marginal-effects-plot"><span class="header-section-number">5.5</span> Interaction Effects (Marginal Effects Plot)</h2>
 <div class="cell page-columns page-full">
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1"></a><span class="fu">library</span>(plm)</span>
 <span id="cb35-2"><a href="#cb35-2"></a><span class="fu">library</span>(marginaleffects)</span>
 <span id="cb35-3"><a href="#cb35-3"></a><span class="fu">library</span>(ggplot2)</span>
@@ -4725,7 +4641,6 @@ Standard errors clustered by country.
 <span id="cb35-64"><a href="#cb35-64"></a><span class="fu">ggsave</span>(<span class="st">"figures/interaction_quality.pdf"</span>, <span class="at">plot =</span> p_me_quality, <span class="at">width =</span> <span class="dv">7</span>, <span class="at">height =</span> <span class="dv">5</span>)</span>
 <span id="cb35-65"><a href="#cb35-65"></a></span>
 <span id="cb35-66"><a href="#cb35-66"></a>p_me_quality</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 
 <div class="no-row-height column-margin column-container"><div class="cell-output-display">
 <div>
@@ -4738,8 +4653,6 @@ Standard errors clustered by country.
 <section id="additional-figures" class="level2 page-columns page-full" data-number="5.6">
 <h2 data-number="5.6" class="anchored" data-anchor-id="additional-figures"><span class="header-section-number">5.6</span> Additional Figures</h2>
 <div class="cell page-columns page-full">
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1"></a><span class="co"># distibution of patent quality</span></span>
 <span id="cb36-2"><a href="#cb36-2"></a><span class="fu">library</span>(tidyverse)</span>
 <span id="cb36-3"><a href="#cb36-3"></a><span class="fu">library</span>(data.table)</span>
@@ -4817,7 +4730,6 @@ Standard errors clustered by country.
 <span id="cb36-75"><a href="#cb36-75"></a>)</span>
 <span id="cb36-76"><a href="#cb36-76"></a></span>
 <span id="cb36-77"><a href="#cb36-77"></a>quality_density_bins</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 
 <div class="no-row-height column-margin column-container"><div class="cell-output-display">
 <div>
@@ -4825,10 +4737,7 @@ Standard errors clustered by country.
 <p><img src="thesis_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
-</div></div><details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1"></a>p_quality_quantity</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
+</div></div><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1"></a>p_quality_quantity</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 
 <div class="no-row-height column-margin column-container"><div class="cell-output-display">
 <div>
@@ -4838,8 +4747,6 @@ Standard errors clustered by country.
 </div>
 </div></div></div>
 <div class="cell page-columns page-full">
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1"></a><span class="fu">library</span>(tidyverse)</span>
 <span id="cb38-2"><a href="#cb38-2"></a></span>
 <span id="cb38-3"><a href="#cb38-3"></a><span class="co"># --------------------------</span></span>
@@ -4953,7 +4860,6 @@ Standard errors clustered by country.
 <span id="cb38-111"><a href="#cb38-111"></a></span>
 <span id="cb38-112"><a href="#cb38-112"></a><span class="fu">ggsave</span>(<span class="st">"figures/ipr_quantity.pdf"</span>, <span class="at">plot =</span> p4, <span class="at">width =</span> <span class="dv">7</span>, <span class="at">height =</span> <span class="dv">5</span>)</span>
 <span id="cb38-113"><a href="#cb38-113"></a>p1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 
 <div class="no-row-height column-margin column-container"><div class="cell-output-display">
 <div>
@@ -4961,10 +4867,7 @@ Standard errors clustered by country.
 <p><img src="thesis_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="960"></p>
 </figure>
 </div>
-</div></div><details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1"></a>p2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
+</div></div><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1"></a>p2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 
 <div class="no-row-height column-margin column-container"><div class="cell-output-display">
 <div>
@@ -4972,10 +4875,7 @@ Standard errors clustered by country.
 <p><img src="thesis_files/figure-html/unnamed-chunk-12-2.png" class="img-fluid figure-img" width="960"></p>
 </figure>
 </div>
-</div></div><details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1"></a>p3</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
+</div></div><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1"></a>p3</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 
 <div class="no-row-height column-margin column-container"><div class="cell-output-display">
 <div>
@@ -4983,10 +4883,7 @@ Standard errors clustered by country.
 <p><img src="thesis_files/figure-html/unnamed-chunk-12-3.png" class="img-fluid figure-img" width="960"></p>
 </figure>
 </div>
-</div></div><details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1"></a>p4</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
+</div></div><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1"></a>p4</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 
 <div class="no-row-height column-margin column-container"><div class="cell-output-display">
 <div>
@@ -4996,8 +4893,6 @@ Standard errors clustered by country.
 </div>
 </div></div></div>
 <div class="cell page-columns page-full">
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1"></a>quality_market_df <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
 <span id="cb42-2"><a href="#cb42-2"></a>  <span class="fu">filter</span>(</span>
 <span id="cb42-3"><a href="#cb42-3"></a>    <span class="sc">!</span><span class="fu">is.na</span>(quality_index_100),</span>
@@ -5050,7 +4945,6 @@ Standard errors clustered by country.
 <span id="cb42-50"><a href="#cb42-50"></a>  <span class="at">height =</span> <span class="dv">5</span></span>
 <span id="cb42-51"><a href="#cb42-51"></a>)</span>
 <span id="cb42-52"><a href="#cb42-52"></a>p_quality_market_ipr</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 
 <div class="no-row-height column-margin column-container"><div class="cell-output-display">
 <div>
@@ -5071,8 +4965,6 @@ Standard errors clustered by country.
 <section id="joint-significance-and-nonlinearity-tests" class="level2" data-number="6.1">
 <h2 data-number="6.1" class="anchored" data-anchor-id="joint-significance-and-nonlinearity-tests"><span class="header-section-number">6.1</span> Joint Significance and Nonlinearity Tests</h2>
 <div class="cell">
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1"></a><span class="co"># robustness and model analysis</span></span>
 <span id="cb43-2"><a href="#cb43-2"></a></span>
 <span id="cb43-3"><a href="#cb43-3"></a><span class="fu">library</span>(dplyr)</span>
@@ -5107,13 +4999,10 @@ Standard errors clustered by country.
 <span id="cb43-32"><a href="#cb43-32"></a><span class="co"># run models, see where squared terms are justified</span></span>
 <span id="cb43-33"><a href="#cb43-33"></a></span>
 <span id="cb43-34"><a href="#cb43-34"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st"> testing for nonlinearity </span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>
  testing for nonlinearity </code></pre>
 </div>
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1"></a><span class="co">#  formulas to check squared term p-values</span></span>
 <span id="cb45-2"><a href="#cb45-2"></a></span>
 <span id="cb45-3"><a href="#cb45-3"></a>check_quad <span class="ot">&lt;-</span> <span class="cf">function</span>(dv, base_var) {</span>
@@ -5128,74 +5017,53 @@ Standard errors clustered by country.
 <span id="cb45-12"><a href="#cb45-12"></a>}</span>
 <span id="cb45-13"><a href="#cb45-13"></a></span>
 <span id="cb45-14"><a href="#cb45-14"></a><span class="fu">check_quad</span>(<span class="st">"quality_index_100"</span>, <span class="st">"ln_market"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Checking Quadratic for: quality_index_100 vs ln_market 
   Estimate Std. Error    t value   Pr(&gt;|t|) 
  0.1372631  0.1490833  0.9207139  0.3574770 </code></pre>
 </div>
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1"></a><span class="fu">check_quad</span>(<span class="st">"quality_index_100"</span>, <span class="st">"ln_bank"</span>)    <span class="co"># EXPECTED: significant</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Checking Quadratic for: quality_index_100 vs ln_bank 
   Estimate Std. Error    t value   Pr(&gt;|t|) 
 1.51142138 0.63335568 2.38637059 0.01723636 </code></pre>
 </div>
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1"></a><span class="fu">check_quad</span>(<span class="st">"quality_index_100"</span>, <span class="st">"ln_vc"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Checking Quadratic for: quality_index_100 vs ln_vc 
   Estimate Std. Error    t value   Pr(&gt;|t|) 
  0.0624900  0.1570784  0.3978269  0.6909969 </code></pre>
 </div>
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1"></a><span class="fu">check_quad</span>(<span class="st">"ln_patents"</span>,        <span class="st">"ln_market"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Checking Quadratic for: ln_patents vs ln_market 
    Estimate  Std. Error     t value    Pr(&gt;|t|) 
 -0.01886422  0.03126178 -0.60342743  0.54642649 </code></pre>
 </div>
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1"></a><span class="fu">check_quad</span>(<span class="st">"ln_patents"</span>,        <span class="st">"ln_bank"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Checking Quadratic for: ln_patents vs ln_bank 
   Estimate Std. Error    t value   Pr(&gt;|t|) 
 0.02737307 0.07257386 0.37717529 0.70615433 </code></pre>
 </div>
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1"></a><span class="fu">check_quad</span>(<span class="st">"ln_patents"</span>,        <span class="st">"ln_vc"</span>)        <span class="co"># EXPECTED: significant</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Checking Quadratic for: ln_patents vs ln_vc 
   Estimate Std. Error    t value   Pr(&gt;|t|) 
 0.07698413 0.03183525 2.41820396 0.01615012 </code></pre>
 </div>
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1"></a><span class="co"># final models and joint tests</span></span>
 <span id="cb57-2"><a href="#cb57-2"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st"> joint significance tests </span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>
  joint significance tests </code></pre>
 </div>
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb59"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1"></a>run_final <span class="ot">&lt;-</span> <span class="cf">function</span>(dv, base_var, <span class="at">use_quad =</span> <span class="cn">FALSE</span>) {</span>
 <span id="cb59-2"><a href="#cb59-2"></a>  </span>
 <span id="cb59-3"><a href="#cb59-3"></a>  main_vars <span class="ot">&lt;-</span> <span class="cf">if</span>(use_quad) {</span>
@@ -5226,7 +5094,6 @@ Checking Quadratic for: ln_patents vs ln_vc
 <span id="cb59-28"><a href="#cb59-28"></a></span>
 <span id="cb59-29"><a href="#cb59-29"></a><span class="co"># quality final</span></span>
 <span id="cb59-30"><a href="#cb59-30"></a><span class="fu">run_final</span>(<span class="st">"quality_index_100"</span>, <span class="st">"ln_market"</span>, <span class="at">use_quad =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>
  ---------------------------------------- 
@@ -5252,10 +5119,7 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 [Within R-squared]: 0.02452826 </code></pre>
 </div>
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb61"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1"></a><span class="fu">run_final</span>(<span class="st">"quality_index_100"</span>, <span class="st">"ln_bank"</span>,   <span class="at">use_quad =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>
  ---------------------------------------- 
@@ -5282,10 +5146,7 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 [Within R-squared]: 0.03938897 </code></pre>
 </div>
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb63"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1"></a><span class="fu">run_final</span>(<span class="st">"quality_index_100"</span>, <span class="st">"ln_vc"</span>,     <span class="at">use_quad =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>
  ---------------------------------------- 
@@ -5309,11 +5170,8 @@ Note: Coefficient covariance matrix supplied.
 
 [Within R-squared]: 0.008877963 </code></pre>
 </div>
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb65"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1"></a><span class="co"># quantity final</span></span>
 <span id="cb65-2"><a href="#cb65-2"></a><span class="fu">run_final</span>(<span class="st">"ln_patents"</span>,        <span class="st">"ln_market"</span>, <span class="at">use_quad =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>
  ---------------------------------------- 
@@ -5337,10 +5195,7 @@ Note: Coefficient covariance matrix supplied.
 
 [Within R-squared]: 0.07196042 </code></pre>
 </div>
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb67"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1"></a><span class="fu">run_final</span>(<span class="st">"ln_patents"</span>,        <span class="st">"ln_bank"</span>,   <span class="at">use_quad =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>
  ---------------------------------------- 
@@ -5364,10 +5219,7 @@ Note: Coefficient covariance matrix supplied.
 
 [Within R-squared]: 0.2278577 </code></pre>
 </div>
-<details class="code-fold">
-<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb69"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1"></a><span class="fu">run_final</span>(<span class="st">"ln_patents"</span>,        <span class="st">"ln_vc"</span>,     <span class="at">use_quad =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>
  ---------------------------------------- 

@@ -3,17 +3,15 @@ project:
   output-dir: docs
 
 website:
-  title: "Aaron DiLorenzo"
+  title: "Aaron DiLorenzo | Research"
   navbar:
     left:
       - text: Home
         href: index.qmd
       - text: Thesis
         href: thesis.qmd
-      - text: Energy Project
+      - text: Oil & Gas Project
         href: fracking.qmd
-      - text: ML Project
-        href: ml.qmd
 
 format:
   html:
