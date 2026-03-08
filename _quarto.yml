@@ -11,7 +11,7 @@ website:
       - text: Thesis
         href: thesis.qmd
       - text: Oil & Gas Project
-        href: fracking.qmd
+        href: frackin.qmd
 
 format:
   html:

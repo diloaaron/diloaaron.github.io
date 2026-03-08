@@ -9,7 +9,7 @@ title: Home
 ## Research
 
 - [Senior Thesis](thesis.html)
-- Unconventional Oil & Gas Extraction (forthcoming)
+- [Hydraulic Fracturing and Induced Seismicity](frackin.html)
 
 ## Resume
 
