@@ -404,10 +404,7 @@ tx_counties <- st_transform(tx_counties, 4326)
 ## Hexbin density plots
 ```{r}
 eq_hex <- ggplot() +
-  # 1. Plot the hexbins first so they sit on the bottom layer
   geom_hex(data = master_earthquakes, aes(x = Longitude, y = Latitude), bins = 40) +
-  
-  # 2. Layer the county lines on top with a transparent fill
   geom_sf(data = tx_counties, fill = NA, color = "grey40", linewidth = 0.3) +
   
   scale_fill_viridis_c(name = "Earthquake Count") +
@@ -441,7 +438,7 @@ library(dplyr)
 library(data.table)
 master_frac_cleanest <- fread("data/master_frac_cleanest.csv")
 #wells map
-wells_map <- leaflet() %>%
+wells_map <- leaflet(options = leafletOptions(preferCanvas = TRUE)) %>%
   addProviderTiles(providers$CartoDB.Positron) %>%
   addPolygons(
     data = tx_counties,
@@ -468,7 +465,7 @@ wells_map <- leaflet() %>%
 
 master_earthquakes <- fread("data/master_earthquakes.csv")
 
-quakes_map <- leaflet() %>%
+quakes_map <- leaflet(options = leafletOptions(preferCanvas = TRUE)) %>%
   addProviderTiles(providers$CartoDB.Positron) %>%
   addPolygons(
     data = tx_counties,
@@ -501,15 +498,15 @@ sync(wells_map, quakes_map)
 col_mag <- colorNumeric('Reds', master_earthquakes$Magnitude)
 col_vol <- colorNumeric('Blues', master_frac_cleanest$Total_Fluid_Volume)
 
-wq<- leaflet() %>%
-  addProviderTiles(providers$CartoDB.DarkMatter) %>% # i like this background
+wq <- leaflet(options = leafletOptions(preferCanvas = TRUE)) %>% 
+  addProviderTiles(providers$CartoDB.DarkMatter) %>%
   addPolygons(
     data = tx_counties,
     fillColor = 'transparent', 
     color = '#444444',        
     weight = 1
   ) %>%
-  
+
   # wells are plotted first
   addCircleMarkers(
     data = master_frac_cleanest,
