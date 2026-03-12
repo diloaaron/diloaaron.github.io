@@ -756,7 +756,7 @@ wq
 ::: column
 ### Timeline
 
-<img src="figures/animate.gif" style="width:100%; display:block; margin:auto;"/>
+<img src="animate.gif" style="width:100%; display:block; margin:auto;"/>
 :::
 :::::
 
