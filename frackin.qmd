@@ -23,6 +23,7 @@ link-citations: true
 ---
 
 ***Disclaimer:*** *This project visualizes the relationship between Unconventional Oil and Gas (UOG) activity and seismic events, but does not imply that production wells directly cause earthquakes. The primary driver of induced seismicity is wastewater disposal wells. However, because production and disposal are co-dependent processes, increased UOG extraction generates more wastewater, requiring more disposal, which ultimately elevates seismic risk.*
+
 # Background and Motivation
 
 Fossil fuels still dominate global energy systems, accounting for roughly 80% of global energy consumption and more than 80% of U.S. energy use [@css2025facts]. Over the past two decades, advances in horizontal drilling and hydraulic fracturing have enabled the large-scale development of unconventional oil and gas (UOG) resources trapped in low-permeability shale formations [@wang2015review]. Fracking involves the injection of high-pressure fluid (water, proppant/sand, biocides, surfactants, and gelling agents) into the shale, creating fractures that allow hydrocarbons to flow to the wellbore [@schultz2020hydra]. The result: from the early 2000s to 2012, U.S. gas production rose exponentially (\<1% to 40%) [@nicot2014source].
