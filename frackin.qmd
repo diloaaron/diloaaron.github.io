@@ -21,9 +21,8 @@ format:
 bibliography: fracref.bib
 link-citations: true
 ---
+
 ***Disclaimer:*** *This project visualizes the relationship between Unconventional Oil and Gas (UOG) activity and seismic events, but does not imply that production wells directly cause earthquakes. The primary driver of induced seismicity is wastewater disposal wells. However, because production and disposal are co-dependent processes, increased UOG extraction generates more wastewater, requiring more disposal, which ultimately elevates seismic risk.*
-
-
 # Background and Motivation
 
 Fossil fuels still dominate global energy systems, accounting for roughly 80% of global energy consumption and more than 80% of U.S. energy use [@css2025facts]. Over the past two decades, advances in horizontal drilling and hydraulic fracturing have enabled the large-scale development of unconventional oil and gas (UOG) resources trapped in low-permeability shale formations [@wang2015review]. Fracking involves the injection of high-pressure fluid (water, proppant/sand, biocides, surfactants, and gelling agents) into the shale, creating fractures that allow hydrocarbons to flow to the wellbore [@schultz2020hydra]. The result: from the early 2000s to 2012, U.S. gas production rose exponentially (\<1% to 40%) [@nicot2014source].
@@ -342,6 +341,7 @@ fwrite(master_earthquakes_tx, 'data/master_earthquakes_tx.csv')
 # Analysis
 
 ## Checking USGS/TexNet Coverage and Examining Earthquake Frequency Trends
+
 Understanding earthquake detection capabilities prior to TexNet is essential for this project. The daily frequency timeline shows seismic activity around the beginning of the Shale Boom to the present. While the pre-2017 timeline shows a seemingly negligible amount of earthquakes, this is entirely a monitoring artifact. By 2015, induced seismicity had become such a big issue that Texas mandated a massive upgrade to its seismic infrastructure. The accompanying map of TexNet's monitoring stations shows the result of that initiative (stations are all across the state now).
 
 ```{r eval= TRUE, echo= TRUE, warning= FALSE, message= FALSE}
@@ -428,8 +428,6 @@ eq_cov
 ### TexNet Monitoring Stations
 
 <img src="https://texnet.beg.utexas.edu/files/about/texnet_event_update_withIndex_on20231001_updated.png" style="width:100%; max-height:400px; object-fit:contain; display:block; margin:auto;"/> [@texnet_fig] Now, TexNet has portable and permanent monitoring stations all across the state with the capacity to detect and analyze earthquakes with greater accuracy
-
-
 :::
 
 ```{r message= FALSE, echo= FALSE, warning= FALSE}
@@ -448,7 +446,8 @@ tx_counties <- st_transform(tx_counties, 4326)
 ```
 
 ## Hexbin density plots
-By aggregating ~95,000 production wells and ~45,000 earthquakes into spatial hexbins, we can see the spatial patterns of induced seismicity in Texas. The highest concentrations of modern seismic activity map directly onto the state's most active UOG regions. The Permian and Delaware Basins burn the brightest on both maps. Massive production requires massive wastewater disposal, triggering heavy seismic clusters.
+
+By aggregating \~95,000 production wells and \~45,000 earthquakes into spatial hexbins, we can see the spatial patterns of induced seismicity in Texas. The highest concentrations of modern seismic activity map directly onto the state's most active UOG regions. The Permian and Delaware Basins burn the brightest on both maps. Massive production requires massive wastewater disposal, triggering heavy seismic clusters.
 
 ```{r}
 #| results: hide
@@ -552,7 +551,8 @@ eq_hex
 :::::
 
 ## Spatial & Temporal Mapping
-The interactive map and animated timeline below show the geographic distribution of ~140,000 combined data points. Seismic Events (Red), are scaled and colored by magnitude. Production Wells (Blue) are scaled and colored by total fluid injection volume, serving as a proxy for the intensity of the extraction operation. It's interesting to pan across the major basins, zoom in to see patterns, and use the timeline to watch how the exponential expansion of UOG activites overlays with the increase in seismicity.
+
+The interactive map and animated timeline below show the geographic distribution of \~140,000 combined data points. Seismic Events (Red), are scaled and colored by magnitude. Production Wells (Blue) are scaled and colored by total fluid injection volume, serving as a proxy for the intensity of the extraction operation. It's interesting to pan across the major basins, zoom in to see patterns, and use the timeline to watch how the exponential expansion of UOG activites overlays with the increase in seismicity.
 
 ```{r echo= FALSE, message= FALSE, warning= FALSE}
 # ignore this
@@ -670,6 +670,7 @@ wq <- leaflet(options = leafletOptions(preferCanvas= TRUE)) %>% #drastically imp
 
 #wq
 ```
+
 ```{r eval= FALSE, warning= FALSE, message= FALSE}
 # this code produces the animated map
 library(ggplot2)
@@ -759,7 +760,8 @@ wq
 :::
 :::::
 
-## Time Trends and the Depth Disconnect 
+## Time Trends and the Depth Disconnect
+
 The figure on the left plots monthly fluid injection volumes (scaled for visibility) against the monthly count of seismic events. The temporal trends track closely: as injection volume increases, seismic event frequency often rises as well (or falls if you look at 2020).
 
 However, the density plot on the right reveals an important geophysical feature. When comparing the True Vertical Depth (TVD) of production wells against the focal depth of the earthquakes, there is very little overlap. Seismic events are occurring significantly deeper in the subsurface than the depth of the production wells. The production wells themselves are not physically triggering the deep faults. Instead, the massive volumes of wastewater they generate are disposed of in separate, much deeper injection wells (often nearby), which alter pressures in the underlying crystalline basement rock, triggering deep slips.
@@ -846,6 +848,7 @@ pdf1<- ggplot() +
     legend.justification = c(1, 1) 
   )
 ```
+
 ::::: {.column-screen layout="[48, 48]"}
 ::: column
 ### Monthly Injection Volume, Monthly Events
@@ -861,6 +864,7 @@ p1
 
 ::: column
 ### Distribution of TVD and Event Depth
+
 ```{r}
 #| echo: false
 #| message: false
@@ -873,13 +877,15 @@ pdf1
 
 ::: column-screen
 ## Groundwater Concerns and Geology
+
 For those curious about the risk to local aquifers, I also include a figure from The @twdb2026. It maps groundwater wells across Texas, and you can also toggle geological layers and see well purpose (domestic, irrigation, commercial, and livestock). I was curious so see if many domestic water wells reach depths that are vulnerable to fracking fluid migration. TVD is only part of the risk, even if a domestic well is safely situated far above a fracturing zone, the groundwater is still susceptible to contamination through mechanical and logistical failures. Poorly cemented well casings, surface-level wastewater spills, and transport tanker/storage leaks present shallow-depth risks to local water supplies.
 
 <iframe src="https://www3.twdb.texas.gov/apps/waterdatainteractive/groundwaterdataviewer/?embed=true" style="width: 100%; height: 600px;" scrolling="no" frameborder="0">
-</iframe>
-*Source: Texas Water Development Board —  Water data Interactive* [@twdb2026]
-:::
 
+</iframe>
+
+*Source: Texas Water Development Board — Water data Interactive* [@twdb2026]
+:::
 
 ```{r echo= FALSE, eval= FALSE}
 ## Cumulative Distribution of TX Earthquakes
@@ -907,9 +913,9 @@ master_earthquakes %>%
   )
 ```
 
-
 ::: column-screen
 ## Disposal Wells
+
 The figure below from The Texas Tribune [@murphy2013disposal] shows the locations of wastewater disposal wells across the state. Although this specific snapshot reflects the infrastructure as of 2013, it shows that the disposal wells are built extremely close to to active production zones. Were there is intense UOG production, there must be high-volume wastewater disposal, inevitably resulting in a concentrated area of seismic activity.
 
 <iframe src="https://apps.texastribune.org/series/water-for-fracking/map/?embed=true" style="width: 100%; height: 600px;" scrolling="no" frameborder="0">
@@ -921,8 +927,12 @@ The figure below from The Texas Tribune [@murphy2013disposal] shows the location
 
 # Further Study
 
-This project lays the groundwork for two major extensions. A more thorough assessment of the specific chemicals used in UOG injection fluids would be a really nice route (many recent studies investigate this). Given the difficult nature of the FracFocus data, utilizing dedicated tools like the Open-FF project [@allison2026openff] would be very helpful. 
+This project lays the groundwork for two major extensions. A more thorough assessment of the specific chemicals used in UOG injection fluids would be a really nice route (many recent studies investigate this). Given the difficult nature of the FracFocus data, utilizing dedicated tools like the Open-FF project [@allison2026openff] would be very helpful.
 
 The second extension is moving from visual correlation to statistical prediction (a task that requires dedicated geophysical and statistical expertise). While beyond the current scope of this project (and my abilities), advanced spatiotemporal modeling could be used to predict the frequency of events based on injection volumes, fluid density, or local geology. Transitioning from spatial mapping to predictive risk modeling would be super interesting, and maybe make UOG activities a bit safer.
+
+<a class="btn btn-primary" 
+   href="https://raw.githubusercontent.com/diloaaron/diloaaron.github.io/main/frackin.qmd" 
+   download> download this .qmd file </a>
 
 # References
