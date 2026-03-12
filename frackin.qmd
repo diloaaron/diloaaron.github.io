@@ -23,7 +23,6 @@ link-citations: true
 ---
 ***Disclaimer:*** *This project visualizes the relationship between Unconventional Oil and Gas (UOG) activity and seismic events, but does not imply that production wells directly cause earthquakes. The primary driver of induced seismicity is wastewater disposal wells. However, because production and disposal are co-dependent processes, increased UOG extraction generates more wastewater, requiring more disposal, which ultimately elevates seismic risk.*
 
-[Download QMD](frackin.qmd)
 
 # Background and Motivation
 
@@ -756,7 +755,7 @@ wq
 ::: column
 ### Timeline
 
-<img src="animate.gif" style="width:100%; display:block; margin:auto;"/>
+<img src="documents/animate.gif" style="width:100%; display:block; margin:auto;"/>
 :::
 :::::
 

@@ -3,7 +3,7 @@ project:
   output-dir: docs
 
 website:
-  title: "Aaron DiLorenzo | Research"
+  title: "Aaron DiLorenzo"
   navbar:
     left:
       - text: Home
