@@ -2,13 +2,13 @@
 title: Home
 ---
 
-## About Me
+## About
 
 
 
 ## Research
 
-- [Senior Thesis](thesis.html)
+- [Thesis](thesis.html)
 - [Hydraulic Fracturing and Induced Seismicity](frackin.html)
 
 ## Resume

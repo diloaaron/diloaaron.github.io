@@ -21,3 +21,4 @@ forcats
 lubridate
 carData
 car
+fixest
