@@ -1,12 +1,22 @@
 ---
 title: Home
+format: 
+  html:
+    include-in-header:
+        text: |
+          <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/bitmaks/cm-web-fonts@latest/fonts.css">
+          <style>
+            body, p, h1, h2, h3, h4, h5, h6, li, td, th {
+              font-family: "Computer Modern Serif", serif !important;
+            }
+          </style>
 ---
 
 ## About
 
 
 
-## Research
+## Research Projects
 
 - [Thesis](thesis.html)
 - [Hydraulic Fracturing and Induced Seismicity](frackin.html)
