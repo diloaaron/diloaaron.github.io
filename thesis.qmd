@@ -47,7 +47,7 @@ editor:
 ### Resources & Data Access
 
 * **[Download/View the Full Thesis (PDF)](documents/analysis.pdf)** 
-* **[Download the Replication Source Code (.qmd)](https://github.com/diloaaron/diloaaron.github.io/blob/main/thesis.qmd)**
+* **[Download the Replication Source Code (.qmd)](https://raw.githubusercontent.com/diloaaron/diloaaron.github.io/refs/heads/main/thesis.qmd)**
 * **[Access the Raw and Final Datasets](https://github.com/diloaaron/diloaaron.github.io/tree/main/data)**
 * **[Request OECD Patent Quality Data](https://forms.office.com/pages/responsepage.aspx?id=1MdBrGEfDUaw9PySWitHHKuxmuqpz_9KusL7-G1D6wFUOEU0OVBYVk5QTzROVlBTSUtBUUREWVhHTiQlQCN0PWcu&route=shorturl)** *(Required for the initial data construction phase)*
 
@@ -320,7 +320,7 @@ development variable ($FD$) and the Park Index ($IPR$) are
 mean-centered. This ensures that $\beta_1$ and $\beta_2$ are interpreted
 as the marginal effects of finance and IPR exactly at the sample mean of
 the other variable, rather than at an unrealistic zero value. 2. **Fixed
-Effects (**$\alpha_i, \delta_t$): I include country fixed effects to
+Effects (**$\alpha_i, \lambda_t$): I include country fixed effects to
 absorb time-invariant institutional or cultural characteristics, and
 year fixed effects to control for global macro shocks and
 aggregate patenting trends. 3. **Clustered Standard Errors**: To account
