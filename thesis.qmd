@@ -753,9 +753,7 @@ library(marginaleffects)
 library(ggplot2)
 library(dplyr)
 
-# -------------------------
-# Estimate Column 3
-# -------------------------
+# estimate col 3
 twfe_c3 <- plm(
   quality_index_100 ~ 
     ln_market_c * ipr_c +
@@ -767,9 +765,7 @@ twfe_c3 <- plm(
   effect = "twoways"
 )
 
-# -------------------------
-# Estimate Column 4
-# -------------------------
+# estimate col 4c
 twfe_c4 <- plm(
   quality_index_100 ~ 
     ln_market_c * ipr_c +
