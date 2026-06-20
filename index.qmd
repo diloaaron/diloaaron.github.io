@@ -14,12 +14,13 @@ format:
 
 ## About
 
-
+Project Engineer at a GC/CM in NYC; residential construction in CT before that. I love to build things — with lumber, data, or other mediums.
 
 ## Research Projects
+- [QXGBoost for NYC Construction Risk](documents/qxgboost.pdf)
+- [Innovation Outcomes](thesis.html)
+- [UOG & Induced Seismicity](frackin.html)
 
-- [Thesis](thesis.html)
-- [Hydraulic Fracturing and Induced Seismicity](frackin.html)
 
 ## Resume
 

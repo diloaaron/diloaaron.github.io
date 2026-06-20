@@ -8,10 +8,12 @@ website:
     left:
       - text: Home
         href: index.qmd
-      - text: Thesis
+      - text: Innovation Outcomes
         href: thesis.qmd
-      - text: Oil & Gas Project
+      - text: UOG & Induced Seismicity
         href: frackin.qmd
+      - text: QXGBoost for NYC Construction Risk
+        href: documents/qxgboost.pdf
 
 format:
   html:
